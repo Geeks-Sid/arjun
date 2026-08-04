@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.local/schemas/phase_acceptance.json",
+  "title": "Phase Acceptance Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase",
+    "status",
+    "generated_by",
+    "generated_at",
+    "smoke_command",
+    "smoke_passed",
+    "criteria",
+    "unresolved_issues_file",
+    "handoff_file"
+  ],
+  "properties": {
+    "phase": {
+      "type": "string",
+      "pattern": "^[0-9]{2}$"
+    },
+    "status": {
+      "enum": ["passed", "failed", "blocked"]
+    },
+    "generated_by": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "smoke_command": { "type": "string", "minLength": 1 },
+    "smoke_passed": { "type": "boolean" },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "status": {
+            "enum": ["passed", "failed", "blocked", "not_applicable"]
+          },
+          "evidence": { "type": "string" },
+          "justification": { "type": "string" }
+        }
+      }
+    },
+    "unresolved_issues_file": { "type": "string", "minLength": 1 },
+    "handoff_file": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "phase": "00",
+  "generated_at": "2026-08-04T19:48:26Z",
+  "commands": [
+    "python -m pytest tests/phase_00 -q"
+  ],
+  "summary": {
+    "passed": 65,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 0.1
+  },
+  "tests": [
+    {"name": "tests/phase_00/test_license_schema.py", "status": "passed"},
+    {"name": "tests/phase_00/test_acceptance_schema.py", "status": "passed"},
+    {"name": "tests/phase_00/test_scope_consistency.py", "status": "passed"},
+    {"name": "tests/phase_00/test_doc_links.py", "status": "passed"},
+    {"name": "tests/phase_00/test_accelerator_policy.py", "status": "passed"}
+  ]
+}

@@ -1,0 +1,348 @@
+# Preliminary license records for the v1 model roster.
+# Schema: model_registry/license_schema.json (structure from idea.md).
+# Policy: docs/licensing_policy.md — unresolved terms are BLOCKING, never guessed.
+# Cross-field rules enforced by medfm/tools/governance.py:
+#   * any use field == "unresolved"  => status must be blocked_unresolved
+#   * repository/weights_uri == "unresolved" => status must be blocked_unresolved
+#   * approved_* requires accepted terms for gated repos
+#   * approved_commercial requires commercial_use == "permitted"
+
+medsiglip:
+  model_id: medsiglip
+  provider: Google (Health AI Developer Foundations)
+  repository: https://huggingface.co/google/medsiglip-448
+  weights_uri: unresolved
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: Apache-2.0
+  weights_license: Health AI Developer Foundations terms (exact terms unreviewed)
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["research evaluation after license review"]
+  prohibited_use_cases: ["clinical use", "commercial use until terms reviewed"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "HAI-DEF terms require named-individual acceptance. Review before enabling."
+
+rad-dino:
+  model_id: rad-dino
+  provider: Microsoft
+  repository: https://github.com/microsoft/RAD-DINO
+  weights_uri: https://huggingface.co/microsoft/rad-dino
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: MIT
+  weights_license: MIT
+  commercial_use: permitted
+  derivative_models: permitted
+  redistribution: permitted
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["research", "commercial (MIT)"]
+  prohibited_use_cases: ["clinical use without validation"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "MIT per upstream repository; confirm weights license file at pinned revision."
+
+medgemma-1.5-4b:
+  model_id: medgemma-1.5-4b
+  provider: Google (Health AI Developer Foundations)
+  repository: https://huggingface.co/google/medgemma-1.5-4b-it
+  weights_uri: unresolved
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: Apache-2.0
+  weights_license: Health AI Developer Foundations terms (exact terms unreviewed)
+  commercial_use: conditional
+  derivative_models: conditional
+  redistribution: unresolved
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["research evaluation after terms acceptance"]
+  prohibited_use_cases: ["clinical use without validation", "redistribution until terms reviewed"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Gated; HAI-DEF terms permit defined health uses with a prohibited-use policy. Redistribution terms unresolved, so the record is blocking until reviewed; accept terms as a named individual before enabling."
+
+h-optimus-0:
+  model_id: h-optimus-0
+  provider: Bioptimus
+  repository: https://huggingface.co/bioptimus/H-optimus-0
+  weights_uri: https://huggingface.co/bioptimus/H-optimus-0
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: Apache-2.0
+  weights_license: Apache-2.0
+  commercial_use: permitted
+  derivative_models: permitted
+  redistribution: permitted
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["research", "commercial (Apache-2.0)"]
+  prohibited_use_cases: ["clinical use without validation"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Apache-2.0 per provider announcement; HF repo is gated and requires acceptance."
+
+conch:
+  model_id: conch
+  provider: Mahmood Lab (Harvard/BWH)
+  repository: https://huggingface.co/MahmoodLab/CONCH
+  weights_uri: https://huggingface.co/MahmoodLab/CONCH
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: unresolved
+  weights_license: Custom research license (non-commercial, per provider)
+  commercial_use: prohibited
+  derivative_models: conditional
+  redistribution: prohibited
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["non-commercial research"]
+  prohibited_use_cases: ["commercial use", "redistribution"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Optional v1 model. Research-only classification; verify exact license text at pinned revision."
+
+ct-fm:
+  model_id: ct-fm
+  provider: CT-FM authors (academic)
+  repository: unresolved
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Preferred 3D CT backbone. Source repository and license must be confirmed in Phase 05 before enabling."
+
+flexict-3d:
+  model_id: flexict-3d
+  provider: FlexiCT authors (academic)
+  repository: unresolved
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Fallback 3D CT backbone (2D/3D/3D-VL checkpoints with CLS and patch tokens). Confirm repository and license in Phase 05."
+
+merlin:
+  model_id: merlin
+  provider: Stanford AIMI
+  repository: https://github.com/Stanford-AIMI/Merlin
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Native 3D CT VLM with public code and PEFT dependencies. License terms to confirm in Phase 05/07."
+
+m3d-lamed:
+  model_id: m3d-lamed
+  provider: BAAI-DCAI (M3D)
+  repository: https://github.com/BAAI-DCAI/Medical-3D-VLM
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["research integration only, pending license review"]
+  prohibited_use_cases: ["commercial use until resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "M3D-CLIP / M3D-LaMed research integration. Confirm code and weights licenses in Phase 05."
+
+triad:
+  model_id: triad
+  provider: Triad authors (academic)
+  repository: unresolved
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "3D MRI Swin checkpoints (segmentation/classification/registration). Confirm repository and license in Phase 05."
+
+nv-segment-ctmr:
+  model_id: nv-segment-ctmr
+  provider: NVIDIA
+  repository: unresolved
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Automatic 3D CT/MRI segmentation (300+ classes) plus interactive pathways. Distribution channel (NGC/HF/MONAI bundle) and license to confirm in Phase 05."
+
+brainiac:
+  model_id: brainiac
+  provider: BrainIAC authors (academic)
+  repository: unresolved
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Deferred — optional later 3D MRI integration, not required for v1 acceptance."
+
+medsam2:
+  model_id: medsam2
+  provider: bowang-lab
+  repository: https://github.com/bowang-lab/MedSAM2
+  weights_uri: unresolved
+  revision_policy: pinned_revision_required_unresolved
+  code_license: unresolved
+  weights_license: unresolved
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "SAM2-style memory architecture for 3D medical images/videos. Confirm code and checkpoint licenses in Phase 05."
+
+gigapath-flash:
+  model_id: gigapath-flash
+  provider: Microsoft / Providence (Prov-GigaPath)
+  repository: https://huggingface.co/prov-gigapath/prov-gigapath
+  weights_uri: unresolved
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: unresolved
+  weights_license: Custom license (per provider; terms unreviewed)
+  commercial_use: unresolved
+  derivative_models: unresolved
+  redistribution: unresolved
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["none until resolved"]
+  prohibited_use_cases: ["all use until license resolved"]
+  status: blocked_unresolved
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Slide-level pathology path (GigaPath-Flash). Gated HF repo; custom terms require review."
+
+titan:
+  model_id: titan
+  provider: Mahmood Lab (Harvard/BWH)
+  repository: https://huggingface.co/MahmoodLab/TITAN
+  weights_uri: https://huggingface.co/MahmoodLab/TITAN
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: unresolved
+  weights_license: Custom research license (non-commercial, per provider)
+  commercial_use: prohibited
+  derivative_models: conditional
+  redistribution: prohibited
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["non-commercial research"]
+  prohibited_use_cases: ["commercial use", "redistribution"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Multimodal whole-slide representations aligned with reports. Research-only classification; verify exact license text."
+
+gemma-generic:
+  model_id: gemma-generic
+  provider: Google
+  repository: https://huggingface.co/google/gemma-3-4b-it
+  weights_uri: unresolved
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: Apache-2.0
+  weights_license: Gemma Terms of Use
+  commercial_use: conditional
+  derivative_models: conditional
+  redistribution: conditional
+  gated_access: true
+  accepted_terms_date: null
+  approved_use_cases: ["research comparison baseline behind the shared LM interface"]
+  prohibited_use_cases: ["uses barred by the Gemma prohibited-use policy"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Optional generic (non-medical) LM behind the same LanguageModelAdapter interface."
+
+qwen-generic:
+  model_id: qwen-generic
+  provider: Alibaba (Qwen)
+  repository: https://huggingface.co/Qwen
+  weights_uri: unresolved
+  revision_policy: pinned_hf_revision_pending_acceptance
+  code_license: Apache-2.0
+  weights_license: Apache-2.0 (verify per checkpoint)
+  commercial_use: permitted
+  derivative_models: permitted
+  redistribution: permitted
+  gated_access: false
+  accepted_terms_date: null
+  approved_use_cases: ["research comparison baseline behind the shared LM interface"]
+  prohibited_use_cases: ["clinical use without validation"]
+  status: pending_review
+  review_owner: Project Maintainer (Siddhesh)
+  review_date: 2026-11-02
+  notes: "Optional generic LM; some Qwen checkpoints use different licenses — verify the exact checkpoint before enabling."

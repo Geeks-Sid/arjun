@@ -1,0 +1,66 @@
+{
+  "phase": "00",
+  "status": "passed",
+  "generated_by": "Kimi Code CLI",
+  "generated_at": "2026-08-04T19:48:26Z",
+  "smoke_command": "python -m pytest tests/phase_00 -q",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "deps-confirmed",
+      "description": "Workstation/GPU and PEFT-first assumptions confirmed; owners identified",
+      "status": "passed",
+      "evidence": "docs/product_requirements.md section 1 (48 GB build target confirmed per owner direction 2026-08-04) and section 9 (owners)"
+    },
+    {
+      "id": "product-docs",
+      "description": "Product requirements, supported modalities, supported tasks documented with canonical enums",
+      "status": "passed",
+      "evidence": "docs/product_requirements.md, docs/supported_modalities.md, docs/supported_tasks.md"
+    },
+    {
+      "id": "matrix-complete",
+      "description": "Every modality/task pair mapped to supported, deferred, or unsupported",
+      "status": "passed",
+      "evidence": "tests/phase_00/test_scope_consistency.py::test_matrix_is_complete_partition"
+    },
+    {
+      "id": "roster-and-slices",
+      "description": "v1 model roster with preferred/fallback backbones and minimum vertical slices defined",
+      "status": "passed",
+      "evidence": "model_registry/v1_scope.yaml models + vertical_slices; docs/product_requirements.md sections 5-6"
+    },
+    {
+      "id": "governance-docs",
+      "description": "Clinical safety, data, model, licensing, reproducibility docs with owners and review dates; PHI fail-closed and trust_remote_code policy defined",
+      "status": "passed",
+      "evidence": "docs/clinical_safety_scope.md, docs/data_governance.md, docs/model_governance.md, docs/licensing_policy.md, docs/reproducibility_policy.md; tests/phase_00/test_doc_links.py::test_governance_doc_has_owner_and_review_date"
+    },
+    {
+      "id": "adrs",
+      "description": "ADR 0001-0009 written with alternatives, consequences, reversal conditions",
+      "status": "passed",
+      "evidence": "tests/phase_00/test_doc_links.py::test_every_adr_has_required_sections"
+    },
+    {
+      "id": "license-registry",
+      "description": "License schema defined; preliminary record for every v1 checkpoint; unresolved terms blocking; research-only vs commercial separated",
+      "status": "passed",
+      "evidence": "model_registry/license_schema.json, model_registry/licenses.yaml; tests/phase_00/test_license_schema.py"
+    },
+    {
+      "id": "agent-protocol",
+      "description": "Agent phase protocol complete enough for Phase 01",
+      "status": "passed",
+      "evidence": "agent/README.md, agent/phase_template.md, agent/acceptance_schema.json, agent/prompts/*.md; tests/phase_00/test_acceptance_schema.py"
+    },
+    {
+      "id": "accelerator-policy",
+      "description": "Per-backend accelerator status for every v1 model; blanket cross-accelerator claims rejected without hardware evidence; v1 TPU minimum target defined",
+      "status": "passed",
+      "evidence": "tests/phase_00/test_accelerator_policy.py; model_registry/v1_scope.yaml accelerator_tiers"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_00/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_00/next_phase_handoff.md"
+}

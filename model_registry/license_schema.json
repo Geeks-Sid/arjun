@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.local/schemas/license_record.json",
+  "title": "Model License Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_id",
+    "provider",
+    "repository",
+    "weights_uri",
+    "revision_policy",
+    "code_license",
+    "weights_license",
+    "commercial_use",
+    "derivative_models",
+    "redistribution",
+    "gated_access",
+    "accepted_terms_date",
+    "approved_use_cases",
+    "prohibited_use_cases",
+    "status",
+    "review_owner",
+    "review_date",
+    "notes"
+  ],
+  "properties": {
+    "model_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$"
+    },
+    "provider": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "minLength": 1 },
+    "weights_uri": { "type": "string", "minLength": 1 },
+    "revision_policy": { "type": "string", "minLength": 1 },
+    "code_license": { "type": "string", "minLength": 1 },
+    "weights_license": { "type": "string", "minLength": 1 },
+    "commercial_use": { "enum": ["permitted", "prohibited", "conditional", "unresolved"] },
+    "derivative_models": { "enum": ["permitted", "prohibited", "conditional", "unresolved"] },
+    "redistribution": { "enum": ["permitted", "prohibited", "conditional", "unresolved"] },
+    "gated_access": { "type": "boolean" },
+    "accepted_terms_date": { "type": ["string", "null"], "format": "date" },
+    "approved_use_cases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "prohibited_use_cases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "status": {
+      "enum": ["approved_research", "approved_commercial", "pending_review", "blocked_unresolved", "rejected"]
+    },
+    "review_owner": { "type": "string", "minLength": 1 },
+    "review_date": { "type": "string", "format": "date" },
+    "notes": { "type": "string" }
+  }
+}

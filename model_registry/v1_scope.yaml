@@ -1,0 +1,336 @@
+# v1 scope registry — machine-readable source of truth for Phase 00.
+# Validated by tests/phase_00/test_scope_consistency.py and tests/phase_00/test_accelerator_policy.py.
+version: "1.0"
+phase: "00"
+generated: "2026-08-04"
+
+# Canonical enums handed to Phase 02 (see docs/supported_modalities.md, docs/supported_tasks.md).
+modalities:
+  - name: XRAY_2D
+    preferred_backbone: medsiglip
+    fallback_backbone: rad-dino
+    backbone_candidates: [medsiglip, rad-dino, medgemma-1.5-4b]
+  - name: CT_2D_SLICE
+    preferred_backbone: rad-dino
+    fallback_backbone: flexict-3d
+    backbone_candidates: [rad-dino, flexict-3d, medsiglip]
+  - name: CT_3D
+    preferred_backbone: ct-fm
+    fallback_backbone: flexict-3d
+    backbone_candidates: [ct-fm, flexict-3d, merlin, m3d-lamed]
+  - name: MRI_2D_SLICE
+    preferred_backbone: rad-dino
+    fallback_backbone: medsiglip
+    backbone_candidates: [rad-dino, medsiglip]
+  - name: MRI_3D
+    preferred_backbone: triad
+    fallback_backbone: nv-segment-ctmr
+    backbone_candidates: [triad, nv-segment-ctmr, brainiac]
+  - name: PATHOLOGY_TILE
+    preferred_backbone: h-optimus-0
+    fallback_backbone: conch
+    backbone_candidates: [h-optimus-0, conch]
+  - name: PATHOLOGY_WSI
+    preferred_backbone: h-optimus-0
+    fallback_backbone: gigapath-flash
+    backbone_candidates: [h-optimus-0, gigapath-flash, titan, conch]
+  - name: MULTI_IMAGE_2D
+    preferred_backbone: medgemma-1.5-4b
+    fallback_backbone: medsiglip
+    backbone_candidates: [medgemma-1.5-4b, medsiglip]
+  - name: MULTI_SERIES_3D
+    preferred_backbone: triad
+    fallback_backbone: nv-segment-ctmr
+    backbone_candidates: [triad, nv-segment-ctmr]
+  - name: TEXT_ONLY
+    preferred_backbone: medgemma-1.5-4b
+    fallback_backbone: gemma-generic
+    backbone_candidates: [medgemma-1.5-4b, gemma-generic, qwen-generic]
+
+tasks:
+  - name: BINARY_CLASSIFICATION
+    implementation_path: "Sigmoid task head on pooled encoder embedding (Phase 11)"
+    primary_models: [rad-dino, medsiglip, ct-fm, triad, h-optimus-0]
+  - name: MULTICLASS_CLASSIFICATION
+    implementation_path: "Softmax task head on pooled encoder embedding (Phase 11)"
+    primary_models: [rad-dino, medsiglip, ct-fm, triad, h-optimus-0]
+  - name: MULTILABEL_CLASSIFICATION
+    implementation_path: "Multi-sigmoid task head on pooled encoder embedding (Phase 11)"
+    primary_models: [rad-dino, medsiglip, ct-fm, h-optimus-0]
+  - name: ORDINAL_CLASSIFICATION
+    implementation_path: "Cumulative-link ordinal head on pooled embedding (Phase 11)"
+    primary_models: [rad-dino, ct-fm, triad]
+  - name: IMAGE_TEXT_RETRIEVAL
+    implementation_path: "Dual-tower contrastive retrieval head (Phases 11/13/15)"
+    primary_models: [medsiglip, conch, titan]
+  - name: TEXT_IMAGE_RETRIEVAL
+    implementation_path: "Dual-tower contrastive retrieval head (Phases 11/13/15)"
+    primary_models: [medsiglip, conch, titan]
+  - name: SEMANTIC_SEGMENTATION
+    implementation_path: "Encoder feature maps + segmentation decoder head (Phases 11/14)"
+    primary_models: [triad, nv-segment-ctmr, ct-fm, flexict-3d]
+  - name: INSTANCE_SEGMENTATION
+    implementation_path: "Deferred — decoder + instance head, post-v1"
+    primary_models: []
+  - name: PROMPTABLE_SEGMENTATION
+    implementation_path: "MedSAM2-style prompt encoder + mask decoder (Phase 14)"
+    primary_models: [medsam2, nv-segment-ctmr]
+  - name: LANGUAGE_CONDITIONED_SEGMENTATION
+    implementation_path: "Text-conditioned decoder on visual tokens (deferred to recipe phases)"
+    primary_models: []
+  - name: BOUNDING_BOX_LOCALIZATION
+    implementation_path: "Box regression head on spatial tokens (deferred)"
+    primary_models: []
+  - name: VISUAL_QUESTION_ANSWERING
+    implementation_path: "VLM: external encoder + bridge + LM (Phases 09/13)"
+    primary_models: [medgemma-1.5-4b, merlin, m3d-lamed, titan]
+  - name: REPORT_GENERATION
+    implementation_path: "VLM: external encoder + bridge + LM (Phases 09/13)"
+    primary_models: [medgemma-1.5-4b, merlin, m3d-lamed, titan]
+  - name: STRUCTURED_FINDING_GENERATION
+    implementation_path: "VLM with structured decoding constraints (Phase 13)"
+    primary_models: [medgemma-1.5-4b]
+  - name: CONTRASTIVE_ALIGNMENT
+    implementation_path: "Dual-tower contrastive loss (Phase 11)"
+    primary_models: [medsiglip, conch, m3d-lamed]
+  - name: MULTITASK
+    implementation_path: "Shared encoder + task-router heads (Phase 11)"
+    primary_models: [medsiglip, ct-fm, h-optimus-0]
+
+# Complete partition: every modality maps every task to exactly one bucket.
+modality_task_matrix:
+  XRAY_2D:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [SEMANTIC_SEGMENTATION, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION]
+    unsupported: []
+  CT_2D_SLICE:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  CT_3D:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, PROMPTABLE_SEGMENTATION, CONTRASTIVE_ALIGNMENT, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, INSTANCE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  MRI_2D_SLICE:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  MRI_3D:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  PATHOLOGY_TILE:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, SEMANTIC_SEGMENTATION, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  PATHOLOGY_WSI:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, CONTRASTIVE_ALIGNMENT]
+    deferred: [ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, STRUCTURED_FINDING_GENERATION, MULTITASK]
+    unsupported: [INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, BOUNDING_BOX_LOCALIZATION]
+  MULTI_IMAGE_2D:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, BOUNDING_BOX_LOCALIZATION]
+    unsupported: [SEMANTIC_SEGMENTATION, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION]
+  MULTI_SERIES_3D:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    deferred: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    unsupported: []
+  TEXT_ONLY:
+    supported: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION, MULTITASK]
+    deferred: []
+    unsupported: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, SEMANTIC_SEGMENTATION, INSTANCE_SEGMENTATION, PROMPTABLE_SEGMENTATION, LANGUAGE_CONDITIONED_SEGMENTATION, BOUNDING_BOX_LOCALIZATION, CONTRASTIVE_ALIGNMENT]
+
+vertical_slices:
+  - id: VS-2D
+    modality: XRAY_2D
+    task: MULTILABEL_CLASSIFICATION
+    models: [rad-dino, medsiglip]
+    description: "Frozen 2D encoder + trained multilabel head"
+  - id: VS-3D
+    modality: CT_3D
+    task: MULTICLASS_CLASSIFICATION
+    models: [ct-fm, flexict-3d]
+    description: "Frozen 3D CT encoder + trained head"
+  - id: VS-WSI
+    modality: PATHOLOGY_WSI
+    task: BINARY_CLASSIFICATION
+    models: [h-optimus-0, gigapath-flash]
+    description: "Tile embeddings + slide aggregator (MIL)"
+  - id: VS-SEG
+    modality: CT_3D
+    task: SEMANTIC_SEGMENTATION
+    models: [nv-segment-ctmr, triad, ct-fm]
+    description: "Encoder feature maps + segmentation decoder"
+  - id: VS-RETRIEVAL
+    modality: XRAY_2D
+    task: IMAGE_TEXT_RETRIEVAL
+    models: [medsiglip]
+    description: "Dual-tower contrastive retrieval"
+  - id: VS-VLM
+    modality: MULTI_IMAGE_2D
+    task: REPORT_GENERATION
+    models: [medgemma-1.5-4b]
+    description: "External encoder + bridge + MedGemma 1.5 4B (QLoRA on CUDA, BF16 LoRA on TPU)"
+
+accelerator_tiers:
+  - id: T0
+    name: cpu_contract
+    description: "CPU contract tests, tiny local models, synthetic data"
+    v1_status: required
+  - id: T1
+    name: cuda_single
+    description: "One CUDA GPU, 48 GB VRAM (v1 reference device; local dev shell may be smaller)"
+    v1_status: required
+  - id: T2
+    name: cuda_ddp
+    description: "Multi-GPU DDP (replicated)"
+    v1_status: required_where_hardware_available
+  - id: T3
+    name: cuda_fsdp
+    description: "Multi-GPU FSDP (sharded)"
+    v1_status: required_where_hardware_available
+  - id: T4
+    name: tpu_single_host
+    description: "Single-host TPU via PyTorch/XLA PJRT. Minimum v1 target: tiny-model coverage of all task families plus at least one accepted real HF vision or language backbone."
+    v1_status: required
+  - id: T5
+    name: tpu_multi_host
+    description: "Multi-host TPU SPMD/FSDP"
+    v1_status: deferred_until_t4_accepted
+
+# Capability statuses per implementation_plan/accelerator_training_strategy.md.
+backend_status_enum:
+  - UNTESTED
+  - CPU_CONTRACT_ONLY
+  - SUPPORTED_SINGLE_DEVICE
+  - SUPPORTED_REPLICATED
+  - SUPPORTED_SHARDED
+  - BLOCKED_CUSTOM_OP
+  - BLOCKED_MEMORY
+  - BLOCKED_UPSTREAM
+  - NOT_APPLICABLE
+
+# Per-backend keys are mandatory for every model. No blanket cross-backend key
+# is allowed; any SUPPORTED_* status requires evidence (smoke_config + date).
+backend_keys: [cpu, cuda_single, cuda_distributed, tpu_single_host, tpu_multi_host]
+
+models:
+  - model_id: medsiglip
+    family: 2d_radiology
+    role: preferred
+    v1: true
+    modalities: [XRAY_2D, CT_2D_SLICE, MRI_2D_SLICE, MULTI_IMAGE_2D]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, CONTRASTIVE_ALIGNMENT, MULTITASK]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: rad-dino
+    family: 2d_radiology
+    role: fallback
+    v1: true
+    modalities: [XRAY_2D, CT_2D_SLICE, MRI_2D_SLICE]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: medgemma-1.5-4b
+    family: generative_vlm
+    role: preferred
+    v1: true
+    modalities: [XRAY_2D, MULTI_IMAGE_2D, TEXT_ONLY]
+    tasks: [VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: h-optimus-0
+    family: pathology
+    role: preferred
+    v1: true
+    modalities: [PATHOLOGY_TILE, PATHOLOGY_WSI]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, MULTITASK]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: conch
+    family: pathology
+    role: optional
+    v1: true
+    modalities: [PATHOLOGY_TILE, PATHOLOGY_WSI]
+    tasks: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, CONTRASTIVE_ALIGNMENT]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: ct-fm
+    family: 3d_ct
+    role: preferred
+    v1: true
+    modalities: [CT_3D]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, MULTILABEL_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION, MULTITASK]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: flexict-3d
+    family: 3d_ct
+    role: fallback
+    v1: true
+    modalities: [CT_2D_SLICE, CT_3D]
+    tasks: [SEMANTIC_SEGMENTATION, BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: merlin
+    family: 3d_ct_vlm
+    role: research
+    v1: true
+    modalities: [CT_3D]
+    tasks: [VISUAL_QUESTION_ANSWERING, REPORT_GENERATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: m3d-lamed
+    family: 3d_ct_vlm
+    role: research
+    v1: true
+    modalities: [CT_3D]
+    tasks: [VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, CONTRASTIVE_ALIGNMENT]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: triad
+    family: 3d_mri
+    role: preferred
+    v1: true
+    modalities: [MRI_3D, MULTI_SERIES_3D]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION, ORDINAL_CLASSIFICATION, SEMANTIC_SEGMENTATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: nv-segment-ctmr
+    family: segmentation
+    role: preferred
+    v1: true
+    modalities: [CT_3D, MRI_3D, MULTI_SERIES_3D]
+    tasks: [SEMANTIC_SEGMENTATION, PROMPTABLE_SEGMENTATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: brainiac
+    family: 3d_mri
+    role: deferred
+    v1: false
+    modalities: [MRI_3D]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION]
+    accelerator_support: {cpu: NOT_APPLICABLE, cuda_single: NOT_APPLICABLE, cuda_distributed: NOT_APPLICABLE, tpu_single_host: NOT_APPLICABLE, tpu_multi_host: NOT_APPLICABLE}
+  - model_id: medsam2
+    family: promptable_segmentation
+    role: preferred
+    v1: true
+    modalities: [CT_3D, MRI_3D]
+    tasks: [PROMPTABLE_SEGMENTATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: gigapath-flash
+    family: pathology
+    role: fallback
+    v1: true
+    modalities: [PATHOLOGY_WSI]
+    tasks: [BINARY_CLASSIFICATION, MULTICLASS_CLASSIFICATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: titan
+    family: pathology
+    role: optional
+    v1: true
+    modalities: [PATHOLOGY_WSI]
+    tasks: [IMAGE_TEXT_RETRIEVAL, TEXT_IMAGE_RETRIEVAL, VISUAL_QUESTION_ANSWERING, REPORT_GENERATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: gemma-generic
+    family: language
+    role: optional
+    v1: true
+    modalities: [TEXT_ONLY]
+    tasks: [VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
+  - model_id: qwen-generic
+    family: language
+    role: optional
+    v1: true
+    modalities: [TEXT_ONLY]
+    tasks: [VISUAL_QUESTION_ANSWERING, REPORT_GENERATION, STRUCTURED_FINDING_GENERATION]
+    accelerator_support: {cpu: UNTESTED, cuda_single: UNTESTED, cuda_distributed: UNTESTED, tpu_single_host: UNTESTED, tpu_multi_host: UNTESTED}
