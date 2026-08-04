@@ -1,0 +1,163 @@
+[project]
+name = "medfm"
+version = "0.1.0"
+description = "Unified medical foundation-model framework (CPU/CUDA/TPU)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11,<3.14"
+# Direct dependencies are pinned/ranged here; exact resolution lives in uv.lock.
+# Update process: `uv lock --upgrade-package <pkg>` then re-run the acceptance
+# command (`make lint && make typecheck && make test`) before committing.
+dependencies = [
+    # Core
+    "torch==2.9.0",          # pinned to match torch_xla[tpu]==2.9.0 (TPU extra)
+    "torchvision==0.24.0",   # matched with torch 2.9.0
+    "numpy>=2.2,<3",
+    "scipy>=1.15",
+    "pandas>=2.2",
+    "einops>=0.8",
+    "safetensors>=0.5",
+    "pydantic>=2.10",
+    "pyyaml>=6.0.2",
+    "fsspec>=2025.3",
+    "jsonschema>=4.23",
+]
+
+[project.optional-dependencies]
+# Medical imaging
+medical = [
+    "monai>=1.5",
+    "nibabel>=5.3",
+    "pydicom>=3.0",
+    "highdicom>=0.25",
+    "SimpleITK>=2.5",
+    "scikit-image>=0.25",
+]
+# Pathology / whole-slide imaging (CPU-only readers; GPU accel is separate)
+pathology = [
+    "openslide-python>=1.4",
+    "tiffslide>=2.5",
+    "h5py>=3.12",
+    "zarr>=3.0",
+    "pyarrow>=19",
+]
+# Optional GPU-accelerated WSI I/O (NVIDIA RAPIDS); never required
+cucim = [
+    "cucim-cu12>=24.12",
+]
+# Hugging Face / PEFT adaptation layer (bitsandbytes deliberately excluded;
+# it is CUDA-only and lives in the `cuda` extra so the TPU baseline stays clean)
+hf = [
+    "transformers>=4.48",
+    "peft>=0.14",
+    "accelerate>=1.4",
+    "datasets>=3.4",
+    "huggingface_hub>=0.30",
+    "trl>=0.15",
+]
+# CUDA-only extras. Never imported eagerly by CPU code paths.
+cuda = [
+    "bitsandbytes>=0.45",
+]
+# TPU baseline: matched PyTorch/XLA + libtpu set. Must NOT contain
+# bitsandbytes, FlashAttention, cuCIM, or other custom CUDA packages.
+tpu = [
+    "torch_xla[tpu]==2.9.0",
+]
+# Local-first tracking
+tracking = [
+    "tensorboard>=2.19",
+]
+# Optional external trackers (disabled by default; medical metadata may be sensitive)
+mlflow = [
+    "mlflow>=2.20",
+]
+wandb = [
+    "wandb>=0.19",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pre-commit>=4",
+    "types-pyyaml>=6.0.12",
+    "types-jsonschema>=4.23",
+]
+
+[project.scripts]
+medfm = "medfm.cli.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["medfm"]
+
+# The framework targets Linux workstations and Cloud TPU VMs only; this keeps
+# the lockfile honest about CUDA/TPU wheels that have no macOS/Windows builds.
+[tool.uv]
+environments = ["sys_platform == 'linux'"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "gpu: requires a local CUDA GPU (enable with MEDFM_RUN_GPU_TESTS=1)",
+    "tpu: requires a TPU runtime (enable with MEDFM_RUN_TPU_TESTS=1)",
+    "distributed: multi-device test on protected runners (enable with MEDFM_RUN_DISTRIBUTED_TESTS=1)",
+]
+
+# Type checking: mypy, strict for first-party code. Strictness expectation by
+# package: medfm.core / medfm.training / medfm.tools must stay strict-clean;
+# adapter packages added in later phases may relax specific rules via explicit
+# per-module overrides below (never by disabling checks globally).
+[tool.mypy]
+python_version = "3.13"
+strict = true
+mypy_path = "."
+packages = ["medfm"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "monai.*",
+    "nibabel.*",
+    "peft.*",
+    "transformers.*",
+    "torch_xla.*",
+    "bitsandbytes.*",
+    "SimpleITK.*",
+    "openslide.*",
+    "tiffslide.*",
+    "mlflow.*",
+    "wandb.*",
+]
+ignore_missing_imports = true
+
+# Tool/diagnostics modules call into untyped third-party APIs (torch CUDA
+# probes, TensorBoard writer). All other first-party packages stay fully
+# strict, including disallow_untyped_calls.
+[[tool.mypy.overrides]]
+module = [
+    "medfm.tools.doctor",
+    "medfm.tools.smoke",
+    "medfm.training.run_metadata",
+    "medfm.training.tracking",
+]
+disallow_untyped_calls = false
+
+# MONAI exposes transforms through lazy module __getattr__ hooks that mypy
+# cannot resolve; scoped to the smoke tool only.
+[[tool.mypy.overrides]]
+module = ["medfm.tools.smoke"]
+disable_error_code = ["attr-defined"]

@@ -2,3 +2,57 @@ idea.md
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Secrets / credentials
+.env
+.env.*
+!.env.example
+
+# Run artifacts and experiment outputs
+artifacts/*
+!artifacts/.gitkeep
+wandb/
+mlruns/
+runs/
+lightning_logs/
+
+# Model and dataset caches (never commit weights or data)
+.cache/
+model_cache/
+dataset_cache/
+models_cache/
+
+# Model weights / checkpoints
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.onnx
+*.gguf
+
+# Patient-data and medical-imaging patterns (never committed)
+*.dcm
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.nrrd
+*.svs
+*.ndpi
+*.mrxs
+*.scn
+*.vms
+*.vmu
+
+# Local tool state
+.mypy_cache/
+.ruff_cache/
+.tox/
+dist/
+build/
+*.egg-info/

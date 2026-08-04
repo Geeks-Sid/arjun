@@ -1,0 +1,27 @@
+# Phase 01 — Commands executed
+
+All commands run from the repository root on the development workstation
+(RTX 4060 Laptop GPU, 8 GB VRAM, driver 595.84, Python 3.13.13).
+
+```bash
+uv lock
+make install-dev
+uv lock  # after adding types-jsonschema
+uv sync --frozen --extra medical --extra pathology --extra hf --extra cuda --extra tracking --all-groups
+uv run --frozen ruff check . --fix
+uv run --frozen ruff format .
+make lint
+make typecheck
+make test
+make smoke
+make doctor
+make test-gpu
+uv venv /tmp/medfm-fresh-venv --python 3.13
+uv pip install --python /tmp/medfm-fresh-venv/bin/python -e .
+cd /tmp && /tmp/medfm-fresh-venv/bin/python -c "import medfm, medfm.tools.doctor, medfm.training.tracking"
+cd /tmp && /tmp/medfm-fresh-venv/bin/medfm doctor --backend cpu --json
+uv export --frozen --no-dev --no-default-groups --extra medical --extra hf --extra tpu  # TPU set audit
+uv run --frozen pytest tests/ -q --junitxml=/tmp/phase01_cpu.xml
+MEDFM_RUN_GPU_TESTS=1 uv run --frozen pytest tests/ -q -m gpu --junitxml=/tmp/phase01_gpu.xml
+python -m medfm.tools.validate_phase --phase 01
+```

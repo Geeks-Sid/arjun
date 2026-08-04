@@ -50,9 +50,7 @@ def test_internal_links_resolve():
 def test_governance_doc_has_owner_and_review_date(doc):
     text = (gov.REPO_ROOT / doc).read_text(encoding="utf-8")
     assert re.search(r"^Owner: \S", text, re.MULTILINE), f"{doc} lacks an owner"
-    assert re.search(r"^Review date: \d{4}-\d{2}-\d{2}", text, re.MULTILINE), (
-        f"{doc} lacks a review date"
-    )
+    assert re.search(r"^Review date: \d{4}-\d{2}-\d{2}", text, re.MULTILINE), f"{doc} lacks a review date"
 
 
 def test_every_adr_has_required_sections():
@@ -60,6 +58,11 @@ def test_every_adr_has_required_sections():
     assert len(adrs) == 9, f"expected 9 ADRs, found {len(adrs)}"
     for adr in adrs:
         text = adr.read_text(encoding="utf-8")
-        for section in ("## Context", "## Decision", "## Alternatives considered",
-                        "## Consequences", "## Reversal conditions"):
+        for section in (
+            "## Context",
+            "## Decision",
+            "## Alternatives considered",
+            "## Consequences",
+            "## Reversal conditions",
+        ):
             assert section in text, f"{adr.name} missing '{section}'"

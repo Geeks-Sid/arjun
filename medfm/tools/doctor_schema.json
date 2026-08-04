@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.local/schemas/doctor_report.json",
+  "title": "medfm doctor report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "backend",
+    "python",
+    "torch",
+    "packages",
+    "storage",
+    "accelerator"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "backend": { "enum": ["cpu", "cuda", "xla_tpu"] },
+    "python": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "implementation", "executable"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "implementation": { "type": "string", "minLength": 1 },
+        "executable": { "type": "string", "minLength": 1 }
+      }
+    },
+    "torch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "cuda_build_version", "cuda_initialized"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "cuda_build_version": { "type": ["string", "null"] },
+        "cuda_initialized": { "type": "boolean" }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "required": ["torch", "monai", "transformers", "peft", "bitsandbytes"],
+      "properties": {
+        "torch": { "type": ["string", "null"] },
+        "torchvision": { "type": ["string", "null"] },
+        "monai": { "type": ["string", "null"] },
+        "transformers": { "type": ["string", "null"] },
+        "peft": { "type": ["string", "null"] },
+        "accelerate": { "type": ["string", "null"] },
+        "bitsandbytes": { "type": ["string", "null"] },
+        "torch_xla": { "type": ["string", "null"] },
+        "libtpu": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["free_disk_bytes", "model_cache", "dataset_cache"],
+      "properties": {
+        "free_disk_bytes": { "type": "integer", "minimum": 0 },
+        "model_cache": { "$ref": "#/$defs/cache_status" },
+        "dataset_cache": { "$ref": "#/$defs/cache_status" }
+      }
+    },
+    "accelerator": { "type": "object" }
+  },
+  "$defs": {
+    "cache_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "configured", "exists", "writable"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "configured": { "type": "boolean" },
+        "exists": { "type": "boolean" },
+        "writable": { "type": "boolean" }
+      }
+    }
+  }
+}

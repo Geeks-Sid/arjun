@@ -13,8 +13,7 @@ def test_every_model_has_per_backend_status(scope):
         support = model.get("accelerator_support")
         assert isinstance(support, dict), model["model_id"]
         assert set(support) == backend_keys, (
-            f"{model['model_id']}: expected backends {sorted(backend_keys)}, "
-            f"got {sorted(support)}"
+            f"{model['model_id']}: expected backends {sorted(backend_keys)}, got {sorted(support)}"
         )
         for backend, status in support.items():
             assert status in status_enum, f"{model['model_id']}/{backend}: {status}"

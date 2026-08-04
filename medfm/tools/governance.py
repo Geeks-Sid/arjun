@@ -47,7 +47,7 @@ def load_json(path: Path | str) -> Any:
         return json.load(fh)
 
 
-def _schema_errors(instance: Any, schema: dict) -> list[str]:
+def _schema_errors(instance: Any, schema: dict[str, Any]) -> list[str]:
     validator = Draft202012Validator(schema)
     return sorted(e.message for e in validator.iter_errors(instance))
 
@@ -65,7 +65,7 @@ def _normalize_dates(value: Any) -> Any:
     return value
 
 
-def validate_license_record(record: dict, schema: dict) -> list[str]:
+def validate_license_record(record: dict[str, Any], schema: dict[str, Any]) -> list[str]:
     """Validate one license record against the schema plus cross-field policy."""
     record = _normalize_dates(record)
     errors = _schema_errors(record, schema)
@@ -76,9 +76,7 @@ def validate_license_record(record: dict, schema: dict) -> list[str]:
     status = record["status"]
 
     if any(v == "unresolved" for v in use_fields) and status != "blocked_unresolved":
-        errors.append(
-            "unresolved license terms are blocking: status must be 'blocked_unresolved'"
-        )
+        errors.append("unresolved license terms are blocking: status must be 'blocked_unresolved'")
     if (record["repository"] == "unresolved" or record["weights_uri"] == "unresolved") and status not in {
         "blocked_unresolved",
         "pending_review",
@@ -102,7 +100,10 @@ def validate_license_file(path: Path | str = LICENSES_PATH) -> dict[str, list[st
         return {"<file>": ["licenses file must be a non-empty mapping of model_id to record"]}
     problems: dict[str, list[str]] = {}
     for key, record in data.items():
-        errs = _schema_errors(record, schema) if not isinstance(record, dict) else validate_license_record(record, schema)
+        if isinstance(record, dict):
+            errs = validate_license_record(record, schema)
+        else:
+            errs = _schema_errors(record, schema)
         if isinstance(record, dict) and record.get("model_id") != key:
             errs = errs + [f"mapping key '{key}' does not match model_id '{record.get('model_id')}'"]
         if errs:
@@ -110,7 +111,7 @@ def validate_license_file(path: Path | str = LICENSES_PATH) -> dict[str, list[st
     return problems
 
 
-def validate_acceptance_report(report: dict, schema: dict) -> list[str]:
+def validate_acceptance_report(report: dict[str, Any], schema: dict[str, Any]) -> list[str]:
     """Validate a phase acceptance report. 'unknown' is never a legal status."""
     errors = _schema_errors(report, schema)
     if errors:
@@ -125,14 +126,12 @@ def validate_acceptance_report(report: dict, schema: dict) -> list[str]:
             errors.append(f"criterion[{i}] '{criterion['id']}': {status} requires justification")
     if report["status"] == "passed" and not report["smoke_passed"]:
         errors.append("overall status 'passed' requires smoke_passed == true")
-    if report["status"] == "passed" and any(
-        c["status"] in {"failed", "blocked"} for c in report["criteria"]
-    ):
+    if report["status"] == "passed" and any(c["status"] in {"failed", "blocked"} for c in report["criteria"]):
         errors.append("overall status 'passed' forbids failed/blocked criteria")
     return errors
 
 
-def check_scope_consistency(scope: dict, license_ids: set[str]) -> list[str]:
+def check_scope_consistency(scope: dict[str, Any], license_ids: set[str]) -> list[str]:
     """Cross-checks between the v1 scope registry and the license records."""
     errors: list[str] = []
 
@@ -196,9 +195,7 @@ def check_scope_consistency(scope: dict, license_ids: set[str]) -> list[str]:
     for task in scope["tasks"]:
         if not task.get("implementation_path"):
             errors.append(f"task '{task['name']}' has no implementation path")
-        supported_somewhere = any(
-            task["name"] in (matrix[m].get("supported") or []) for m in matrix
-        )
+        supported_somewhere = any(task["name"] in (matrix[m].get("supported") or []) for m in matrix)
         if supported_somewhere:
             claimed = set(task.get("primary_models") or [])
             if not claimed:
@@ -226,7 +223,7 @@ def check_scope_consistency(scope: dict, license_ids: set[str]) -> list[str]:
     return errors
 
 
-def check_accelerator_policy(scope: dict) -> list[str]:
+def check_accelerator_policy(scope: dict[str, Any]) -> list[str]:
     """Every model records a per-backend status; no blanket support claims."""
     errors: list[str] = []
     backend_keys = set(scope["backend_keys"])

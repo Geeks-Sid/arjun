@@ -1,0 +1,523 @@
+{
+  "generated_by": "pytest --junitxml (cpu suite + protected gpu suite)",
+  "summary": {
+    "total": 101,
+    "passed": 94,
+    "failed": 0,
+    "skipped": 7
+  },
+  "tests": [
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_every_model_has_per_backend_status",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_registry_passes_accelerator_policy",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_blanket_support_key_is_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_supported_status_without_evidence_is_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_supported_status_with_evidence_passes",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_missing_backend_status_is_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_accelerator_policy::test_invalid_status_enum_is_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_real_phase_00_acceptance_report_is_valid",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_valid_report_passes",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_unknown_criterion_status_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_passed_criterion_requires_evidence",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_not_applicable_requires_justification",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_overall_passed_forbids_failed_criteria",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_overall_passed_requires_smoke_passed",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_missing_required_field_fails[phase]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_missing_required_field_fails[status]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_missing_required_field_fails[criteria]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_missing_required_field_fails[smoke_command]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_missing_required_field_fails[smoke_passed]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_acceptance_schema::test_bad_phase_format_fails",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_internal_links_resolve",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_governance_doc_has_owner_and_review_date[docs/clinical_safety_scope.md]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_governance_doc_has_owner_and_review_date[docs/data_governance.md]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_governance_doc_has_owner_and_review_date[docs/model_governance.md]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_governance_doc_has_owner_and_review_date[docs/licensing_policy.md]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_governance_doc_has_owner_and_review_date[docs/reproducibility_policy.md]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_doc_links::test_every_adr_has_required_sections",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_every_registry_record_is_valid",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_registry_file_level_validation_passes",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_valid_record_passes",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[model_id]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[provider]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[repository]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[weights_uri]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[revision_policy]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[code_license]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[weights_license]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[commercial_use]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[derivative_models]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[redistribution]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[gated_access]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[accepted_terms_date]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[approved_use_cases]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[prohibited_use_cases]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[status]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[review_owner]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[review_date]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_missing_required_field_fails[notes]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_invalid_use_enum_fails[commercial_use]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_invalid_use_enum_fails[derivative_models]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_invalid_use_enum_fails[redistribution]",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_unresolved_terms_must_block",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_unresolved_terms_with_blocked_status_passes",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_approved_commercial_requires_permitted_use",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_approved_gated_model_requires_accepted_terms",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_extra_field_fails",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_license_schema::test_key_must_match_model_id",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_scope_is_consistent_with_licenses",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_every_modality_has_a_backbone_candidate",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_every_supported_task_has_an_implementation_path",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_matrix_is_complete_partition",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_every_scope_model_has_license_record",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_no_orphan_license_records",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_vertical_slices_cover_required_families",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_00.test_scope_consistency::test_model_task_claims_are_bidirectional",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_cpu_report_conforms_to_schema",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_json_cli_conforms_to_schema",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_cuda_backend_reports_expected_fields",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_tpu_selection_reports_incompatible_packages",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_no_credentials_or_absolute_home_paths_leak",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_doctor::test_package_versions_reported_without_import",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gitignore::test_data_weights_and_caches_are_ignored",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gitignore::test_source_and_lockfile_are_not_ignored",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_cuda_hardware_present_when_enabled",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected gpu test; set MEDFM_RUN_GPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_bf16_allocation_and_peak_memory_reporting",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected gpu test; set MEDFM_RUN_GPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_multi_device_reduction",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected gpu test; set MEDFM_RUN_GPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_lora_step::test_lora_freezes_base_and_trains_adapters",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_lora_step::test_one_lora_optimization_step_updates_only_adapters",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_monai_pipeline::test_synthetic_nifti_load_crop_preserves_affine",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_monai_pipeline::test_monai_pipeline_import_does_not_initialize_cuda",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_packaging::test_subpackages_importable",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_packaging::test_no_forbidden_top_level_imports",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_packaging::test_cpu_import_does_not_initialize_cuda_or_xla",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_required_fields_present",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_effective_batch_size_formula",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_placeholder_hashes_recorded",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_trainable_parameter_counts",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_serialization_is_deterministic",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_config_hash_excludes_measured_fields",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_run_metadata::test_invalid_inputs_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_tpu::test_tpu_runtime_present",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected tpu test; set MEDFM_RUN_TPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_tpu::test_bf16_linear_step_on_every_local_device",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected tpu test; set MEDFM_RUN_TPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_tpu::test_multi_device_all_reduce",
+      "suite": "cpu",
+      "status": "skipped",
+      "reason": "protected tpu test; set MEDFM_RUN_TPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests.phase_01.test_tracking::test_redact_mapping_recurses_and_matches_case_insensitively",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_tracking::test_local_json_tracker_round_trip",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_tracking::test_unknown_tracker_rejected",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_tracking::test_external_trackers_behind_extras",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_tracking::test_tensorboard_tracker_optional",
+      "suite": "cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_cuda_hardware_present_when_enabled",
+      "suite": "gpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_bf16_allocation_and_peak_memory_reporting",
+      "suite": "gpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests.phase_01.test_gpu::test_multi_device_reduction",
+      "suite": "gpu",
+      "status": "skipped",
+      "reason": "multi-device reduction needs >= 2 GPUs, found 1"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "phase": "01",
+  "status": "passed",
+  "generated_by": "Kimi Code CLI",
+  "generated_at": "2026-08-04T20:35:00Z",
+  "smoke_command": "make smoke",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "repo-scaffold",
+      "description": "Package and directory layout per idea.md; README, LICENSE, .gitignore, Makefile; placeholders only for package discovery",
+      "status": "passed",
+      "evidence": "medfm/{cli,core,data,models,peft,tasks,training,evaluation,inference,registry,tools}; tests/phase_01/test_packaging.py::test_subpackages_importable"
+    },
+    {
+      "id": "dependency-policy",
+      "description": "Pinned direct dependencies, committed uv.lock, extras for medical/pathology/hf/cuda/tpu/tracking; cuCIM optional; bitsandbytes excluded from TPU set; matched torch/torch_xla pins",
+      "status": "passed",
+      "evidence": "pyproject.toml + uv.lock (torch 2.9.0 / torch_xla[tpu] 2.9.0 / libtpu 0.0.21); uv export audit of the tpu extra shows no bitsandbytes/cuCIM/FlashAttention; update process in README"
+    },
+    {
+      "id": "developer-commands",
+      "description": "make install/install-dev/lint/typecheck/test/test-gpu/test-tpu/test-distributed-*/smoke/doctor, all nonzero-on-failure",
+      "status": "passed",
+      "evidence": "Makefile; make lint, make typecheck, make test, make smoke, make doctor, make test-gpu all executed successfully (commands_executed.txt)"
+    },
+    {
+      "id": "runtime-diagnostics",
+      "description": "medfm doctor reports Python/torch/CUDA/driver/GPU/VRAM, BF16, SDPA/FlashAttention, package versions, disk/caches; JSON conforms to schema; redacts credentials and user paths; backend selection with NCCL/PJRT/TPU topology reporting",
+      "status": "passed",
+      "evidence": "medfm/tools/doctor.py + doctor_schema.json; tests/phase_01/test_doctor.py (6 tests including redaction and schema conformance)"
+    },
+    {
+      "id": "containers",
+      "description": "Dev and CI Dockerfiles, compose with explicit GPU config and cache mounts, non-root user, pinned base images, driver/disk docs, TPU VM provisioning documented without credentials",
+      "status": "passed",
+      "evidence": "docker/Dockerfile, docker/Dockerfile.ci, docker/compose.yaml, docker/README.md, scripts/tpu_vm_bootstrap.sh"
+    },
+    {
+      "id": "reproducibility-capture",
+      "description": "Run-metadata utility captures commit/dirty state, lockfile hash, runtime + accelerator topology, seed, precision, batch geometry, param counts, peak memory, shape buckets, XLA metrics; deterministic serialization; placeholders for dataset/preprocessing/base-model hashes",
+      "status": "passed",
+      "evidence": "medfm/training/run_metadata.py; tests/phase_01/test_run_metadata.py (7 tests including determinism and batch-geometry validation)"
+    },
+    {
+      "id": "local-tracking",
+      "description": "Tracker protocol with LocalJSONTracker default, optional TensorBoard, reserved MLflow/W&B extras, sensitive-key redaction",
+      "status": "passed",
+      "evidence": "medfm/training/tracking.py; tests/phase_01/test_tracking.py (5 tests)"
+    },
+    {
+      "id": "cpu-tests-no-weights",
+      "description": "CPU tests pass without downloading weights; CPU import initializes neither CUDA nor XLA",
+      "status": "passed",
+      "evidence": "make test: 92 passed; tests/phase_01/test_packaging.py::test_cpu_import_does_not_initialize_cuda_or_xla (subprocess check)"
+    },
+    {
+      "id": "fresh-editable-install",
+      "description": "Clean editable install in a fresh environment works",
+      "status": "passed",
+      "evidence": "uv venv /tmp/medfm-fresh-venv + uv pip install -e .; import medfm and `medfm doctor --backend cpu --json` succeeded from outside the repo"
+    },
+    {
+      "id": "synthetic-pipelines",
+      "description": "Synthetic MONAI 3D NIfTI load/crop (affine preserved) and tiny local LoRA optimization step pass",
+      "status": "passed",
+      "evidence": "tests/phase_01/test_monai_pipeline.py, tests/phase_01/test_lora_step.py; make smoke 3/3"
+    },
+    {
+      "id": "gpu-bf16-smoke",
+      "description": "Protected GPU smoke confirms BF16 execution and peak-memory reporting",
+      "status": "passed",
+      "evidence": "make test-gpu on RTX 4060 Laptop (sm 8.9): 2 passed (BF16 matmul + peak VRAM), multi-device reduction skipped with recorded reason (single GPU)"
+    },
+    {
+      "id": "tpu-bf16-smoke",
+      "description": "Protected TPU smoke confirms XLA BF16 execution on all local devices",
+      "status": "not_applicable",
+      "justification": "No TPU hardware on the development workstation. Tests are implemented and protected (tests/phase_01/test_tpu.py), the TPU lock set is pinned and audited, and execution is delegated to a Cloud TPU VM via scripts/tpu_vm_bootstrap.sh + make test-tpu; recorded in unresolved_issues.md."
+    },
+    {
+      "id": "distributed-reduction",
+      "description": "Multi-device reduction test on CUDA and TPU protected runners",
+      "status": "not_applicable",
+      "justification": "Single-GPU workstation, no TPU: multi-device tests are implemented (test_gpu.py::test_multi_device_reduction, test_tpu.py::test_multi_device_all_reduce) and protected behind MEDFM_RUN_DISTRIBUTED_TESTS=1 for multi-device runners; recorded in unresolved_issues.md."
+    },
+    {
+      "id": "no-data-or-credentials-tracked",
+      "description": "No data, weights, caches, or credentials are tracked by git",
+      "status": "passed",
+      "evidence": "tests/phase_01/test_gitignore.py (git check-ignore over artifact/weight/patient-data/cache paths; source and lockfile verified not ignored)"
+    },
+    {
+      "id": "doctor-json-schema",
+      "description": "Doctor JSON output conforms to a versioned schema",
+      "status": "passed",
+      "evidence": "medfm/tools/doctor_schema.json; test_doctor.py::test_json_cli_conforms_to_schema; smoke check doctor_json_schema"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_01/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_01/next_phase_handoff.md"
+}

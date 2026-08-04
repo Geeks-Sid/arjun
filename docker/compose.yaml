@@ -1,0 +1,39 @@
+# Local parity compose file. GPU access is explicit (device reservation below);
+# model/dataset caches are named volumes mounted at the documented locations.
+services:
+  dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: medfm:dev
+    working_dir: /workspace
+    ipc: host
+    volumes:
+      - ..:/workspace
+      - medfm-model-cache:/home/medfm/.cache/medfm/models
+      - medfm-dataset-cache:/home/medfm/.cache/medfm/datasets
+      - medfm-artifacts:/workspace/artifacts
+    environment:
+      MEDFM_MODEL_CACHE: /home/medfm/.cache/medfm/models
+      MEDFM_DATASET_CACHE: /home/medfm/.cache/medfm/datasets
+      # HF_TOKEN must come from the host environment or a local .env file
+      # that is never committed; do not hard-code credentials here.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all # restrict with device_ids: ["0"] when sharing a host
+              capabilities: [gpu]
+
+  ci:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ci
+    image: medfm:ci
+    working_dir: /workspace
+
+volumes:
+  medfm-model-cache:
+  medfm-dataset-cache:
+  medfm-artifacts:

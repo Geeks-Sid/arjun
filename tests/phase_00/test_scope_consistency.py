@@ -21,9 +21,7 @@ def test_every_modality_has_a_backbone_candidate(scope):
 def test_every_supported_task_has_an_implementation_path(scope):
     matrix = scope["modality_task_matrix"]
     for task in scope["tasks"]:
-        supported_somewhere = any(
-            task["name"] in (matrix[m].get("supported") or []) for m in matrix
-        )
+        supported_somewhere = any(task["name"] in (matrix[m].get("supported") or []) for m in matrix)
         if supported_somewhere:
             assert task["implementation_path"], task["name"]
             assert task["primary_models"], f"{task['name']} supported but no primary model"
@@ -58,6 +56,4 @@ def test_model_task_claims_are_bidirectional(scope):
     models = {m["model_id"]: m for m in scope["models"]}
     for task in scope["tasks"]:
         for pm in task.get("primary_models") or []:
-            assert task["name"] in models[pm]["tasks"], (
-                f"{task['name']} claims {pm} but {pm} does not list it"
-            )
+            assert task["name"] in models[pm]["tasks"], f"{task['name']} claims {pm} but {pm} does not list it"

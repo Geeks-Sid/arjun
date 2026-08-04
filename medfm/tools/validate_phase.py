@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
+from typing import Any
 
 from medfm.tools import governance as gov
 
@@ -58,6 +58,28 @@ PHASE_00_REQUIRED_FILES = [
     "agent/prompts/repair_phase.md",
 ]
 
+PHASE_01_REQUIRED_FILES = [
+    "pyproject.toml",
+    "uv.lock",
+    "README.md",
+    "LICENSE",
+    "Makefile",
+    ".gitignore",
+    "docker/Dockerfile",
+    "docker/Dockerfile.ci",
+    "docker/compose.yaml",
+    "docker/README.md",
+    "scripts/tpu_vm_bootstrap.sh",
+    "medfm/cli/__init__.py",
+    "medfm/cli/main.py",
+    "medfm/tools/doctor.py",
+    "medfm/tools/doctor_schema.json",
+    "medfm/tools/smoke.py",
+    "medfm/training/run_metadata.py",
+    "medfm/training/tracking.py",
+    "tests/phase_01/conftest.py",
+]
+
 
 def _check_report(phase: str, errors: list[str]) -> None:
     report_dir = gov.REPO_ROOT / "agent" / "reports" / f"phase_{phase}"
@@ -86,7 +108,7 @@ def _check_report(phase: str, errors: list[str]) -> None:
                 errors.append(f"test_results.json: skipped test '{t.get('name')}' lacks a reason")
 
 
-def validate_acceptance(report: dict, schema: dict, phase: str) -> list[str]:
+def validate_acceptance(report: dict[str, Any], schema: dict[str, Any], phase: str) -> list[str]:
     errors = gov.validate_acceptance_report(report, schema)
     if errors:
         return errors
@@ -109,6 +131,10 @@ def validate_phase(phase: str) -> list[str]:
         license_ids = set(gov.load_yaml(gov.REPO_ROOT / gov.LICENSES_PATH))
         errors.extend(gov.check_scope_consistency(scope, license_ids))
         errors.extend(gov.check_accelerator_policy(scope))
+    elif phase == "01":
+        for rel in PHASE_01_REQUIRED_FILES:
+            if not (gov.REPO_ROOT / rel).exists():
+                errors.append(f"missing required file: {rel}")
     else:
         errors.append(f"no validator registered for phase {phase}")
     _check_report(phase, errors)
