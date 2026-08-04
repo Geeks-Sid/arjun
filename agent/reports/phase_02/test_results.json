@@ -1,0 +1,424 @@
+{
+  "phase": "02",
+  "exit_code": 0,
+  "tests": [
+    {
+      "name": "tests/phase_02/test_backend_neutrality.py::test_core_modules_have_no_backend_imports_or_hardcoded_devices",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[XRAY_2D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[CT_2D_SLICE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[CT_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[MRI_2D_SLICE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[MRI_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[PATHOLOGY_TILE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[PATHOLOGY_WSI]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[MULTI_IMAGE_2D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[MULTI_SERIES_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_synthetic_batch_validates_for_every_modality[TEXT_ONLY]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_modality_is_authoritative_over_rank",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_rank_mismatch_error_is_actionable",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_text_only_rejects_pixel_values",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_text_only_requires_input_ids",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_sample_ids_must_match_batch_dim",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_attention_mask_shape_must_match_input_ids",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_image_mask_shapes_per_modality",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_segmentation_target_shape_validated_against_pixels",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_valid_segmentation_shapes_pass",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_visual_token_batch_shape_and_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_bucket_requires_masks_for_padded_content",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_bucket_shape_must_match_padded_dims",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_bucket_id_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_static_bucket_padding_masks_preserve_unpadded_content",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_device_transfer_preserves_non_tensor_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_pin_memory_marks_batch_and_keeps_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_batch.py::test_batch_metadata_dict_has_no_payloads_or_devices",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_contract_smoke.py::test_contract_smoke_samples_for_all_modality_families",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_contract_smoke.py::test_contract_smoke_batches_for_all_modality_families",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_contract_smoke.py::test_contract_smoke_encoder_lm_task_pipeline",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_contract_smoke.py::test_contract_smoke_bucket_and_hash",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_device_transfer.py::test_batch_transfer_on_cuda",
+      "status": "skipped",
+      "reason": "Skipped: protected gpu test; set MEDFM_RUN_GPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests/phase_02/test_device_transfer.py::test_batch_transfer_on_xla",
+      "status": "skipped",
+      "reason": "Skipped: protected tpu test; set MEDFM_RUN_TPU_TESTS=1 to enable"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_dummy_encoder_conforms_to_protocol",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_dummy_encoder_output_semantics",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_unsupported_modality_fails",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_spatial_request_on_pooling_only_encoder_fails_not_fabricates",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_output_spec_check_against_missing_output",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_encoder_output_shape_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_encoder_contract.py::test_preprocess_spec_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_modality_enum_matches_governance_doc",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_task_enum_matches_governance_doc",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_auxiliary_enums_cover_loading_coordinate_precision_split",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_unknown_values_rejected_with_legal_value_listing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_versioned_enum_migration_applies_only_with_version",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_pixel_rank_contract_is_per_modality",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_hash_id_factories_accept_digests",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_hash_id_factories_reject_raw_identifiers[1.2.840.113619.2.55.3]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_hash_id_factories_reject_raw_identifiers[0001234567]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_hash_id_factories_reject_raw_identifiers[PATIENT-0042]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_enums.py::test_hash_id_factories_reject_raw_identifiers[AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12AB12]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_dummy_lm_conforms_to_protocol",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_adapters_must_declare_visual_entry_path",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_text_only_adapter_rejects_visual_tokens",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_forward_with_visual_tokens_output_shapes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_tokenized_text_shape_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_projected_visual_tokens_mask_shape",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_generation_config_and_output",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_language_contract.py::test_language_output_scalar_loss",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_spatial_metadata_roundtrip_lossless",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_spatial_metadata_roundtrip_through_json_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_spatial_metadata_float32_precision_preserved",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_pathology_metadata_roundtrip_lossless",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_pathology_tile_coordinates_exact_integers",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_metadata_roundtrip.py::test_canonical_serialization_is_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[XRAY_2D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[CT_2D_SLICE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[CT_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[MRI_2D_SLICE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[MRI_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[PATHOLOGY_TILE]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[PATHOLOGY_WSI]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[MULTI_IMAGE_2D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[MULTI_SERIES_3D]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality[TEXT_ONLY]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_modality_specific_metadata_requirements",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_text_only_forbids_images_and_requires_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_image_modalities_require_image_references",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_raw_patient_identifier_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_validate_for_task_requirements",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_label_target_semantics",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_box_target_coordinate_system_and_geometry",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_conversation_turn_roles",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_full_sample_roundtrip_through_canonical_dict",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_segmentation_target_roundtrip",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_sample_schema.py::test_pathology_metadata_available_on_sample",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_canonical_json_deterministic_regardless_of_key_order",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_config_hash_stable_across_equivalent_configs",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_accelerator_neutral_dtype_names_roundtrip",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_tensor_metadata_never_contains_device",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_inline_tensor_limit_protects_payloads",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_materialize_cpu_detaches",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_batch_serialization_has_no_device_requirement",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_sample_serialization_has_no_device_requirement",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_schema_version_rejects_newer_payloads",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_versioned_migration_hooks_upgrade_old_payloads",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_serialization.py::test_tensor_from_data_roundtrip_dtype",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_dummy_task_conforms_to_protocol",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_end_to_end_loss_and_metric_lifecycle",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_unsupported_modality_raises_typed_error",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_task_type_declared",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_loss_output_scalar_enforcement",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_02/test_task_contract.py::test_loss_output_counts_support_distributed_reduction",
+      "status": "passed"
+    }
+  ]
+}

@@ -81,6 +81,24 @@ PHASE_01_REQUIRED_FILES = [
 ]
 
 
+PHASE_02_REQUIRED_FILES = [
+    "medfm/core/__init__.py",
+    "medfm/core/enums.py",
+    "medfm/core/errors.py",
+    "medfm/core/versioning.py",
+    "medfm/core/sample.py",
+    "medfm/core/batch.py",
+    "medfm/core/encoder.py",
+    "medfm/core/language.py",
+    "medfm/core/task.py",
+    "medfm/core/serialization.py",
+    "docs/core_contracts.md",
+    "tests/phase_02/conftest.py",
+    "tests/phase_02/contract_fixtures.py",
+    "tests/phase_02/test_contract_smoke.py",
+]
+
+
 def _check_report(phase: str, errors: list[str]) -> None:
     report_dir = gov.REPO_ROOT / "agent" / "reports" / f"phase_{phase}"
     for name in REPORT_FILES:
@@ -133,6 +151,10 @@ def validate_phase(phase: str) -> list[str]:
         errors.extend(gov.check_accelerator_policy(scope))
     elif phase == "01":
         for rel in PHASE_01_REQUIRED_FILES:
+            if not (gov.REPO_ROOT / rel).exists():
+                errors.append(f"missing required file: {rel}")
+    elif phase == "02":
+        for rel in PHASE_02_REQUIRED_FILES:
             if not (gov.REPO_ROOT / rel).exists():
                 errors.append(f"missing required file: {rel}")
     else:

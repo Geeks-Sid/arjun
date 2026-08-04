@@ -1,0 +1,84 @@
+{
+  "phase": "02",
+  "status": "passed",
+  "generated_by": "Kimi Code CLI",
+  "generated_at": "2026-08-04T21:11:11Z",
+  "smoke_command": "pytest tests/phase_02/test_contract_smoke.py -q",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "enums-and-identifiers",
+      "description": "Canonical Modality/TaskType enums plus loading modes, coordinate systems, precision modes, split names; unknown values rejected with versioned migration hooks; typed hash IDs reject raw identifiers",
+      "status": "passed",
+      "evidence": "medfm/core/enums.py, medfm/core/sample.py (NewType IDs + factories); tests/phase_02/test_enums.py (enum sets match governance docs, migration hooks, MRN/DICOM-UID rejection)"
+    },
+    {
+      "id": "sample-schemas",
+      "description": "MedicalSample with nested image/label/segmentation/box/conversation/provenance types; SpatialMetadata (shape/affine/spacing/orientation/frame reference); PathologyMetadata (MPP, magnification, pyramid, stain, scanner, coordinates); modality/task requirement validation; schema version fields and migration hooks",
+      "status": "passed",
+      "evidence": "medfm/core/sample.py, medfm/core/versioning.py; tests/phase_02/test_sample_schema.py, test_metadata_roundtrip.py, test_serialization.py::test_versioned_migration_hooks_upgrade_old_payloads"
+    },
+    {
+      "id": "batch-schema",
+      "description": "MedicalBatch covering 2D/3D/multi-image/WSI/visual-token/text-token/segmentation shapes; modality authoritative over rank; mask/target shape validation; backend-neutral device transfer and pin-memory preserving metadata; bucket IDs with mandatory padding masks",
+      "status": "passed",
+      "evidence": "medfm/core/batch.py; tests/phase_02/test_batch.py (21 tests incl. rank-mismatch actionable errors, bucket mask rules, padded-content recovery, transfer metadata retention)"
+    },
+    {
+      "id": "encoder-language-contracts",
+      "description": "EncoderCapabilities/PreprocessSpec/InputSpec/OutputSpec; VisualEncoder protocol and EncoderOutput with documented pooled/spatial/feature-map/mask/coordinate semantics; LanguageModelAdapter protocol with mandatory inputs_embeds-or-native-connector declaration; unsupported requests fail instead of fabricating or silently pooling",
+      "status": "passed",
+      "evidence": "medfm/core/encoder.py, medfm/core/language.py; tests/phase_02/test_encoder_contract.py, test_language_contract.py"
+    },
+    {
+      "id": "task-loss-contracts",
+      "description": "TaskModule protocol; LossOutput with total/components/counts/diagnostics; metric lifecycle and distributed-reduction expectations; typed errors for unsupported modality/task/capability",
+      "status": "passed",
+      "evidence": "medfm/core/task.py, medfm/core/errors.py; tests/phase_02/test_task_contract.py"
+    },
+    {
+      "id": "serialization-compatibility",
+      "description": "Deterministic JSON/YAML for non-tensor fields; tensor metadata separate from payloads; config hashes over canonical serialization; accelerator-neutral dtype names; no device locations serialized; CPU materialization before export; stability/deprecation policy documented",
+      "status": "passed",
+      "evidence": "medfm/core/serialization.py, docs/core_contracts.md; tests/phase_02/test_serialization.py, test_backend_neutrality.py (AST-enforced: no .cuda()/backend imports in core)"
+    },
+    {
+      "id": "synthetic-samples-all-modality-families",
+      "description": "Synthetic 2D, 3D, multi-image, WSI, and text samples construct and validate; round-trip through canonical serialization",
+      "status": "passed",
+      "evidence": "tests/phase_02/test_sample_schema.py::test_synthetic_sample_validates_for_every_modality (parametrized over all 10 modalities), test_contract_smoke.py"
+    },
+    {
+      "id": "invalid-combinations-fail-clearly",
+      "description": "Incorrect tensor-rank/modality combinations fail with actionable errors naming expected rank/axes",
+      "status": "passed",
+      "evidence": "tests/phase_02/test_batch.py::test_rank_mismatch_error_is_actionable, test_modality_is_authoritative_over_rank"
+    },
+    {
+      "id": "metadata-roundtrips",
+      "description": "Spatial metadata and pathology coordinates/MPP survive serialization round-trips losslessly (bitwise for float32 affines, exact for int coordinates)",
+      "status": "passed",
+      "evidence": "tests/phase_02/test_metadata_roundtrip.py (6 tests)"
+    },
+    {
+      "id": "protocol-conformance-fixtures",
+      "description": "Static protocol conformance fixtures for dummy encoders, LMs, and tasks handed to model authors",
+      "status": "passed",
+      "evidence": "tests/phase_02/contract_fixtures.py + isinstance checks in test_encoder_contract.py, test_language_contract.py, test_task_contract.py"
+    },
+    {
+      "id": "accelerator-fixtures",
+      "description": "Schema/device-transfer fixtures run on CPU, CUDA, and XLA where hardware is available",
+      "status": "passed",
+      "evidence": "CPU: full suite (194 passed). CUDA: MEDFM_RUN_GPU_TESTS=1 pytest -m gpu → 3 passed including tests/phase_02/test_device_transfer.py::test_batch_transfer_on_cuda on RTX 4060 Laptop. XLA: fixture implemented and protected (tpu marker); no TPU on this host — see unresolved_issues.md"
+    },
+    {
+      "id": "downstream-decoupling",
+      "description": "Downstream phases can depend on contracts without importing concrete adapters",
+      "status": "passed",
+      "evidence": "medfm/core/ imports only torch/stdlib; protocols are runtime_checkable; conformance dummies live in tests, not the package"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_02/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_02/next_phase_handoff.md"
+}

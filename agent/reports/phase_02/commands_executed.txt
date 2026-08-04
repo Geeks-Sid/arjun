@@ -1,0 +1,11 @@
+uv run --frozen pytest tests/phase_02 -q
+uv run --frozen ruff check --fix .
+uv run --frozen ruff format .
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+uv run --frozen mypy
+uv run --frozen pytest tests/ -q
+uv run --frozen python -m medfm.tools.smoke --phase 02
+uv run --frozen pytest tests/phase_02/test_contract_smoke.py -q
+MEDFM_RUN_GPU_TESTS=1 uv run --frozen pytest tests/ -q -m gpu
+uv run --frozen python -m medfm.tools.validate_phase --phase 02

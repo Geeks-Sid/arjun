@@ -100,13 +100,82 @@ def _check_tiny_lora_step() -> None:
         raise RuntimeError("model output unchanged after one optimization step")
 
 
+def _check_core_sample_roundtrip() -> None:
+    import torch
+
+    from medfm.core import (
+        ImageReference,
+        MedicalSample,
+        Modality,
+        ProvenanceMetadata,
+        SpatialMetadata,
+        canonical_json,
+    )
+
+    sample = MedicalSample(
+        sample_id="smoke-ct3d",
+        patient_id_hash="ab12" * 16,
+        modality=Modality.CT_3D,
+        image_references=(ImageReference(uri="s3://bucket/volume.nii.gz"),),
+        spatial=SpatialMetadata(
+            original_shape=(8, 16, 16),
+            current_shape=(8, 16, 16),
+            affine=torch.eye(4, dtype=torch.float64),
+            spacing_mm=(2.0, 2.0, 2.0),
+        ),
+        provenance=ProvenanceMetadata(dataset_name="synthetic", dataset_version="0.1"),
+    )
+    blob = canonical_json(sample.to_dict())
+    import json
+
+    restored = MedicalSample.from_dict(json.loads(blob))
+    if restored.to_dict() != sample.to_dict():
+        raise RuntimeError("MedicalSample canonical round-trip is not lossless")
+
+
+def _check_core_batch_contract() -> None:
+    import torch
+
+    from medfm.core import BucketId, BucketKind, MedicalBatch, Modality, ShapeContractError
+
+    batch = MedicalBatch(
+        modality=Modality.PATHOLOGY_WSI,
+        pixel_values=torch.randn(2, 4, 3, 8, 8),
+        image_mask=torch.ones(2, 4, dtype=torch.bool),
+        tile_coordinates=torch.zeros(2, 4, 2, dtype=torch.int64),
+        sample_ids=["a", "b"],
+        bucket=BucketId(kind=BucketKind.WSI_TILES, shape=(4,)),
+    )
+    moved = batch.to("cpu")
+    if moved.modality is not Modality.PATHOLOGY_WSI or moved.sample_ids != ["a", "b"]:
+        raise RuntimeError("device transfer lost non-tensor metadata")
+    try:
+        MedicalBatch(
+            modality=Modality.XRAY_2D,
+            pixel_values=torch.randn(2, 1, 8, 8, 8),
+            sample_ids=["a", "b"],
+        )
+    except ShapeContractError:
+        pass
+    else:
+        raise RuntimeError("rank/modality mismatch was not rejected")
+
+
 PHASE_01_CHECKS: list[tuple[str, Callable[[], None]]] = [
     ("doctor_json_schema", _check_doctor_json),
     ("monai_3d_load_crop", _check_monai_3d_pipeline),
     ("tiny_lora_step", _check_tiny_lora_step),
 ]
 
-SMOKE_CHECKS: dict[str, list[tuple[str, Callable[[], None]]]] = {"01": PHASE_01_CHECKS}
+PHASE_02_CHECKS: list[tuple[str, Callable[[], None]]] = [
+    ("core_sample_roundtrip", _check_core_sample_roundtrip),
+    ("core_batch_contract", _check_core_batch_contract),
+]
+
+SMOKE_CHECKS: dict[str, list[tuple[str, Callable[[], None]]]] = {
+    "01": PHASE_01_CHECKS,
+    "02": PHASE_02_CHECKS,
+}
 
 
 def main(argv: list[str] | None = None) -> int:
