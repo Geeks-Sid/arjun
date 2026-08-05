@@ -1,0 +1,66 @@
+{
+  "phase": "03",
+  "status": "passed",
+  "generated_by": "Qwen Code",
+  "generated_at": "2026-08-05T04:45:37Z",
+  "smoke_command": "python -m medfm.cli.data fingerprint --manifest tests/fixtures/manifests/mixed_synthetic.parquet",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "canonical-manifests",
+      "description": "Versioned Parquet manifest schema with all idea.md columns; fail-closed validation; URI scheme + path-traversal guards; JSONL debugging-only; restricted reports referenced not embedded; migration + introspection commands; shape-bucket hints are non-authoritative",
+      "status": "passed",
+      "evidence": "medfm/data/manifests/schema.py, medfm/data/manifests/io.py; tests/phase_03/test_manifests.py (52 tests: scheme/traversal rejection, report-text column rejection, migration, content-hash determinism)"
+    },
+    {
+      "id": "split-generation-and-leakage",
+      "description": "Patient-disjoint splitting by default; site-disjoint and temporal holdouts; studies/tiles/slides/cases kept together via grouping keys; duplicate content hashes detected across splits; auditable split report with seed + grouping keys; refuse-to-train gate unless a ResearchOverride is recorded",
+      "status": "passed",
+      "evidence": "medfm/data/splits.py; tests/phase_03/test_splits.py (14 tests incl. deliberately-corrupted patient/group/content leakage and override gating)"
+    },
+    {
+      "id": "radiology-readers",
+      "description": "NIfTI, MHA, NumPy-volume, and PNG/JPEG readers; DICOM series discovery + physical-position sorting; orientation/spacing/frame-of-reference validation; CT rescale slope/intercept + MONOCHROME1 correction; multiframe/scout/mixed/unsupported-pixel detection; UID hashing; actionable errors",
+      "status": "passed",
+      "evidence": "medfm/data/readers/radiology.py, medfm/data/readers/dicom.py; tests/phase_03/test_dicom_reader.py + test_radiology_readers.py (physical sort under scrambled filenames, calibration, affine origin, rejection paths)"
+    },
+    {
+      "id": "pathology-readers",
+      "description": "Common slide-reader contract (dimensions, levels, MPP, thumbnails, regions, tiles); OpenSlide + TiffSlide backends; cuCIM behind a capability check; pre-extracted tile + embedding-store readers; validated pyramid-level coordinate conversion; corrupt regions recoverable at tile scope",
+      "status": "passed",
+      "evidence": "medfm/data/readers/pathology.py; tests/phase_03/test_pathology_readers.py (synthetic pyramid TIFF read by both backends, level-coord round trip, on_corrupt=skip recovery)"
+    },
+    {
+      "id": "dataset-fingerprinting",
+      "description": "medfm data fingerprint reports patient/study/sample counts, modality/shape/spacing/intensity/label/missing/site/vendor/duplicate stats, text length + WSI MPP/magnification + segmentation volumes, split-leakage results, deterministic fingerprint hash, and bounded shape-bucket recommendations; machine-readable report",
+      "status": "passed",
+      "evidence": "medfm/data/fingerprint.py; tests/phase_03/test_fingerprint.py; smoke command emits the report for tests/fixtures/manifests/mixed_synthetic.parquet"
+    },
+    {
+      "id": "caching",
+      "description": "Preprocessing/visual-embedding/tokenization cache interfaces; keys include source hash, reader version, preprocessing hash, model id/revision, layer, dtype; atomic writes; corrupt-entry detection + quarantine; LRU eviction metadata; accelerator-neutral CPU tensors; rank-safe coordinator-only / per-rank partitions",
+      "status": "passed",
+      "evidence": "medfm/data/caching/{keys,base,disk,typed}.py; tests/phase_03/test_caching.py (16 tests incl. invalidation on normalization/resolution/model/adapter/layer/dtype, corrupt-entry recovery, LRU budget, rank partitions)"
+    },
+    {
+      "id": "distributed-input-ownership",
+      "description": "Patient/study/slide-aware distributed sampling with no group leakage across ranks; deterministic per-epoch rank + worker seeds; padded final batches excluded from metrics via explicit sentinels; corrupt samples resolved before collectives",
+      "status": "passed",
+      "evidence": "medfm/data/samplers.py; tests/phase_03/test_samplers.py (exact coverage across ranks/epochs, group integrity, padding sentinels, pre-collective resolution)"
+    },
+    {
+      "id": "privacy-and-provenance",
+      "description": "Exceptions and logs never expose raw identifiers or report text; every row carries dataset name/version/license/provenance; UIDs hashed at the reader boundary",
+      "status": "passed",
+      "evidence": "medfm/data/errors.py, medfm/data/manifests/schema.py (_hash_problem does not echo values); tests/phase_03/test_privacy.py"
+    },
+    {
+      "id": "synthetic-fixtures",
+      "description": "Synthetic DICOM series, NIfTI, MHA, ordinary images, and pyramid WSI generated legally and load correctly; committed mixed-modality fingerprint fixture",
+      "status": "passed",
+      "evidence": "tests/phase_03/synthetic.py, tests/fixtures/manifests/mixed_synthetic.parquet, tests/phase_03/generate_fixture.py"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_03/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_03/next_phase_handoff.md"
+}

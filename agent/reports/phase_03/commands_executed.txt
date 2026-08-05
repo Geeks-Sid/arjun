@@ -1,0 +1,11 @@
+uv run --frozen python tests/phase_03/generate_fixture.py
+uv run --frozen python -m medfm.cli.data fingerprint --manifest tests/fixtures/manifests/mixed_synthetic.parquet
+uv run --frozen pytest tests/phase_03 -q
+uv run --frozen ruff check --fix .
+uv run --frozen ruff format .
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+uv run --frozen mypy
+uv run --frozen pytest tests/ -q
+uv run --frozen python -m medfm.tools.smoke --phase 03
+uv run --frozen python -m medfm.tools.validate_phase --phase 03

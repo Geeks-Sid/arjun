@@ -99,6 +99,33 @@ PHASE_02_REQUIRED_FILES = [
 ]
 
 
+PHASE_03_REQUIRED_FILES = [
+    "medfm/data/__init__.py",
+    "medfm/data/errors.py",
+    "medfm/data/manifests/__init__.py",
+    "medfm/data/manifests/schema.py",
+    "medfm/data/manifests/io.py",
+    "medfm/data/readers/__init__.py",
+    "medfm/data/readers/base.py",
+    "medfm/data/readers/radiology.py",
+    "medfm/data/readers/dicom.py",
+    "medfm/data/readers/pathology.py",
+    "medfm/data/caching/__init__.py",
+    "medfm/data/caching/keys.py",
+    "medfm/data/caching/base.py",
+    "medfm/data/caching/disk.py",
+    "medfm/data/caching/typed.py",
+    "medfm/data/splits.py",
+    "medfm/data/fingerprint.py",
+    "medfm/data/samplers.py",
+    "medfm/cli/data.py",
+    "medfm/tools/data_tools.py",
+    "tests/fixtures/manifests/mixed_synthetic.parquet",
+    "tests/phase_03/conftest.py",
+    "tests/phase_03/synthetic.py",
+]
+
+
 def _check_report(phase: str, errors: list[str]) -> None:
     report_dir = gov.REPO_ROOT / "agent" / "reports" / f"phase_{phase}"
     for name in REPORT_FILES:
@@ -155,6 +182,10 @@ def validate_phase(phase: str) -> list[str]:
                 errors.append(f"missing required file: {rel}")
     elif phase == "02":
         for rel in PHASE_02_REQUIRED_FILES:
+            if not (gov.REPO_ROOT / rel).exists():
+                errors.append(f"missing required file: {rel}")
+    elif phase == "03":
+        for rel in PHASE_03_REQUIRED_FILES:
             if not (gov.REPO_ROOT / rel).exists():
                 errors.append(f"missing required file: {rel}")
     else:

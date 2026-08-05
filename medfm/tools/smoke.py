@@ -161,6 +161,55 @@ def _check_core_batch_contract() -> None:
         raise RuntimeError("rank/modality mismatch was not rejected")
 
 
+def _check_data_fingerprint_fixture() -> None:
+    from medfm.data.fingerprint import fingerprint_manifest
+    from medfm.data.manifests.io import read_manifest
+
+    fixture = gov.REPO_ROOT / "tests" / "fixtures" / "manifests" / "mixed_synthetic.parquet"
+    if not fixture.is_file():
+        raise RuntimeError(f"missing fingerprint fixture: {fixture}")
+    report = fingerprint_manifest(read_manifest(fixture))
+    if not report["split_leakage"]["ok"]:
+        raise RuntimeError("committed fixture manifest has split leakage")
+    again = fingerprint_manifest(read_manifest(fixture))
+    if again["fingerprint_hash"] != report["fingerprint_hash"]:
+        raise RuntimeError("dataset fingerprint is not deterministic")
+
+
+def _check_dicom_sort_and_cache_invalidation() -> None:
+    import importlib
+
+    import numpy as np
+    import torch
+
+    from medfm.data.caching import PreprocessingCache
+    from medfm.data.readers.dicom import DICOMSeriesReader
+
+    fixture_dir = str(gov.REPO_ROOT / "tests" / "phase_03")
+    sys.path.insert(0, fixture_dir)
+    try:
+        synthetic = importlib.import_module("synthetic")  # tests/phase_03 fixture builder
+    finally:
+        sys.path.remove(fixture_dir)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        series_dir = Path(tmp) / "series"
+        _, raw = synthetic.write_dicom_series(series_dir, num_slices=4, shuffle_files=True, value_seed=3)
+        read = DICOMSeriesReader().read(series_dir)
+        expected = raw.astype(np.float64) * 2.0 - 1000.0
+        if not np.allclose(read.image.numpy().transpose(2, 1, 0), expected):
+            raise RuntimeError("DICOM physical sort / CT calibration mismatch")
+
+        cache = PreprocessingCache.on_disk(Path(tmp) / "cache")
+        key = PreprocessingCache.key(source_file_hash="0" * 64, reader_version="1.0.0", preprocessing_hash="1" * 64)
+        cache.put(key, {"image": torch.randn(4)})
+        if cache.get(key) is None:
+            raise RuntimeError("cache round-trip failed")
+        altered = PreprocessingCache.key(source_file_hash="0" * 64, reader_version="1.0.0", preprocessing_hash="2" * 64)
+        if cache.get(altered) is not None:
+            raise RuntimeError("cache failed to invalidate on preprocessing change")
+
+
 PHASE_01_CHECKS: list[tuple[str, Callable[[], None]]] = [
     ("doctor_json_schema", _check_doctor_json),
     ("monai_3d_load_crop", _check_monai_3d_pipeline),
@@ -172,9 +221,15 @@ PHASE_02_CHECKS: list[tuple[str, Callable[[], None]]] = [
     ("core_batch_contract", _check_core_batch_contract),
 ]
 
+PHASE_03_CHECKS: list[tuple[str, Callable[[], None]]] = [
+    ("data_fingerprint_fixture", _check_data_fingerprint_fixture),
+    ("dicom_sort_and_cache_invalidation", _check_dicom_sort_and_cache_invalidation),
+]
+
 SMOKE_CHECKS: dict[str, list[tuple[str, Callable[[], None]]]] = {
     "01": PHASE_01_CHECKS,
     "02": PHASE_02_CHECKS,
+    "03": PHASE_03_CHECKS,
 }
 
 

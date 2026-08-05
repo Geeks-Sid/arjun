@@ -23,6 +23,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     doctor.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
+    sub.add_parser("data", help="dataset manifest tools (fingerprint/inspect/migrate/split)")
+
     args, rest = parser.parse_known_args(argv)
     if args.command == "doctor":
         from medfm.tools import doctor as doctor_mod
@@ -31,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.json:
             forwarded.append("--json")
         return doctor_mod.main([*forwarded, *rest])
+    if args.command == "data":
+        from medfm.tools import data_tools
+
+        return data_tools.main(rest)
 
     parser.error(f"unknown command: {args.command}")  # pragma: no cover
     return 2  # pragma: no cover

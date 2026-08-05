@@ -1,0 +1,610 @@
+{
+  "phase": "03",
+  "exit_code": 0,
+  "tests": [
+    {
+      "name": "tests/phase_03/test_caching.py::test_key_requires_sha256_and_canonical_dtype",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_key_string_is_deterministic_and_component_sensitive",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_put_get_round_trip_is_cpu_and_accelerator_neutral",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_invalidation_on_normalization_resolution_and_reader_change",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_invalidation_on_model_adapter_layer_dtype_change",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_tokenization_cache_key_isolation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_typed_cache_rejects_cross_kind_keys",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_rejects_non_canonical_dtype_and_empty_put",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_corrupt_entry_is_quarantined_and_reported_as_miss",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_missing_meta_detected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_partial_write_is_atomic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_lru_eviction_respects_budget",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_entry_alone_larger_than_budget_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_rank_safety_coordinator_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_rank_safety_per_rank_partitions",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_caching.py::test_invalidate_and_clear",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_committed_fixture_exists_and_is_valid",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_smoke_command_fingerprints_committed_fixture",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_fingerprint_is_deterministic_across_runs",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_fingerprint_missing_manifest_fails_cleanly",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_inspect_command_reports_schema",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_split_command_writes_assignment_and_report",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_migrate_command_round_trips",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_cli_data.py::test_parser_requires_a_command",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_discovers_single_series_by_hashed_uid",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_sorts_slices_by_physical_position_not_filename",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_affine_maps_voxel_origin_to_first_slice_position",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_applies_rescale_slope_and_intercept",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_monochrome1_is_inverted",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_hashes_uids_and_never_exposes_raw_identifiers",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_rejects_inconsistent_orientation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_rejects_inconsistent_pixel_spacing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_rejects_multiframe_objects",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_rejects_scout_localizer_series",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_rejects_mixed_series_unless_selected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_empty_directory_is_actionable",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_dicom_reader.py::test_summaries_report_counts_without_pixels",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_fingerprint_counts_and_distributions",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_fingerprint_is_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_shape_spacing_and_intensity_stats_present",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_wsi_and_report_stats",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_label_prevalence_counts_tasks",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_duplicate_content_hashes_flagged",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_leakage_results_embedded_in_report",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_shape_bucket_recommendations_are_bounded",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_bucket_recommendation_covers_observed_shapes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_fingerprint.py::test_fingerprint_handles_minimal_frame",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_valid_frame_passes_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_parquet_round_trip_preserves_values",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_jsonl_round_trip_preserves_values_and_warns",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_read_manifest_with_version_reports_stamped_version",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_write_manifest_rejects_unknown_suffix",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_write_manifest_validates_before_writing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_missing_required_column_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_embedded_report_text_column_rejected[report]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_embedded_report_text_column_rejected[report_text]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_embedded_report_text_column_rejected[report_body]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_report_chars_and_report_uri_columns_allowed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_raw_patient_identifiers_rejected[12345678]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_raw_patient_identifiers_rejected[1.2.840.113619]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_null_patient_id_hash_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_nullable_study_series_hashes_accepted_when_null",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_duplicate_sample_id_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_modality_rejected_with_actionable_message",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_split_rejected_with_actionable_message",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_null_split_accepted",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_disallowed_uri_schemes_rejected[ftp]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_disallowed_uri_schemes_rejected[gopher]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_disallowed_scheme_in_manifest_collected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_path_traversal_outside_base_dir_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_dotdot_relative_uri_without_base_dir_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_relative_path_inside_base_dir_allowed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_allowed_uri_forms_accepted[s3://bucket/images/0001.nii.gz]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_allowed_uri_forms_accepted[gs://bucket/wsi/0003.svs]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_allowed_uri_forms_accepted[https://data.example.org/xray/0002.png]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_allowed_uri_forms_accepted[file:///data/images/0001.nii.gz]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_allowed_uri_forms_accepted[/absolute/environment/specific/path.nii.gz]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_empty_and_control_character_uris_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_text_only_row_with_null_image_uri_accepted",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_ct3d_row_with_null_image_uri_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_empty_provenance_columns_rejected[dataset_name]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_empty_provenance_columns_rejected[dataset_version]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_empty_provenance_columns_rejected[license]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_shape_values_rejected[bad_shape0]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_shape_values_rejected[bad_shape1]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_shape_values_rejected[bad_shape2]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_shape_values_rejected[bad_shape3]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_spacing_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_image_sha256_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_bad_group_id_hash_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_negative_report_chars_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_shape_bucket_hints_are_optional",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_multiple_problems_collected_into_one_error",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_inspect_manifest_is_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_manifest_content_hash_deterministic_across_formats",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_identical_frames_written_twice_hash_identically",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_newer_schema_version_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_missing_version_metadata_assumed_v1",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_manifests.py::test_manifest_schema_dict_covers_required_columns",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_tiffslide_exposes_contract_geometry",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_read_region_matches_level0_pixels",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_thumbnail_is_bounded",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_read_tiles_returns_chw_with_level0_coords",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_openslide_backend_opens_same_file",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_cucim_reader_is_capability_gated",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_convert_level_coords_round_trips",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_validate_level_coords_rejects_out_of_bounds",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_invalid_level_is_actionable",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_preextracted_tile_reader",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_embedding_store_reader",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_pathology_readers.py::test_corrupt_region_is_recoverable_at_tile_scope",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_privacy.py::test_manifest_rejects_raw_identifiers_not_just_hashes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_privacy.py::test_manifest_rejects_embedded_report_text_columns",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_privacy.py::test_dicom_errors_do_not_leak_raw_uids_or_mrn",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_privacy.py::test_split_leakage_error_reports_hashes_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_privacy.py::test_data_layer_logging_carries_no_phi",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_nifti_preserves_affine_spacing_dtype_orientation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_mha_transposes_to_framework_axis_order",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_numpy_volume_with_and_without_sidecar",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_numpy_volume_rejects_bad_sidecar_affine",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_png_and_jpeg_rgb_and_grayscale",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_reader_for_path_dispatches_by_suffix",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_resolve_local_path_rejects_remote_and_missing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_radiology_readers.py::test_unsupported_dtype_is_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_sample_bridge.py::test_volumetric_row_builds_contract_sample",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_sample_bridge.py::test_wsi_row_builds_contract_sample",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_sample_bridge.py::test_text_only_row_needs_no_payload",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_shards_are_disjoint_and_cover_exactly",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_group_intact_per_rank",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_padding_equalizes_shard_lengths_with_sentinels",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_epoch_is_deterministic_and_covers_dataset",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_iteration_yields_padding_sentinels_too",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_split_filter_restricts_rows",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_group_id_hash_override_wins",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_invalid_rank_arguments_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_worker_seed_is_deterministic_and_distinct",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_samplers.py::test_corrupt_samples_resolve_before_collectives",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_patient_policy_is_patient_disjoint",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_assignment_is_deterministic_in_seed_and_row_order",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_group_id_hash_keeps_tiles_together",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_site_policy_is_site_disjoint",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_temporal_policy_holds_out_the_tail_of_time",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_invalid_ratios_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_clean_manifest_passes_leakage_check",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_patient_leakage_detected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_duplicate_content_hash_across_splits_detected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_group_leakage_detected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_assert_no_split_leakage_raises_with_hashes_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_research_override_allows_documented_exception",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_temporal_policy_exempts_patient_overlap_but_not_content",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_03/test_splits.py::test_split_report_is_deterministic_and_auditable",
+      "status": "passed"
+    }
+  ]
+}
