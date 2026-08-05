@@ -44,3 +44,4 @@ agent/reports/phase_03/test_results.json
 agent/reports/phase_03/acceptance.json
 agent/reports/phase_03/unresolved_issues.md
 agent/reports/phase_03/next_phase_handoff.md
+implementation_plan/phase_03_data_ingestion_and_provenance.md (checklist ticked)
