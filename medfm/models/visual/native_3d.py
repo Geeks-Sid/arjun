@@ -6,6 +6,12 @@ local MONAI-compatible architecture is useful for contract tests and as a
 pure-PyTorch fallback when an upstream checkpoint uses unavailable operators.
 Model-specific modules in this package only declare preprocessing, checkpoint
 identity, and capability differences.
+
+The local sliding-window helper intentionally remains separate from
+``medfm.inference.sliding_window.sliding_window_inference``. The shared helper
+uses Gaussian blending, zero-padding, and flattened window batches, whereas
+this public adapter contract requires unpadded overlap averaging and exact
+``torch.equal`` identity reconstruction.
 """
 
 from __future__ import annotations
@@ -765,6 +771,12 @@ def sliding_window_inference(
     metadata: Sequence[SpatialMetadata] | None = None,
 ) -> torch.Tensor:
     """Host-side fixed-window reconstruction with overlap averaging.
+
+    This deliberately preserves the native adapter's exact reconstruction
+    contract rather than delegating to the shared inference helper: that
+    helper's Gaussian blending, zero-padding, and flattened window batches
+    change numerics and predictor call semantics. The local loop is therefore
+    not a redundant implementation of the same behavior.
 
     ``predictor`` receives a ``[B,C,d,h,w]`` crop and, when accepted, the
     matching metadata list as a second positional argument. The output must be
