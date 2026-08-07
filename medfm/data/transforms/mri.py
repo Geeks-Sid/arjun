@@ -158,6 +158,16 @@ class ForegroundZScoreNormalize(Transform):
         image = data.image.to(torch.float32)
         means: list[float] = []
         stds: list[float] = []
+        try:
+            from monai.transforms import NormalizeIntensity  # type: ignore[attr-defined]
+        except ImportError:
+            normalize_kernel: Any = None
+        else:
+            normalize_kernel = NormalizeIntensity(
+                nonzero=True,
+                channel_wise=True,
+                dtype=torch.float32,  # type: ignore[arg-type]
+            )
         for channel in range(image.shape[0]):
             foreground = image[channel] != 0
             if not bool(foreground.any()):
@@ -170,7 +180,10 @@ class ForegroundZScoreNormalize(Transform):
             means.append(mean)
             stds.append(std)
             if std > _EPS:
-                image[channel] = torch.where(foreground, (image[channel] - mean) / std, image[channel])
+                if normalize_kernel is None:
+                    image[channel] = torch.where(foreground, (image[channel] - mean) / std, image[channel])
+                else:
+                    image[channel] = normalize_kernel(image[channel : channel + 1])[0]
         data.image = image.contiguous()
         data.record(self.name, self.stage, {"means": means, "stds": stds})
         return data
@@ -203,6 +216,21 @@ class RobustPercentileNormalize(Transform):
         image = data.image.to(torch.float32)
         lows: list[float] = []
         highs: list[float] = []
+        try:
+            from monai.transforms import ScaleIntensityRangePercentiles  # type: ignore[attr-defined]
+        except ImportError:
+            percentile_kernel: Any = None
+        else:
+            percentile_kernel = ScaleIntensityRangePercentiles(
+                self.lower,
+                self.upper,
+                b_min=0.0,
+                b_max=1.0,
+                clip=True,
+                relative=False,
+                channel_wise=False,
+                dtype=torch.float32,  # type: ignore[arg-type]
+            )
         for channel in range(image.shape[0]):
             foreground = image[channel] != 0
             if not bool(foreground.any()):
@@ -215,8 +243,12 @@ class RobustPercentileNormalize(Transform):
             lows.append(low)
             highs.append(high)
             if high - low > _EPS:
-                normalized = ((image[channel].clamp(low, high) - low) / (high - low)).clamp(0.0, 1.0)
-                image[channel] = torch.where(foreground, normalized, image[channel])
+                if percentile_kernel is None:
+                    normalized = ((image[channel].clamp(low, high) - low) / (high - low)).clamp(0.0, 1.0)
+                    image[channel] = torch.where(foreground, normalized, image[channel])
+                else:
+                    normalized_values = percentile_kernel(values)
+                    image[channel][foreground] = normalized_values
         data.image = image.contiguous()
         data.record(self.name, self.stage, {"lower": self.lower, "upper": self.upper, "lows": lows, "highs": highs})
         return data

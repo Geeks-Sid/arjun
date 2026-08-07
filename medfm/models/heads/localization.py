@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
+from torchvision.ops import box_iou as _torchvision_box_iou  # type: ignore[import-untyped]
+from torchvision.ops import generalized_box_iou as _torchvision_generalized_box_iou
 
 from medfm.core.encoder import EncoderOutput
 from medfm.core.enums import CoordinateSystem
@@ -220,10 +222,31 @@ def boxes_from_spatial_metadata(
 
 
 def box_iou(boxes_a: torch.Tensor, boxes_b: torch.Tensor, *, eps: float = 1e-7) -> torch.Tensor:
-    """Pairwise IoU for aligned axis-aligned 2D or 3D boxes."""
+    """Pairwise IoU for aligned axis-aligned 2D or 3D boxes.
+
+    The torchvision kernel is used for the common float32, batched 2D case.
+    Its pairwise matrix is reduced to the aligned diagonal required by this
+    module's contract; other dtypes, dimensions, and custom epsilons stay on
+    the native implementation to preserve their output dtype and semantics.
+    """
 
     if boxes_a.shape[-1] not in (4, 6) or boxes_b.shape[-1] != boxes_a.shape[-1]:
         raise ShapeContractError("box_iou expects matching 2D/3D box dimensions")
+    if (
+        boxes_a.ndim == boxes_b.ndim == 2
+        and boxes_a.shape == boxes_b.shape
+        and boxes_a.shape[-1] == 4
+        and boxes_a.dtype == boxes_b.dtype == torch.float32
+        and eps == 1e-7
+        and bool(torch.all(boxes_a[:, :2] < boxes_a[:, 2:]))
+        and bool(torch.all(boxes_b[:, :2] < boxes_b[:, 2:]))
+    ):
+        starts_a, ends_a = boxes_a[..., :2], boxes_a[..., 2:]
+        starts_b, ends_b = boxes_b[..., :2], boxes_b[..., 2:]
+        xyxy_a = torch.cat((starts_a, ends_a), dim=-1)
+        xyxy_b = torch.cat((starts_b, ends_b), dim=-1)
+        return cast(torch.Tensor, _torchvision_box_iou(xyxy_a, xyxy_b).diagonal())
+
     dimensions = boxes_a.shape[-1] // 2
     a0, a1 = boxes_a[..., :dimensions], boxes_a[..., dimensions:]
     b0, b1 = boxes_b[..., :dimensions], boxes_b[..., dimensions:]
@@ -236,6 +259,21 @@ def box_iou(boxes_a: torch.Tensor, boxes_b: torch.Tensor, *, eps: float = 1e-7) 
 
 
 def generalized_box_iou(boxes_a: torch.Tensor, boxes_b: torch.Tensor, *, eps: float = 1e-7) -> torch.Tensor:
+    if (
+        boxes_a.shape[-1] == boxes_b.shape[-1] == 4
+        and boxes_a.ndim == boxes_b.ndim == 2
+        and boxes_a.shape == boxes_b.shape
+        and boxes_a.dtype == boxes_b.dtype == torch.float32
+        and eps == 1e-7
+        and bool(torch.all(boxes_a[:, :2] < boxes_a[:, 2:]))
+        and bool(torch.all(boxes_b[:, :2] < boxes_b[:, 2:]))
+    ):
+        starts_a, ends_a = boxes_a[..., :2], boxes_a[..., 2:]
+        starts_b, ends_b = boxes_b[..., :2], boxes_b[..., 2:]
+        xyxy_a = torch.cat((starts_a, ends_a), dim=-1)
+        xyxy_b = torch.cat((starts_b, ends_b), dim=-1)
+        return cast(torch.Tensor, _torchvision_generalized_box_iou(xyxy_a, xyxy_b).diagonal())
+
     iou = box_iou(boxes_a, boxes_b, eps=eps)
     dimensions = boxes_a.shape[-1] // 2
     a0, a1 = boxes_a[..., :dimensions], boxes_a[..., dimensions:]

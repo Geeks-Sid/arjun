@@ -26,7 +26,7 @@ functions of (payload, config).
 from __future__ import annotations
 
 from types import EllipsisType
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import numpy as np
 import torch
@@ -42,6 +42,21 @@ from medfm.data.transforms.base import (
     TransformRecord,
     register_inverter,
 )
+
+_MonaiMetaTensor: Any = None
+_MonaiCropForeground: Any = None
+_MonaiOrientation: Any = None
+try:
+    from monai.data import MetaTensor as _MetaTensor  # type: ignore[attr-defined]
+    from monai.transforms import CropForeground as _CropForeground  # type: ignore[attr-defined]
+    from monai.transforms.spatial.array import Orientation as _Orientation
+
+    _MonaiMetaTensor = _MetaTensor
+    _MonaiCropForeground = _CropForeground
+    _MonaiOrientation = _Orientation
+except ImportError:  # pragma: no cover - exercised only without the optional medical extra
+    pass
+
 
 #: scipy.ndimage.zoom interpolation order for image intensities (trilinear).
 IMAGE_ORDER = 3
@@ -189,6 +204,14 @@ def _spatial_flip_dims(ndim: int, axes: list[int]) -> list[int]:
     return [ndim - 3 + axis for axis in sorted(axes)]
 
 
+def _monai_reorient(tensor: torch.Tensor, affine: torch.Tensor, target: str) -> torch.Tensor | None:
+    """Apply MONAI's orientation kernel when metadata makes it unambiguous."""
+    if _MonaiOrientation is None or _MonaiMetaTensor is None:
+        return None
+    result = _MonaiOrientation(axcodes=target)(_MonaiMetaTensor(tensor, affine=affine))
+    return cast(torch.Tensor, result.as_tensor())
+
+
 def _permute_spatial(tensor: torch.Tensor, permutation: list[int]) -> torch.Tensor:
     """Permute the trailing 3 spatial dims; ``permutation[t]`` is the source axis of new axis ``t``."""
     leading = list(range(tensor.ndim - 3))
@@ -264,7 +287,6 @@ class CanonicalizeOrientation(Transform):
     def apply(self, data: TransformData, ctx: TransformContext | None) -> TransformData:
         spatial = _require_volume(data, self.name)
         current = _current_orientation(spatial)
-        # permutation[t] = current axis whose direction family matches target axis t.
         permutation = [
             next(axis for axis, letter in enumerate(current) if _AXIS_INDEX[letter] == _AXIS_INDEX[target_letter])
             for target_letter in self.target
@@ -274,8 +296,14 @@ class CanonicalizeOrientation(Transform):
         old_shape = data.spatial_shape
         new_shape = (old_shape[permutation[0]], old_shape[permutation[1]], old_shape[permutation[2]])
         flip_axes = [t for t in range(3) if flips[t]]
+        use_monai = spatial.affine is not None and _orientation_from_affine(spatial.affine) == current
 
         def _reorient(tensor: torch.Tensor) -> torch.Tensor:
+            if use_monai:
+                assert spatial.affine is not None
+                delegated = _monai_reorient(tensor, spatial.affine, self.target)
+                if delegated is not None:
+                    return delegated
             result = _permute_spatial(tensor, permutation)
             if flip_axes:
                 result = torch.flip(result, dims=_spatial_flip_dims(result.ndim, flip_axes))
@@ -455,33 +483,67 @@ class ForegroundCrop3D(Transform):
     stage: Literal["deterministic"] = "deterministic"
     spatial = True
 
-    def __init__(self, margin: int = 4, threshold: float | None = None, *, pad_value: float = 0.0) -> None:
+    def __init__(
+        self,
+        margin: int = 4,
+        threshold: float | None = None,
+        *,
+        pad_value: float = 0.0,
+        percentile: float = DEFAULT_FOREGROUND_PERCENTILE,
+    ) -> None:
         if margin < 0:
             raise TransformError(f"ForegroundCrop3D.margin must be non-negative; got {margin}")
+        if not 0.0 <= percentile <= 100.0:
+            raise TransformError(f"ForegroundCrop3D.percentile must be in [0, 100]; got {percentile}")
         self.margin = int(margin)
         self.threshold = None if threshold is None else float(threshold)
         self.pad_value = float(pad_value)
+        self.percentile = float(percentile)
 
     def config_dict(self) -> dict[str, Any]:
-        return {"margin": self.margin, "threshold": self.threshold, "pad_value": self.pad_value}
+        return {
+            "margin": self.margin,
+            "threshold": self.threshold,
+            "pad_value": self.pad_value,
+            "percentile": self.percentile,
+        }
 
     def _foreground_threshold(self, image: torch.Tensor) -> float:
         if self.threshold is not None:
             return self.threshold
         flat = image.detach().to(torch.float32).flatten()
-        return float(torch.quantile(flat, DEFAULT_FOREGROUND_PERCENTILE / 100.0))
+        return float(torch.quantile(flat, self.percentile / 100.0))
 
-    def apply(self, data: TransformData, ctx: TransformContext | None) -> TransformData:
-        spatial = _require_volume(data, self.name)
-        threshold = self._foreground_threshold(data.image)
-        foreground = (data.image > threshold).any(dim=0)
-        shape = data.spatial_shape
+    def _foreground_bounds(
+        self, image: torch.Tensor, threshold: float, shape: tuple[int, int, int]
+    ) -> tuple[list[int], list[int]]:
+        if _MonaiCropForeground is not None:
+            crop = _MonaiCropForeground(
+                select_fn=lambda values: values > threshold,
+                margin=self.margin,
+                allow_smaller=True,
+                return_coords=True,
+            )
+            _cropped, starts, ends = crop(image)
+            lo = [int(value) for value in starts]
+            hi = [int(value) for value in ends]
+            if all(end > start for start, end in zip(lo, hi, strict=True)):
+                return lo, hi
+            return [0, 0, 0], [int(d) for d in shape]
+
+        foreground = (image > threshold).any(dim=0)
         if bool(foreground.any()):
             coords = foreground.nonzero()
             lo = [max(0, int(coords[:, axis].min()) - self.margin) for axis in range(3)]
             hi = [min(shape[axis], int(coords[:, axis].max()) + self.margin + 1) for axis in range(3)]
-        else:
-            lo, hi = [0, 0, 0], [int(d) for d in shape]
+            return lo, hi
+        return [0, 0, 0], [int(d) for d in shape]
+
+    def apply(self, data: TransformData, ctx: TransformContext | None) -> TransformData:
+        spatial = _require_volume(data, self.name)
+        threshold = self._foreground_threshold(data.image)
+        shape = data.spatial_shape
+        lo, hi = self._foreground_bounds(data.image, threshold, (int(shape[0]), int(shape[1]), int(shape[2])))
         box: tuple[slice, slice, slice] = (slice(lo[0], hi[0]), slice(lo[1], hi[1]), slice(lo[2], hi[2]))
         crop_index: tuple[EllipsisType, slice, slice, slice] = (Ellipsis, box[0], box[1], box[2])
 

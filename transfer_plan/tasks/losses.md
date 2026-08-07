@@ -14,41 +14,50 @@ empty-target/prediction cases per the repo's semantics, and (d) stay dtype-trans
 and dtype-agnostic on the *kernel*, but they do **not** take a per-sample `valid_mask` and
 their empty-case defaults differ.
 
-- [ ] `_masked_reduce` / `_broadcast_class_weight` / `_validate_reduction` → **keep** — the
+- [x] `_masked_reduce` / `_broadcast_class_weight` / `_validate_reduction` → **keep** — the
       mask-aware reduction IS the value-add; leaving it custom is correct.
-- [ ] `BinaryCrossEntropyWithLogitsLoss` → **keep** — it already calls `nn.functional.binary_cross_entropy_with_logits`;
-      the wrapper only adds masked reduction. No transfer needed.
-- [ ] `CrossEntropyClassificationLoss` → **keep** — same: delegates to `nn.functional.cross_entropy`.
-- [ ] `FocalLoss` → **partial** — MONAI `monai.losses.FocalLoss(gamma, alpha, use_softmax)`
-      exists (verified). Adopt only if a parity test confirms identical alpha/gamma/reduction
-      math on float32 & float16 logits and identical empty-class behavior. Caveat: MONAI's
-      reduction is a plain mean (no valid_mask); keep our `_masked_reduce` wrapper around the
-      delegated kernel. Otherwise **keep**.
-- [ ] `AsymmetricMultilabelLoss` → **keep** — asymmetric focal variant not in MONAI's public
+- [x] `BinaryCrossEntropyWithLogitsLoss` → **keep** — it already calls
+      `nn.functional.binary_cross_entropy_with_logits`; the wrapper only adds masked
+      reduction. No transfer needed.
+- [x] `CrossEntropyClassificationLoss` → **keep** — same: delegates to
+      `nn.functional.cross_entropy`.
+- [x] `FocalLoss` → **keep** — MONAI's softmax focal applies channel-wise focal
+      weighting and class-balanced alpha rather than this wrapper's CE focal contract;
+      measured drift is 0.801864 (float32) and 0.779766 (float16), and MONAI returns
+      float32 for float16 input.
+- [x] `AsymmetricMultilabelLoss` → **keep** — asymmetric focal variant not in MONAI's public
       API; bespoke, keep.
-- [ ] `OrdinalCumulativeLinkLoss` → **keep** — no library equivalent.
-- [ ] `DiceLoss` / `dice_loss` (soft Dice, empty→perfect) → **partial** — MONAI
-      `monai.losses.DiceLoss(include_background, smooth_nr, smooth_dr, reduction)` is the
-      mature reference. **Semantic gap**: this repo treats `empty target/prediction as a
-      perfect class`; MONAI's empty-case behavior must be checked. Keep the empty-class branch
-      custom, delegate the non-empty Dice kernel, and gate with a parity test
-      (float32 + float16). If drift: keep and record.
-- [ ] `DiceCELoss` / `DiceBCELoss` → **partial** — MONAI `DiceCELoss(include_background,
-      sigmoid/softmax, lambda_dice, lambda_ce, label_smoothing)` matches the composition;
-      `DiceBCELoss` maps to `DiceCELoss(sigmoid=True)` or a manual dice+BCE pairing. Same
-      empty-case + masked-reduction caveats as DiceLoss.
-- [ ] `TverskyLoss` → **partial** — MONAI `monai.losses.TverskyLoss(include_background,
-      sigmoid/softmax, alpha, beta, reduction)` is verified; adopt with parity test (ours
-      defaults alpha=beta=0.5). Empty-case + masked-reduce caveats apply.
-- [ ] `BoundaryLoss` → **keep** — local finite-difference boundary surrogate; no MONAI
+- [x] `OrdinalCumulativeLinkLoss` → **keep** — no library equivalent.
+- [x] `DiceLoss` / `dice_loss` (soft Dice, empty→perfect) → **keep** — MONAI matches the
+      float32 kernel exactly with `smooth_nr=smooth_dr=1`, but float16 drifts by
+      0.00048828125 (above the parity tolerance); retaining FP32 accumulation,
+      empty handling, and masked semantics is required.
+- [x] `DiceCELoss` / `DiceBCELoss` → **keep** — MONAI's compositions use a fixed
+      `1e-5` smoothing contract and differ from ours by 0.052701/0.019297 in float32
+      (0.050781/0.019531 in float16), respectively.
+- [x] `TverskyLoss` → **keep** — MONAI matches the float32 kernel, but float16 drifts
+      by 0.00048828125; preserving dtype-transparent output and masked/empty behavior
+      takes precedence.
+- [x] `BoundaryLoss` → **keep** — local finite-difference boundary surrogate; no MONAI
       equivalent in the installed API surface.
-- [ ] `DeepSupervisionLoss` → **partial** — MONAI `monai.losses.DeepSupervisionLoss` exists
-      (verified) but assumes its own spatial weights contract; ours takes explicit
-      per-level weights. Keep unless parity on `tests/phase_11/test_heads_and_losses.py` holds.
-- [ ] `FocalSegmentationLoss` → **partial** — thin wrapper over `FocalLoss`; inherits its verdict.
-- [ ] Functional aliases (`binary_cross_entropy_with_logits`, `cross_entropy`, `focal_loss`,
+- [x] `DeepSupervisionLoss` → **keep** — MONAI's implementation does not preserve our
+      explicit per-level weighting, mask forwarding, resizing contract, or float16 output.
+- [x] `FocalSegmentationLoss` → **keep** — inherits `FocalLoss`'s non-parity and dtype
+      mismatch with MONAI.
+- [x] Functional aliases (`binary_cross_entropy_with_logits`, `cross_entropy`, `focal_loss`,
       `dice_ce_loss`, `dice_bce_loss`, ...) → **keep** — stable config-facing surface; bodies
       forward to the classes above.
+
+## Result
+
+- Verdicts: all checklist items are `keep`; no MONAI transfer was safe under the
+  float32 + float16 parity, empty-case, mask-aware reduction, and dtype-transparency
+  requirements.
+- Parity measurements (MONAI configured with equivalent available options): Focal
+  drift 0.801864/0.779766 (float32/float16); Dice 0/0.00048828125; DiceCE
+  0.052701/0.050781; DiceBCE 0.019297/0.019531; Tversky 0/0.00048828125.
+- Files changed: `tests/phase_11/test_parity_losses.py` and this checklist.
+- Validation: `uv run --frozen pytest tests/phase_11/test_parity_losses.py` (7 passed).
 
 ## Tests
 `tests/phase_11/test_heads_and_losses.py`, `tests/phase_11/test_segmentation.py`,

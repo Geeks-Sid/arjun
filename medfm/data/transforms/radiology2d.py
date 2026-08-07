@@ -44,6 +44,7 @@ from typing import Any
 
 import torch
 import torch.nn.functional as F
+from torchvision.transforms import functional as TVF  # type: ignore[import-untyped]
 
 from medfm.data.errors import TransformError
 from medfm.data.transforms.base import (
@@ -616,11 +617,11 @@ class RandomFlip2D(Transform):
         if self.allow_horizontal:
             flipped_horizontal = bool(torch.rand((), generator=context.rng) < self.p)
             if flipped_horizontal:
-                image = torch.flip(image, dims=(-1,))
+                image = TVF.hflip(image)
         if self.allow_vertical:
             flipped_vertical = bool(torch.rand((), generator=context.rng) < self.p)
             if flipped_vertical:
-                image = torch.flip(image, dims=(-2,))
+                image = TVF.vflip(image)
         data.image = image
         data.record(
             self.name,

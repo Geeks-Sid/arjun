@@ -131,7 +131,28 @@ class WindowChannels(Transform):
                 f"WindowChannels expects a single-channel [1, D, H, W] HU volume; got shape {tuple(data.image.shape)}"
             )
         hu = data.image[0]
-        channels = [((hu - (center - width / 2.0)) / width).clamp(0.0, 1.0) for center, width in self.windows]
+        try:
+            from monai.transforms import ScaleIntensityRange  # type: ignore[attr-defined]
+        except ImportError:
+            # MONAI is an optional medical extra; preserve the native torch
+            # kernel when that extra is not installed.
+            channels: list[torch.Tensor] = [
+                ((hu - (center - width / 2.0)) / width).clamp(0.0, 1.0) for center, width in self.windows
+            ]
+        else:
+            channels = [
+                torch.as_tensor(
+                    ScaleIntensityRange(
+                        a_min=center - width / 2.0,
+                        a_max=center + width / 2.0,
+                        b_min=0.0,
+                        b_max=1.0,
+                        clip=True,
+                        dtype=hu.dtype,  # type: ignore[arg-type]
+                    )(hu)
+                )
+                for center, width in self.windows
+            ]
         data.image = torch.stack(channels, dim=0).contiguous()
         data.record(self.name, self.stage, {"windows": [[c, w] for c, w in self.windows]})
         return data

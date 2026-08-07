@@ -557,6 +557,39 @@ def _surface_distances(source: NDArray[Any], target: NDArray[Any], spacing: tupl
     return np.asarray(distance[source_surface], dtype=np.float64)
 
 
+def _monai_spatial_summary(
+    pred: NDArray[Any], truth: NDArray[Any], spacing: tuple[float, ...], tolerance_mm: float
+) -> tuple[float, float, float]:
+    """Compute non-empty surface metrics with MONAI's physical-space kernels."""
+    from monai.metrics.hausdorff_distance import HausdorffDistanceMetric
+    from monai.metrics.surface_dice import SurfaceDiceMetric
+    from monai.metrics.surface_distance import SurfaceDistanceMetric
+
+    pred_tensor = torch.as_tensor(pred, dtype=torch.bool).unsqueeze(0).unsqueeze(0)
+    truth_tensor = torch.as_tensor(truth, dtype=torch.bool).unsqueeze(0).unsqueeze(0)
+    hd95_raw = HausdorffDistanceMetric(percentile=95.0, directed=False, include_background=False, reduction="mean")(
+        pred_tensor, truth_tensor, spacing=spacing
+    )
+    assd_raw = SurfaceDistanceMetric(
+        symmetric=True, include_background=False, distance_metric="euclidean", reduction="mean"
+    )(pred_tensor, truth_tensor, spacing=spacing)
+    surface_raw = SurfaceDiceMetric(
+        class_thresholds=[float(tolerance_mm)],
+        include_background=False,
+        distance_metric="euclidean",
+        reduction="mean",
+    )(pred_tensor, truth_tensor, spacing=spacing)
+
+    def _repo_value(raw: Any) -> float:
+        value = float(_tensor(raw).reshape(-1)[0])
+        # Empty masks are handled before this helper.  MONAI's NaN/inf
+        # sentinel therefore maps to the finite repo fallback for non-empty
+        # inputs rather than leaking into MetricValue aggregation.
+        return value if math.isfinite(value) else 0.0
+
+    return _repo_value(hd95_raw), _repo_value(assd_raw), _repo_value(surface_raw)
+
+
 def _spatial_summary(
     pred: NDArray[Any], truth: NDArray[Any], spacing: tuple[float, ...], tolerance_mm: float
 ) -> dict[str, float | None | str]:
@@ -580,14 +613,7 @@ def _spatial_summary(
     else:
         dice = 2.0 * intersection / (pred_count + truth_count)
         iou = intersection / union if union else 1.0
-        forward = _surface_distances(pred, truth, spacing)
-        backward = _surface_distances(truth, pred, spacing)
-        both = np.concatenate((forward, backward))
-        surface = (
-            float(np.mean(np.concatenate((forward <= tolerance_mm, backward <= tolerance_mm)))) if both.size else 0.0
-        )
-        hd95 = float(np.quantile(both, 0.95)) if both.size else 0.0
-        assd = float(np.mean(both)) if both.size else 0.0
+        hd95, assd, surface = _monai_spatial_summary(pred, truth, spacing, tolerance_mm)
         empty_case = "neither_empty"
     return {
         "dice": dice,
