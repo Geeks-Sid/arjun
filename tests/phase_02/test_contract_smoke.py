@@ -7,13 +7,6 @@ Run directly via the phase smoke command:
 from dataclasses import replace
 
 import torch
-from contract_fixtures import (
-    DummyLanguageModelAdapter,
-    DummyTaskModule,
-    DummyVisualEncoder,
-    make_batch,
-    make_sample,
-)
 
 from medfm.core import (
     BucketId,
@@ -29,6 +22,13 @@ from medfm.core import (
     VisualEncoder,
     canonical_json,
     config_hash,
+)
+from phase_02.contract_fixtures import (
+    DummyLanguageModelAdapter,
+    DummyTaskModule,
+    DummyVisualEncoder,
+    make_batch,
+    make_sample,
 )
 
 

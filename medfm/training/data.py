@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Iterator, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, replace
 from typing import Any
 
 import torch
@@ -92,6 +92,7 @@ class DeterministicDistributedSampler(Sampler[int]):
             raise DataExecutionError("sampler checkpoint epoch must be >= 0")
         self.epoch = epoch
 
+
 @dataclass(frozen=True)
 class ShapeBucket:
     name: str
@@ -155,7 +156,11 @@ class ShapeBucketPlan:
                     result.append(ShapeBucket(f"{prefix}_{index}", tuple(int(d) for d in value), prefix))
             return tuple(result)
 
-        return cls(train=parse(raw.get("train"), "train"), validation=parse(raw.get("validation"), "validation"), max_buckets=max_buckets)
+        return cls(
+            train=parse(raw.get("train"), "train"),
+            validation=parse(raw.get("validation"), "validation"),
+            max_buckets=max_buckets,
+        )
 
     def all(self) -> tuple[ShapeBucket, ...]:
         return (*self.train, *self.validation)

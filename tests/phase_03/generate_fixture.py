@@ -19,9 +19,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from synthetic import build_mixed_manifest  # noqa: E402
-
 from medfm.data.manifests.io import write_manifest  # noqa: E402
+from phase_03.synthetic import build_mixed_manifest  # noqa: E402
 
 FIXTURE_PATH = REPO_ROOT / "tests" / "fixtures" / "manifests" / "mixed_synthetic.parquet"
 

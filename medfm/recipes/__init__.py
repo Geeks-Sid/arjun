@@ -1,5 +1,29 @@
 """Recipe-owned builders for reproducible training configurations."""
 
+from medfm.recipes.pathology_stitching import (
+    COORDINATE_SYSTEM,
+    EVIDENCE_SCHEMA_VERSION,
+    StitchedSlide,
+    TilePrediction,
+    evidence_json_is_valid,
+    evidence_payload,
+    evidence_tiles_from_scores,
+    evidence_tiles_to_json,
+    extract_evidence_tiles,
+    make_evidence_tiles,
+    map_evidence_coordinates,
+    map_normalized_coordinates,
+    map_normalized_coordinates_to_wsi,
+    normalize_level0_geometry,
+    normalized_to_level0_geometry,
+    serialize_evidence_json,
+    stitch_predictions,
+    stitch_tile_predictions,
+    stitch_wsi_predictions,
+    validate_evidence_json,
+    validate_evidence_tiles,
+    write_evidence_json,
+)
 from medfm.recipes.phase13 import (
     PHASE13_RECIPE_VERSION,
     RecipeBuild,
@@ -42,31 +66,6 @@ from medfm.recipes.phase15 import (
     slide_segmentation_metrics,
     tile_segmentation_metrics,
 )
-from medfm.recipes.pathology_stitching import (
-    COORDINATE_SYSTEM,
-    EVIDENCE_SCHEMA_VERSION,
-    StitchedSlide,
-    TilePrediction,
-    evidence_json_is_valid,
-    evidence_payload,
-    evidence_tiles_from_scores,
-    evidence_tiles_to_json,
-    extract_evidence_tiles,
-    make_evidence_tiles,
-    map_evidence_coordinates,
-    map_normalized_coordinates,
-    map_normalized_coordinates_to_wsi,
-    normalize_level0_geometry,
-    normalized_to_level0_geometry,
-    serialize_evidence_json,
-    stitch_predictions,
-    stitch_tile_predictions,
-    stitch_wsi_predictions,
-    validate_evidence_json,
-    validate_evidence_tiles,
-    write_evidence_json,
-)
-
 
 __all__ = [
     "PHASE13_RECIPE_VERSION",

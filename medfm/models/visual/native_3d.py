@@ -494,6 +494,7 @@ class GenericMONAI3DAdapter(nn.Module):
 
     def lora_target_patterns(self) -> tuple[str, ...]:
         return self._lora_targets
+
     def lora_target_specs(self) -> tuple[LoraTargetSpec, ...]:
         return tuple(
             LoraTargetSpec(
@@ -659,6 +660,7 @@ class GenericMONAI3DAdapter(nn.Module):
         if device is not None:
             adapter.to(device)
         return adapter
+
     def export_adapter_checkpoint(self, directory: str | Path) -> Path:
         if not re.fullmatch(r"[0-9a-f]{40,64}", self._revision):
             raise Native3DCheckpointError(

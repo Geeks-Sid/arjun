@@ -1,16 +1,16 @@
 """LoRA injection and gradient-scoping tests across all 2D adapter families."""
 
-import torch
 import pytest
+import torch
 
 from medfm.core.batch import MedicalBatch
 from medfm.core.encoder import OutputSpec
 from medfm.core.errors import UnsupportedCapabilityError
 from medfm.models.visual.base import LinearHead, LoRAGateError
+from medfm.models.visual.hoptimus0 import HOptimus0Adapter
 from medfm.models.visual.medgemma_vision import MedGemmaVisionAdapter
 from medfm.models.visual.medsiglip import MEDSIGLIP_LORA_VISION, MedSigLIPAdapter
 from medfm.models.visual.raddino import RADDINOAdapter
-from medfm.models.visual.hoptimus0 import HOptimus0Adapter
 
 
 def _batch(adapter, n=2):

@@ -1,7 +1,6 @@
 """MedicalSample construction, modality/task validation, and round-trips."""
 
 import pytest
-from contract_fixtures import HASH64, make_provenance, make_sample, make_spatial
 
 from medfm.core import (
     BoxTarget,
@@ -16,6 +15,7 @@ from medfm.core import (
     SegmentationTarget,
     TaskType,
 )
+from phase_02.contract_fixtures import HASH64, make_provenance, make_sample, make_spatial
 
 ALL_MODALITIES = tuple(Modality)
 

@@ -10,7 +10,6 @@ import torch
 from torch import nn
 
 from medfm.core.batch import MedicalBatch
-from medfm.core.enums import Modality, TaskType
 from medfm.core.errors import ShapeContractError
 from medfm.core.task import LossOutput, TaskModule
 
@@ -33,8 +32,7 @@ class TrainingStep(ABC):
         self.last_model_output: Any | None = None
 
     @abstractmethod
-    def forward_and_loss(self, model: nn.Module, batch: MedicalBatch) -> LossOutput:
-        ...
+    def forward_and_loss(self, model: nn.Module, batch: MedicalBatch) -> LossOutput: ...
 
     def forward_model(self, model: nn.Module, batch: MedicalBatch) -> Any:
         return invoke_model(model, batch, forward=self.model_forward)
@@ -50,9 +48,7 @@ class TrainingStep(ABC):
             name: component.float() if component.dtype in (torch.float16, torch.bfloat16) else component
             for name, component in value.components.items()
         }
-        components_changed = any(
-            components[name] is not value.components[name] for name in components
-        )
+        components_changed = any(components[name] is not value.components[name] for name in components)
         if total is value.total and not components_changed:
             return value
         return LossOutput(
@@ -68,6 +64,7 @@ class TaskTrainingStep(TrainingStep):
     """Generic task adapter used by custom recipe modules."""
 
     task_family = "task"
+
     def forward_and_loss(self, model: nn.Module, batch: MedicalBatch) -> LossOutput:
         output = self.forward_model(model, batch)
         self.last_model_output = output
@@ -147,7 +144,13 @@ def make_training_step(
 ) -> TrainingStep:
     """Select a task-step family without embedding recipe model choices."""
     selected = (family or _task_name(task)).lower()
-    if selected in {"classification", "binary_classification", "multiclass_classification", "multilabel_classification", "ordinal_classification"}:
+    if selected in {
+        "classification",
+        "binary_classification",
+        "multiclass_classification",
+        "multilabel_classification",
+        "ordinal_classification",
+    }:
         return ClassificationTrainingStep(task, model_forward=model_forward)
     if "segmentation" in selected:
         return SegmentationTrainingStep(task, model_forward=model_forward)

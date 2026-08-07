@@ -5,13 +5,12 @@ from dataclasses import replace
 import pytest
 import torch
 
-from medfm.training.checkpoint import CheckpointManager, IncompleteCheckpointError
+from medfm.training.checkpoint import IncompleteCheckpointError
 from medfm.training.config import FreezeStageConfig
 from medfm.training.memory import CUDA_OOM_SUGGESTIONS, CompilationMonitor, TpuMemoryPlanner, diagnose_oom
 from medfm.training.optimizer import build_optimizer
 from medfm.training.steps import ClassificationTrainingStep
 from medfm.training.trainer import Trainer
-from medfm.training.tracking import LocalJSONTracker
 
 
 class TinyClassifier(torch.nn.Module):
@@ -23,7 +22,6 @@ class TinyClassifier(torch.nn.Module):
     def forward(self, batch):
         values = batch.pixel_values.flatten(1).mean(dim=1, keepdim=True)
         return {"logits": self.classifier(torch.tanh(self.bridge(values)))}
-
 
 
 def _trainer(tiny_config, tiny_batch, tiny_task, *, steps: int = 1, accumulation: int = 1) -> Trainer:
@@ -64,7 +62,9 @@ def test_freeze_schedule_keeps_classifier_frozen_at_boundary(tiny_config, tiny_b
     model = TinyClassifier()
     classifier_before = model.classifier.weight.detach().clone()
     optimizer = build_optimizer(model, config.optimizer, backend="cpu")
-    trainer = Trainer(model, optimizer, tiny_task, [tiny_batch], config, training_step=ClassificationTrainingStep(tiny_task))
+    trainer = Trainer(
+        model, optimizer, tiny_task, [tiny_batch], config, training_step=ClassificationTrainingStep(tiny_task)
+    )
     trainer.train()
     assert torch.equal(classifier_before, model.classifier.weight.detach())
 
@@ -108,9 +108,7 @@ def test_adapter_export_is_cpu_safetensors(tmp_path, tiny_config, tiny_batch, ti
     assert trainer.checkpoint_manager.inspect(exported).kind == "adapter_only"
 
 
-def test_resuming_completed_checkpoint_is_a_noop(
-    tiny_config, tiny_batch, tiny_task
-) -> None:
+def test_resuming_completed_checkpoint_is_a_noop(tiny_config, tiny_batch, tiny_task) -> None:
     first = _trainer(tiny_config, tiny_batch, tiny_task, steps=1)
     completed = first.train()
     assert completed.success

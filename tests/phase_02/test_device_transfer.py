@@ -6,10 +6,10 @@ CPU coverage lives in test_batch.py; these run only on guarded runners
 
 import pytest
 import torch
-from contract_fixtures import make_spatial
 
 from medfm.core import MedicalBatch, Modality
 from medfm.core.serialization import materialize_cpu
+from phase_02.contract_fixtures import make_spatial
 
 
 def _assert_transfer_preserves_metadata(batch: MedicalBatch, device: torch.device) -> None:

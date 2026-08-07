@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from synthetic import manifest_row, write_nifti, write_pyramid_tiff
 
 from medfm.core.enums import Modality, SplitName, TaskType
 from medfm.data.readers.base import sample_from_manifest_row
 from medfm.data.readers.pathology import TiffSlideReader
 from medfm.data.readers.radiology import NiftiReader
+from phase_03.synthetic import manifest_row, write_nifti, write_pyramid_tiff
 
 
 def test_volumetric_row_builds_contract_sample(tmp_path: Path) -> None:

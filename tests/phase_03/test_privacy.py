@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from synthetic import hid, manifest_row, write_dicom_series
 
 from medfm.data.errors import ManifestError, SplitLeakageError, UnsupportedFormatError
 from medfm.data.manifests.schema import validate_manifest
 from medfm.data.readers.dicom import DICOMSeriesReader, discover_dicom_series
 from medfm.data.splits import SplitPolicy, assert_no_split_leakage, generate_split_assignment
+from phase_03.synthetic import hid, manifest_row, write_dicom_series
 
 RAW_MRN = "MRN-0009182736"
 RAW_UID = "1.2.840.113619.2.55.3.604688"

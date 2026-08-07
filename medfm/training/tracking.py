@@ -11,7 +11,6 @@ All trackers redact configured sensitive keys before anything is written.
 from __future__ import annotations
 
 import json
-import math
 import time
 import traceback
 from pathlib import Path
@@ -92,8 +91,7 @@ def assert_finite_gradients(model: torch.nn.Module, *, step: int | None = None) 
     report = gradient_finite_report(model)
     if report["nonfinite_gradient_names"]:
         raise NonFiniteTrainingError(
-            f"non-finite gradients at step {step}: "
-            + ", ".join(report["nonfinite_gradient_names"][:8])
+            f"non-finite gradients at step {step}: " + ", ".join(report["nonfinite_gradient_names"][:8])
         )
     return report
 

@@ -6,7 +6,7 @@ import importlib.util
 import math
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import torch
@@ -110,9 +110,7 @@ class GradientAudit:
 
     def assert_valid(self, *, require_all_gradients: bool = False) -> None:
         if self.nonfinite_gradient_names:
-            raise TrainabilityAuditError(
-                "non-finite gradients: " + ", ".join(self.nonfinite_gradient_names[:8])
-            )
+            raise TrainabilityAuditError("non-finite gradients: " + ", ".join(self.nonfinite_gradient_names[:8]))
         if require_all_gradients and self.missing_gradient_names:
             raise TrainabilityAuditError(
                 "trainable parameters did not receive gradients: " + ", ".join(self.missing_gradient_names[:8])
@@ -250,7 +248,9 @@ def build_parameter_groups(
     return parameter_groups, tuple(infos), roles
 
 
-def _make_optimizer(parameter_groups: list[dict[str, Any]], config: OptimizerConfig, *, backend: str) -> torch.optim.Optimizer:
+def _make_optimizer(
+    parameter_groups: list[dict[str, Any]], config: OptimizerConfig, *, backend: str
+) -> torch.optim.Optimizer:
     if config.use_8bit:
         if backend != "cuda":
             raise OptimizerConfigurationError("8-bit optimizer state is supported only on CUDA")
@@ -278,7 +278,9 @@ def _make_optimizer(parameter_groups: list[dict[str, Any]], config: OptimizerCon
         raise
 
 
-def _make_scheduler(optimizer: torch.optim.Optimizer, config: OptimizerConfig) -> torch.optim.lr_scheduler.LRScheduler | None:
+def _make_scheduler(
+    optimizer: torch.optim.Optimizer, config: OptimizerConfig
+) -> torch.optim.lr_scheduler.LRScheduler | None:
     if config.warmup_steps <= 0 and config.total_steps is None:
         return None
     warmup = config.warmup_steps
@@ -314,8 +316,11 @@ def build_optimizer(
     scheduler = _make_scheduler(optimizer, resolved)
     return OptimizerBundle(optimizer, scheduler, infos, roles, resolved)
 
+
 def _enable_module(module: nn.Module) -> None:
     module.requires_grad_(True)
+
+
 def apply_freeze_schedule(
     model: nn.Module,
     schedule: FreezeSchedule | Iterable[FreezeStageConfig],
@@ -384,7 +389,9 @@ def audit_trainable_parameters(
         )
     return {
         "trainable_names": trainable,
-        "trainable_parameters": sum(int(parameter.numel()) for _, parameter in _named_parameters(model, components) if parameter.requires_grad),
+        "trainable_parameters": sum(
+            int(parameter.numel()) for _, parameter in _named_parameters(model, components) if parameter.requires_grad
+        ),
         "roles": roles,
         "counts": dict(counts),
         "quantized_trainable_names": quantized,

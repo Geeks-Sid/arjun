@@ -7,11 +7,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from synthetic import write_mha, write_nifti, write_numpy_volume, write_png
 
 from medfm.data.errors import ReaderError, UnsupportedFormatError
 from medfm.data.readers.base import reader_for_path, resolve_local_path
 from medfm.data.readers.radiology import MHAReader, NiftiReader, NumpyVolumeReader, PngJpegReader
+from phase_03.synthetic import write_mha, write_nifti, write_numpy_volume, write_png
 
 
 def test_nifti_preserves_affine_spacing_dtype_orientation(tmp_path: Path) -> None:

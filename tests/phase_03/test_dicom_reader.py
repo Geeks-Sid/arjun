@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from synthetic import write_dicom_series
 
 from medfm.data.errors import ReaderError, UnsupportedFormatError
 from medfm.data.readers.dicom import DICOMSeriesReader, discover_dicom_series
+from phase_03.synthetic import write_dicom_series
 
 
 @pytest.fixture()

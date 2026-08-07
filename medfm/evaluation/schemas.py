@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +24,7 @@ class EvaluationSchemaError(ValueError):
     """Raised when an evaluation record violates a schema invariant."""
 
 
-class ClinicalUnit(str, Enum):
+class ClinicalUnit(StrEnum):
     """Allowed aggregation units for clinical evaluation."""
 
     PATIENT = "patient"
@@ -50,7 +50,7 @@ class ClinicalUnit(str, Enum):
         return f"per_{self.value}"
 
 
-class EvaluationSplit(str, Enum):
+class EvaluationSplit(StrEnum):
     TRAIN = "train"
     VALIDATION = "validation"
     TEST = "test"

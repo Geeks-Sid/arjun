@@ -1,7 +1,7 @@
 """Checkpoint save/load round-trip tests (full and adapter-only, ADR 0006)."""
 
-import torch
 import pytest
+import torch
 
 from medfm.core.batch import MedicalBatch
 from medfm.core.encoder import OutputSpec

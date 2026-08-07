@@ -1,10 +1,10 @@
 """Spatial/pathology metadata serialization round-trips (must be lossless)."""
 
 import torch
-from contract_fixtures import make_pathology, make_spatial
 
 from medfm.core import PathologyMetadata, SpatialMetadata, canonical_json, config_hash
 from medfm.core.serialization import canonical_yaml
+from phase_02.contract_fixtures import make_pathology, make_spatial
 
 
 def test_spatial_metadata_roundtrip_lossless():

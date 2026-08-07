@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from synthetic import hid, manifest_row
 
 from medfm.data.errors import DataError
 from medfm.data.samplers import (
@@ -14,6 +13,7 @@ from medfm.data.samplers import (
     resolve_samples_before_collective,
     worker_seed,
 )
+from phase_03.synthetic import hid, manifest_row
 
 
 def _frame(patients: int = 9, samples_per_patient: int = 3) -> pd.DataFrame:

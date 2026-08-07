@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from synthetic import write_embedding_store, write_pyramid_tiff, write_tile_store
 
 from medfm.data.errors import ReaderError, UnsupportedFormatError
 from medfm.data.readers.pathology import (
@@ -19,6 +18,7 @@ from medfm.data.readers.pathology import (
     convert_level_coords,
     validate_level_coords,
 )
+from phase_03.synthetic import write_embedding_store, write_pyramid_tiff, write_tile_store
 
 
 @pytest.fixture()

@@ -50,7 +50,7 @@ def _build_inspection_model(model_id: str) -> tuple[Any, str]:
         spec = ModelRegistry.get(model_id)
         plugin = get_plugin(spec.model_id)
         if plugin is not None:
-            return plugin.build(spec), spec.model_id
+            return plugin.build(spec), model_id
     except Exception:
         # The inspection command remains useful for an unregistered local
         # family; unknown architecture errors below still fail closed.

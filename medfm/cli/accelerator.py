@@ -68,6 +68,8 @@ def validate_model(args: argparse.Namespace) -> int:
             f"validate-model OK: {result.model_id}@{result.revision} "
             f"on {result.backend} ({loading_mode.value}): {result.detail}"
         )
+    return 0
+
 
 def _run_tiny(config: RunConfig, backend: str, *, max_steps: int = 1) -> Any:
     from medfm.cli.train import tiny_builders

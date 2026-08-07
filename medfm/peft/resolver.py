@@ -174,6 +174,8 @@ def available_target_policies() -> tuple[str, ...]:
 def _normalise_regex(pattern: str) -> str:
     """Accept legacy raw strings containing doubled regex separators."""
     return pattern.replace(r"\\.", r"\.").replace(r"\\d", r"\d")
+
+
 def _matches(pattern: str, name: str) -> bool:
     normalized = _normalise_regex(pattern)
     # Literal target names are module paths, not substring regexes: matching
@@ -234,9 +236,7 @@ def _policy_for(model: nn.Module, architecture: str | None, *, confirm_unknown: 
 
 def _stage_index(name: str) -> int | None:
     # Covers HF Swin stages, native blocks, and TransformerEncoder layers.
-    matches = re.findall(
-        _normalise_regex(r"(?:^|\.)(?:blocks|stages|layers)(?:\.layers)?\.(\d+)(?:\.|$)"), name
-    )
+    matches = re.findall(_normalise_regex(r"(?:^|\.)(?:blocks|stages|layers)(?:\.layers)?\.(\d+)(?:\.|$)"), name)
     if not matches:
         return None
     return int(matches[-1])
@@ -333,9 +333,11 @@ def inspect_modules(
     if not isinstance(model, nn.Module):
         raise TargetResolutionError(f"model must be torch.nn.Module, got {type(model).__name__}")
     resolved_architecture = _architecture_from_model(model, architecture)
-    explicit_confirmation = bool(
-        config.confirm_target_modules if config is not None else False
-    ) if confirm_unknown is None else bool(confirm_unknown)
+    explicit_confirmation = (
+        bool(config.confirm_target_modules if config is not None else False)
+        if confirm_unknown is None
+        else bool(confirm_unknown)
+    )
     policy = _policy_for(model, architecture, confirm_unknown=explicit_confirmation)
     explicit_patterns: tuple[str, ...] | None = None
     selected_policy = TargetPolicy.ARCHITECTURE_DEFAULT.value

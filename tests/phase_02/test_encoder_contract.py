@@ -2,7 +2,6 @@
 
 import pytest
 import torch
-from contract_fixtures import DummyVisualEncoder, PoolingOnlyEncoder, make_batch
 
 from medfm.core import (
     CoordinateSystem,
@@ -15,6 +14,7 @@ from medfm.core import (
     UnsupportedModalityError,
     VisualEncoder,
 )
+from phase_02.contract_fixtures import DummyVisualEncoder, PoolingOnlyEncoder, make_batch
 
 
 def test_dummy_encoder_conforms_to_protocol():

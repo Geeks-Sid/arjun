@@ -2,7 +2,6 @@
 
 import pytest
 import torch
-from contract_fixtures import make_batch, make_sample, make_spatial
 
 from medfm.core import (
     Modality,
@@ -20,6 +19,7 @@ from medfm.core import (
 )
 from medfm.core.errors import SchemaVersionError
 from medfm.core.sample import MedicalSample, SpatialMetadata
+from phase_02.contract_fixtures import make_batch, make_sample, make_spatial
 
 
 def test_canonical_json_deterministic_regardless_of_key_order():

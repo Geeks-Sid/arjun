@@ -1,12 +1,13 @@
 """RAD-DINO and MedSigLIP specific tests."""
 
-import torch
 import pytest
+import torch
+
 from medfm.core.batch import MedicalBatch
 from medfm.core.encoder import OutputSpec
 from medfm.core.enums import Modality
-from medfm.models.visual.raddino import RADDINOAdapter, RADDINO_PREPROCESS
-from medfm.models.visual.medsiglip import MedSigLIPAdapter, MEDSIGLIP_PREPROCESS, MEDSIGLIP_LORA_VISION
+from medfm.models.visual.medsiglip import MEDSIGLIP_LORA_VISION, MEDSIGLIP_PREPROCESS, MedSigLIPAdapter
+from medfm.models.visual.raddino import RADDINO_PREPROCESS, RADDINOAdapter
 
 
 # ---- RAD-DINO ----

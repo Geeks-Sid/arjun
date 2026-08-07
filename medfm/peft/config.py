@@ -66,9 +66,7 @@ def normalize_backend(backend: str | BackendKind) -> BackendKind:
         return BackendKind.XLA_TPU
     if value in _CPU_BACKENDS:
         return BackendKind.CPU
-    raise BackendCapabilityError(
-        f"unknown PEFT backend {backend!r}; expected cpu, cuda/cuda_single, or xla_tpu/tpu_*"
-    )
+    raise BackendCapabilityError(f"unknown PEFT backend {backend!r}; expected cpu, cuda/cuda_single, or xla_tpu/tpu_*")
 
 
 def _dtype_name(value: str | torch.dtype) -> str:
@@ -89,9 +87,7 @@ def _dtype_name(value: str | torch.dtype) -> str:
     try:
         return aliases[normalized]
     except KeyError as exc:
-        raise PeftConfigError(
-            f"unsupported compute dtype {value!r}; expected bfloat16, float16, or float32"
-        ) from exc
+        raise PeftConfigError(f"unsupported compute dtype {value!r}; expected bfloat16, float16, or float32") from exc
 
 
 @dataclass(frozen=True)
@@ -290,9 +286,7 @@ class QuantizationConfig:
                 raise PeftConfigError("bitsandbytes NF4 cannot be marked experimental XLA quantization")
         elif method == QuantizationMethod.EXPERIMENTAL_XLA.value:
             if not self.experimental_xla_quantization:
-                raise PeftConfigError(
-                    "experimental_xla quantization requires experimental_xla_quantization=true"
-                )
+                raise PeftConfigError("experimental_xla quantization requires experimental_xla_quantization=true")
             if self.load_in_4bit:
                 raise PeftConfigError("experimental XLA quantization cannot use bitsandbytes load_in_4bit")
 
@@ -381,8 +375,7 @@ def validate_backend_combination(
     if quantization.is_qlora:
         if selected_backend is not BackendKind.CUDA:
             raise UnsupportedQuantizationError(
-                "bitsandbytes NF4 QLoRA is CUDA-only; TPU uses first-class BF16 LoRA "
-                "and is never labeled TPU QLoRA"
+                "bitsandbytes NF4 QLoRA is CUDA-only; TPU uses first-class BF16 LoRA and is never labeled TPU QLoRA"
             )
         if family is not None and family not in {"language", "llm", "vlm", "causal_lm"}:
             raise UnsupportedQuantizationError(
@@ -395,8 +388,7 @@ def validate_backend_combination(
                 import bitsandbytes  # noqa: F401
             except ImportError as exc:
                 raise QuantizationCapabilityError(
-                    "NF4 QLoRA requires bitsandbytes; install the CUDA extra (medfm[cuda]) "
-                    "before loading the model"
+                    "NF4 QLoRA requires bitsandbytes; install the CUDA extra (medfm[cuda]) before loading the model"
                 ) from exc
         return BackendPeftPlan(
             selected_backend,

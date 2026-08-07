@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import math
-from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
 import torch
@@ -12,7 +11,6 @@ from torch import nn
 
 from medfm.training.backend import AcceleratorBackend, MemorySnapshot
 from medfm.training.config import MemoryConfig, RunConfig
-
 
 CUDA_OOM_SUGGESTIONS: tuple[str, ...] = (
     "reduce microbatch to 1",

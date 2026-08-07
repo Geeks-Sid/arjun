@@ -1,18 +1,17 @@
 """Contract tests: every 2D adapter satisfies the VisualEncoder protocol."""
 
-import torch
 import pytest
+import torch
 
 from medfm.core.batch import MedicalBatch
 from medfm.core.encoder import OutputSpec, VisualEncoder
 from medfm.core.enums import Modality
 from medfm.core.errors import ShapeContractError, UnsupportedCapabilityError
 from medfm.models.visual.base import LinearHead
+from medfm.models.visual.hoptimus0 import HOptimus0Adapter
 from medfm.models.visual.medgemma_vision import MedGemmaVisionAdapter
 from medfm.models.visual.medsiglip import MedSigLIPAdapter
 from medfm.models.visual.raddino import RADDINOAdapter
-from medfm.models.visual.hoptimus0 import HOptimus0Adapter
-
 
 TINY_ADAPTERS = [
     lambda: MedSigLIPAdapter.build_tiny(),

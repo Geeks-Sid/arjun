@@ -257,6 +257,7 @@ class _SegmentationModel(nn.Module):
     def forward_mode(self, batch: MedicalBatch, *, mode: str = "image") -> dict[str, Any]:
         return self.forward(batch)
 
+
 class _PromptableSegmentationModel(_SegmentationModel):
     """Tiny promptable path with prompt tensors kept separate from pixels."""
 
@@ -276,6 +277,7 @@ class _PromptableSegmentationTask(BinarySegmentationTask):
     def __init__(self, decoder: nn.Module, **kwargs: Any) -> None:
         super().__init__(decoder, **kwargs)
         self._task_type = TaskType.PROMPTABLE_SEGMENTATION
+
 
 class _RecipeLanguageTask(TaskModuleBase):
     def __init__(
@@ -304,6 +306,8 @@ class _RecipeLanguageTask(TaskModuleBase):
                 "supervised_token_count": token_count,
             },
         )
+
+
 class _RecipeStructuredTask(StructuredGenerationTask):
     """Structured-findings validation around the recipe language output."""
 
@@ -680,6 +684,7 @@ def _task_weights(config: RunConfig) -> dict[str, float]:
         raise RecipeConfigurationError("mixed_task_weights must contain a positive value")
     return weights
 
+
 def _lora(rank: int, *, architecture: str, targets: tuple[str, ...]) -> LoRAConfig:
     return LoRAConfig(
         enabled=True,
@@ -714,6 +719,7 @@ def _inject_recipe_lora(model: nn.Module, config: RunConfig, options: _RecipeOpt
         language = getattr(model, "language", None)
         if isinstance(language, MedGemmaAdapter | GenericHFCausalLMAdapter):
             inject_language_lora(language, _lora(rank, architecture="llm", targets=LANGUAGE_LORA_TARGETS))
+
 
 def _phase13_model(config: RunConfig, options: _RecipeOptions) -> nn.Module:
     vision = _visual_adapter(options)
@@ -802,6 +808,7 @@ def _phase13_task(config: RunConfig, options: _RecipeOptions, model: nn.Module) 
         return _RecipeStructuredTask(supported_modalities=VISUAL_MODALITIES)
     task_type = TaskType.REPORT_GENERATION if "REPORT" in task_name else TaskType.VISUAL_QUESTION_ANSWERING
     return _RecipeLanguageTask(supported_modalities=VISUAL_MODALITIES, task_type=task_type)
+
 
 def _phase13_data(config: RunConfig, options: _RecipeOptions) -> list[MedicalBatch]:
     if options.family == "classification":

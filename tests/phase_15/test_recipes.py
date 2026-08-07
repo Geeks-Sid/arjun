@@ -13,13 +13,14 @@ from medfm.recipes.phase15 import (
     evaluate_wsi_tile_counts_and_magnification,
     pathology_classification_metrics,
     patient_disjoint_split,
+    phase15_builders,
     select_wsi_visual_tokens,
 )
 from medfm.training.pipeline import TrainingPipeline
-from medfm.recipes.phase15 import phase15_builders
 
-
-ALL_RECIPE_NAMES = tuple(sorted(path.name for path in Path(__file__).parents[2].joinpath("configs/recipes/pathology").glob("*.yaml")))
+ALL_RECIPE_NAMES = tuple(
+    sorted(path.name for path in Path(__file__).parents[2].joinpath("configs/recipes/pathology").glob("*.yaml"))
+)
 
 
 @pytest.mark.parametrize("name", ALL_RECIPE_NAMES)
@@ -156,6 +157,7 @@ def test_one_step_pipeline_for_each_recipe_family(phase15_config, name: str) -> 
     assert result.success
     assert result.optimizer_steps == 1
 
+
 def test_phase15_training_checkpoint_resume(phase15_config) -> None:
     config = phase15_config("wsi_classification_smoke.yaml")
     built = TrainingPipeline(config, builders=phase15_builders()).build()
@@ -180,10 +182,7 @@ def test_task_types_for_language_variants(phase15_config) -> None:
 def test_selector_budget_is_fixed_and_padding_is_masked() -> None:
     embeddings = [torch.arange(15, dtype=torch.float32).reshape(5, 3), torch.ones(2, 3)]
     records = [
-        [
-            {"tile_id": f"a{i}", "x": i, "y": 0, "width": 4, "height": 4}
-            for i in range(5)
-        ],
+        [{"tile_id": f"a{i}", "x": i, "y": 0, "width": 4, "height": 4} for i in range(5)],
         [{"tile_id": f"b{i}", "x": i, "y": 1, "width": 4, "height": 4} for i in range(2)],
     ]
     selected = select_wsi_visual_tokens(embeddings, records, budget=None, selector="grid")

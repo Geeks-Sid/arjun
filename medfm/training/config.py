@@ -9,11 +9,11 @@ its canonical resolved representation.
 
 from __future__ import annotations
 
-import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Mapping, Self
+from typing import Any, Self
 
 import yaml
 
@@ -134,9 +134,7 @@ class AcceleratorConfig:
         precision = _normalize_precision(self.precision)
         attention = str(self.attention).strip().lower()
         if attention not in {"auto", "sdpa", "flash", "flash_attention", "flashattention", "eager", "xla"}:
-            raise RunConfigError(
-                "accelerator.attention must be auto, sdpa, flash, or eager"
-            )
+            raise RunConfigError("accelerator.attention must be auto, sdpa, flash, or eager")
         requested_distribution = self.distribution
         distribution = _normalize_distribution(requested_distribution, backend)
         world_size = _positive_int(self.world_size, "accelerator.world_size")
@@ -324,7 +322,9 @@ class MemoryConfig:
             activation_checkpointing=bool(raw.get("activation_checkpointing", False)),
             gradient_checkpointing=_mapping(raw.get("gradient_checkpointing"), "memory.gradient_checkpointing"),
             use_cache_during_training=bool(raw.get("use_cache_during_training", False)),
-            visual_token_budget=(int(raw["visual_token_budget"]) if raw.get("visual_token_budget") is not None else None),
+            visual_token_budget=(
+                int(raw["visual_token_budget"]) if raw.get("visual_token_budget") is not None else None
+            ),
             max_text_tokens=(int(raw["max_text_tokens"]) if raw.get("max_text_tokens") is not None else None),
             patch_size=tuple(int(v) for v in patch) if patch is not None else None,
             max_3d_patch=tuple(int(v) for v in max_patch) if max_patch is not None else None,
@@ -387,7 +387,9 @@ class OptimizerConfig:
             raise RunConfigError("optimizer.name must be adamw or adam")
         object.__setattr__(self, "name", str(self.name).lower())
         object.__setattr__(self, "lr", _finite_float(self.lr, "optimizer.lr", minimum=0.0))
-        object.__setattr__(self, "weight_decay", _finite_float(self.weight_decay, "optimizer.weight_decay", minimum=0.0))
+        object.__setattr__(
+            self, "weight_decay", _finite_float(self.weight_decay, "optimizer.weight_decay", minimum=0.0)
+        )
         if len(self.betas) != 2 or not all(0.0 <= float(v) < 1.0 for v in self.betas):
             raise RunConfigError("optimizer.betas must contain two values in [0, 1)")
         object.__setattr__(self, "betas", (float(self.betas[0]), float(self.betas[1])))
@@ -396,12 +398,16 @@ class OptimizerConfig:
         if self.total_steps is not None:
             object.__setattr__(self, "total_steps", _positive_int(self.total_steps, "optimizer.total_steps"))
         if self.max_grad_norm is not None:
-            object.__setattr__(self, "max_grad_norm", _finite_float(self.max_grad_norm, "optimizer.max_grad_norm", minimum=0.0))
+            object.__setattr__(
+                self, "max_grad_norm", _finite_float(self.max_grad_norm, "optimizer.max_grad_norm", minimum=0.0)
+            )
         normalized: dict[str, dict[str, float]] = {}
         for name, value in _mapping(self.groups, "optimizer.groups").items():
             group = _mapping(value, f"optimizer.groups.{name}")
             lr = _finite_float(group.get("lr", self.lr), f"optimizer.groups.{name}.lr", minimum=0.0)
-            decay = _finite_float(group.get("weight_decay", self.weight_decay), f"optimizer.groups.{name}.weight_decay", minimum=0.0)
+            decay = _finite_float(
+                group.get("weight_decay", self.weight_decay), f"optimizer.groups.{name}.weight_decay", minimum=0.0
+            )
             normalized[str(name)] = {"lr": lr, "weight_decay": decay}
         object.__setattr__(self, "groups", normalized)
 
@@ -518,7 +524,9 @@ class RunConfig:
 
     def __post_init__(self) -> None:
         if self.schema_version != SCHEMA_VERSION:
-            raise RunConfigError(f"unsupported RunConfig schema_version={self.schema_version}; expected {SCHEMA_VERSION}")
+            raise RunConfigError(
+                f"unsupported RunConfig schema_version={self.schema_version}; expected {SCHEMA_VERSION}"
+            )
         if not self.model_id:
             raise RunConfigError("model_id must be non-empty")
         if self.max_steps is not None:
@@ -565,18 +573,14 @@ class RunConfig:
         peft = LoRAConfig.from_dict(_mapping(peft_value, "peft")) if peft_value else LoRAConfig()
         quant_value = raw.get("quantization", {})
         quantization = (
-            QuantizationConfig.from_dict(_mapping(quant_value, "quantization"))
-            if quant_value
-            else QuantizationConfig()
+            QuantizationConfig.from_dict(_mapping(quant_value, "quantization")) if quant_value else QuantizationConfig()
         )
         return cls(
             model_id=model_id,
             model=model,
             dataset=_mapping(raw.get("dataset"), "dataset"),
             task=(
-                {"name": str(raw["task"])}
-                if isinstance(raw.get("task"), str)
-                else _mapping(raw.get("task"), "task")
+                {"name": str(raw["task"])} if isinstance(raw.get("task"), str) else _mapping(raw.get("task"), "task")
             ),
             accelerator=accelerator,
             batch=batch,

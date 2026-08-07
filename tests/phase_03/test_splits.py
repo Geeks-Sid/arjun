@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from synthetic import hid, manifest_row
 
 from medfm.core.enums import SplitName
 from medfm.data.errors import SplitLeakageError
@@ -16,6 +15,7 @@ from medfm.data.splits import (
     check_split_leakage,
     generate_split_assignment,
 )
+from phase_03.synthetic import hid, manifest_row
 
 
 def _frame(n_patients: int = 12, studies_per_patient: int = 1) -> pd.DataFrame:

@@ -2,7 +2,6 @@
 
 import pytest
 import torch
-from contract_fixtures import make_batch, make_spatial
 
 from medfm.core import (
     BucketError,
@@ -12,6 +11,7 @@ from medfm.core import (
     Modality,
     ShapeContractError,
 )
+from phase_02.contract_fixtures import make_batch, make_spatial
 
 ALL_MODALITIES = tuple(Modality)
 

@@ -1,15 +1,17 @@
 """H-Optimus-0 and MedGemma vision pathway specific tests."""
 
-import torch
-import pytest
 import json
+
+import pytest
+import torch
+
 from medfm.core.batch import MedicalBatch
 from medfm.core.encoder import OutputSpec
 from medfm.core.enums import Modality
 from medfm.core.errors import UnsupportedCapabilityError
 from medfm.models.visual.base import LoRAGateError
-from medfm.models.visual.hoptimus0 import HOptimus0Adapter, HOPTIMUS_PREPROCESS
-from medfm.models.visual.medgemma_vision import MedGemmaVisionAdapter, MEDGEMMA_PREPROCESS
+from medfm.models.visual.hoptimus0 import HOPTIMUS_PREPROCESS, HOptimus0Adapter
+from medfm.models.visual.medgemma_vision import MEDGEMMA_PREPROCESS, MedGemmaVisionAdapter
 
 
 # ---- H-Optimus ----

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import torch
-from conftest import make_batch_2d
 
 from medfm.core.encoder import EncoderOutput
 from medfm.models.decoders import (
@@ -16,6 +15,7 @@ from medfm.models.decoders import (
 )
 from medfm.tasks.losses import DiceBCELoss, DiceCELoss, TverskyLoss
 from medfm.tasks.segmentation import SegmentationTask
+from phase_11.conftest import make_batch_2d
 
 
 def test_unet_and_fpn_share_2d_3d_shapes(encoder_output_2d: EncoderOutput, encoder_output_3d: EncoderOutput) -> None:

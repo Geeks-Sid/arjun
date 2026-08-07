@@ -116,6 +116,7 @@ def _as_prediction(value: TilePrediction | Mapping[str, Any]) -> TilePrediction:
         score=None if raw.get("score") is None else float(raw["score"]),
     )
 
+
 def _record_value(record: Any, name: str, default: Any = None) -> Any:
     if isinstance(record, Mapping):
         return record.get(name, default)
@@ -219,9 +220,7 @@ def stitch_tile_predictions(
         if tile.ndim == 2:
             tile = tile.unsqueeze(0)
         if int(tile.shape[0]) != int(output_channels):
-            raise ValueError(
-                f"tile {prediction.tile_id!r} has {tile.shape[0]} channels; expected {output_channels}"
-            )
+            raise ValueError(f"tile {prediction.tile_id!r} has {tile.shape[0]} channels; expected {output_channels}")
         if tuple(tile.shape[-2:]) != (height, width):
             tile = F.interpolate(tile.unsqueeze(0), size=(height, width), mode="bilinear", align_corners=False)[0]
         x0, y0 = max(0, x), max(0, y)
@@ -317,7 +316,9 @@ def evidence_tiles_from_scores(
     level_downsamples: Mapping[int, float] | Sequence[float] | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Create ranked, coordinate-bearing evidence rows without pixel payloads."""
-    values = scores.detach().float().reshape(-1).tolist() if isinstance(scores, torch.Tensor) else [float(v) for v in scores]
+    values = (
+        scores.detach().float().reshape(-1).tolist() if isinstance(scores, torch.Tensor) else [float(v) for v in scores]
+    )
     if len(values) != len(records):
         raise ValueError("evidence scores must align with tile records")
     if top_k <= 0:

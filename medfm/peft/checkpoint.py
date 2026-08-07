@@ -288,6 +288,8 @@ def load_checkpoint_manifest(directory: str | Path) -> dict[str, Any]:
     if config_hash(dict(configuration)) != manifest["config_hash"]:
         raise AdapterCheckpointError("adapter manifest config_hash does not match configuration")
     return manifest
+
+
 def _validate_base(
     manifest: Mapping[str, Any],
     *,
@@ -310,6 +312,8 @@ def _validate_base(
         )
     if configuration is not None and config_hash(dict(configuration)) != manifest["config_hash"]:
         raise CheckpointCompatibilityError("adapter configuration hash does not match checkpoint")
+
+
 def _ensure_manifest_adapters(
     model: nn.Module,
     manifest: Mapping[str, Any],
@@ -416,8 +420,7 @@ def _nested_allclose(left: Any, right: Any, *, atol: float, rtol: float) -> bool
         return bool(torch.allclose(left, right, atol=atol, rtol=rtol))
     if isinstance(left, tuple | list):
         return len(left) == len(right) and all(
-            _nested_allclose(a, b, atol=atol, rtol=rtol)
-            for a, b in zip(left, right, strict=True)
+            _nested_allclose(a, b, atol=atol, rtol=rtol) for a, b in zip(left, right, strict=True)
         )
     if isinstance(left, Mapping) and isinstance(right, Mapping):
         return left.keys() == right.keys() and all(

@@ -179,8 +179,15 @@ class AcceleratorBackend(ABC):
             use_accelerate = importlib.util.find_spec("accelerate") is not None
         if use_accelerate:
             self._init_accelerate()
+
     def _init_accelerate(self) -> None:
-        """Create Accelerate lazily; subclasses may disable it for XLA hooks."""
+        """Create Accelerate lazily; subclasses may disable it for XLA hooks.
+
+        The Accelerator must be pinned to the backend's declared device rather
+        than letting Accelerate auto-detect hardware, otherwise a CPU backend on
+        a CUDA-capable host silently moves models to ``cuda:0`` (the reported
+        ``cpu tensor vs cuda weight`` mismatches).
+        """
         try:
             from accelerate import Accelerator  # noqa: PLC0415
 
@@ -188,19 +195,18 @@ class AcceleratorBackend(ABC):
             self._accelerator = Accelerator(
                 mixed_precision=mixed_precision,
                 gradient_accumulation_steps=self.gradient_accumulation_steps,
+                cpu=(self.config.backend == "cpu"),
             )
         except (ImportError, RuntimeError) as exc:
             raise BackendUnavailableError("Accelerate was requested but could not be initialized") from exc
 
     @property
     @abstractmethod
-    def capabilities(self) -> BackendCapabilities:
-        ...
+    def capabilities(self) -> BackendCapabilities: ...
 
     @property
     @abstractmethod
-    def topology(self) -> BackendTopology:
-        ...
+    def topology(self) -> BackendTopology: ...
 
     @property
     def uses_accelerate(self) -> bool:
@@ -319,8 +325,13 @@ class AcceleratorBackend(ABC):
         else:
             loss.backward()
 
-    def unscale_optimizer(self, optimizer: torch.optim.Optimizer) -> None:
-        """Unscale FP16 gradients before clipping; BF16/XLA are no-op."""
+    def unscale_optimizer(self, optimizer: torch.optim.Optimizer) -> None:  # noqa: B027 (default no-op hook)
+        """Unscale FP16 gradients before clipping; BF16/XLA are no-op.
+
+        Default hook: backends without a scaler (or that rely on Accelerate's
+        own unscaling) inherit this no-op rather than overriding it, so it is
+        intentionally not abstract.
+        """
 
     def clip_grad_norm(
         self,
@@ -368,8 +379,12 @@ class AcceleratorBackend(ABC):
         if _distributed_initialized():
             torch.distributed.barrier()
 
-    def mark_step(self) -> None:
-        """Commit deferred device work; XLA overrides this hook."""
+    def mark_step(self) -> None:  # noqa: B027 (default no-op hook; only XLA overrides)
+        """Commit deferred device work; XLA overrides this hook.
+
+        CPU/CUDA have no deferred-work commit step, so they inherit the no-op
+        default; only XLA overrides. Intentionally not abstract.
+        """
 
     def memory_snapshot(self) -> MemorySnapshot:
         return MemorySnapshot(backend=self.name)
@@ -678,6 +693,7 @@ class XlaTpuBackend(AcceleratorBackend):
             return self._xm.all_reduce(self._xm.REDUCE_SUM, value)
         except Exception:
             return value
+
     def _xla_reduce_max(self, value: torch.Tensor) -> torch.Tensor:
         try:
             reduce_max = getattr(self._xm, "REDUCE_MAX", None)
@@ -686,7 +702,6 @@ class XlaTpuBackend(AcceleratorBackend):
             return self._xm.all_reduce(reduce_max, value)
         except Exception:
             return value
-
 
     def memory_snapshot(self) -> MemorySnapshot:
         # XLA HBM is intentionally not queried through torch.cuda.  The XLA

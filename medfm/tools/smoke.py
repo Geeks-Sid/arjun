@@ -459,12 +459,11 @@ def _check_phase_11_task_modules() -> None:
     if report.invalid != 1 or report.parse_errors != 1:
         raise RuntimeError("structured findings smoke did not count invalid output")
 
+
 def _check_phase_12_training_engine() -> None:
     """Build the tiny recipe, run one step, export, and inspect diagnostics."""
-    from dataclasses import replace
 
     from medfm.cli.train import tiny_builders
-    from medfm.training.checkpoint import CheckpointManager
     from medfm.training.config import RunConfig
     from medfm.training.memory import CUDA_OOM_SUGGESTIONS, diagnose_oom
     from medfm.training.pipeline import TrainingPipeline
@@ -554,7 +553,6 @@ PHASE_15_CHECKS: list[tuple[str, Callable[[], None]]] = [
 PHASE_12_CHECKS: list[tuple[str, Callable[[], None]]] = [
     ("training_engine_checkpoint_memory_smoke", _check_phase_12_training_engine),
 ]
-
 
 
 PHASE_08_CHECKS: list[tuple[str, Callable[[], None]]] = [

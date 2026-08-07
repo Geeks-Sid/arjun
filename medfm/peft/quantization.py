@@ -217,9 +217,7 @@ def verify_quantized_optimizer_exclusion(model: nn.Module, optimizer: torch.opti
             if is_quantized_parameter(parameter):
                 offending.append(parameter_names.get(id(parameter), "<unnamed>"))
     if offending:
-        raise QuantizedParameterError(
-            "quantized base parameters entered the optimizer: " + ", ".join(offending[:8])
-        )
+        raise QuantizedParameterError("quantized base parameters entered the optimizer: " + ", ".join(offending[:8]))
 
 
 def assert_qlora_trainability(model: nn.Module) -> None:

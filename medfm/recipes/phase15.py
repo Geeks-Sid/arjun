@@ -44,9 +44,9 @@ from medfm.models.pathology import (
     GigaPathFlashAggregator,
     MeanPoolingAggregator,
     PathologyTileEncoder,
-    TokenBudget,
-    TITANAggregator,
     TileEmbeddingMetadata,
+    TITANAggregator,
+    TokenBudget,
     WSITokenSelector,
 )
 from medfm.models.pathology.selection import (
@@ -59,22 +59,6 @@ from medfm.models.pathology.selection import (
     TopKAttentionTileSampler,
 )
 from medfm.peft import LoRAConfig, inject_language_lora, inject_lora
-from medfm.tasks.classification import BinaryClassificationTask, ClassificationTask, MultiLabelClassificationTask
-from medfm.tasks.base import (
-    TaskModuleBase,
-    detached_count_tensor,
-    target_from_batch,
-    valid_sample_count,
-    valid_sample_mask,
-)
-from medfm.tasks.segmentation import BinarySegmentationTask
-from medfm.training.backend import AcceleratorBackend
-from medfm.training.config import RunConfig
-from medfm.training.optimizer import OptimizerBundle, build_optimizer
-from medfm.training.pipeline import ComponentBuilders
-from medfm.training.steps import make_training_step
-from medfm.training.trainer import Trainer
-
 from medfm.recipes.pathology_stitching import (
     COORDINATE_SYSTEM,
     EVIDENCE_SCHEMA_VERSION,
@@ -99,6 +83,21 @@ from medfm.recipes.pathology_stitching import (
     validate_evidence_json,
     validate_evidence_tiles,
 )
+from medfm.tasks.base import (
+    TaskModuleBase,
+    detached_count_tensor,
+    target_from_batch,
+    valid_sample_count,
+    valid_sample_mask,
+)
+from medfm.tasks.classification import BinaryClassificationTask, ClassificationTask, MultiLabelClassificationTask
+from medfm.tasks.segmentation import BinarySegmentationTask
+from medfm.training.backend import AcceleratorBackend
+from medfm.training.config import RunConfig
+from medfm.training.optimizer import OptimizerBundle, build_optimizer
+from medfm.training.pipeline import ComponentBuilders
+from medfm.training.steps import make_training_step
+from medfm.training.trainer import Trainer
 
 PHASE15_RECIPE_VERSION = "phase15-1"
 PATHOLOGY_MODALITIES = (Modality.PATHOLOGY_TILE, Modality.PATHOLOGY_WSI)
@@ -428,12 +427,20 @@ def _parse_count_buckets(raw: Any, fallback: int) -> tuple[int, ...]:
 def _options(config: RunConfig) -> _Phase15Options:
     raw = dict(config.recipe)
     family = _canonical_family(raw.get("family", raw.get("type", "wsi_classification")))
-    default_modality = Modality.PATHOLOGY_TILE if family in {"tile_classification", "pathology_segmentation"} else Modality.PATHOLOGY_WSI
+    default_modality = (
+        Modality.PATHOLOGY_TILE
+        if family in {"tile_classification", "pathology_segmentation"}
+        else Modality.PATHOLOGY_WSI
+    )
     try:
         modality = Modality(str(raw.get("modality", default_modality.value)).upper())
     except ValueError as exc:
         raise PathologyRecipeConfigurationError(f"unknown pathology modality {raw.get('modality')!r}") from exc
-    expected = Modality.PATHOLOGY_TILE if family in {"tile_classification", "pathology_segmentation"} else Modality.PATHOLOGY_WSI
+    expected = (
+        Modality.PATHOLOGY_TILE
+        if family in {"tile_classification", "pathology_segmentation"}
+        else Modality.PATHOLOGY_WSI
+    )
     if modality is not expected:
         raise PathologyRecipeConfigurationError(f"{family} requires modality {expected.value}")
     stage = _stage(raw.get("stage", raw.get("stage_number", "1")))
@@ -474,8 +481,24 @@ def _options(config: RunConfig) -> _Phase15Options:
     selector = str(raw.get("selector", "grid")).lower().replace("-", "_")
     train_selector = str(raw.get("train_selector", selector)).lower().replace("-", "_")
     eval_selector = str(raw.get("eval_selector", "grid")).lower().replace("-", "_")
-    allowed_selectors = {"grid", "random", "seeded_random", "quality", "quality_weighted", "diversity", "topk", "topk_attention", "text", "text_conditioned", "multiresolution"}
-    if selector not in allowed_selectors or train_selector not in allowed_selectors or eval_selector not in allowed_selectors:
+    allowed_selectors = {
+        "grid",
+        "random",
+        "seeded_random",
+        "quality",
+        "quality_weighted",
+        "diversity",
+        "topk",
+        "topk_attention",
+        "text",
+        "text_conditioned",
+        "multiresolution",
+    }
+    if (
+        selector not in allowed_selectors
+        or train_selector not in allowed_selectors
+        or eval_selector not in allowed_selectors
+    ):
         raise PathologyRecipeConfigurationError(f"unknown pathology tile selector in {sorted(allowed_selectors)}")
     aggregator = str(raw.get("aggregator", raw.get("slide_aggregator", "mean"))).lower().replace("-", "_")
     if aggregator not in _ALLOWED_AGGREGATORS:
@@ -519,12 +542,20 @@ def _options(config: RunConfig) -> _Phase15Options:
         selector_revision=str(raw.get("selector_revision", "phase15-selector-v1")),
         aggregator=aggregator,
         bridge_type=bridge,
-        cache_embeddings=bool(raw.get("cache_embeddings", raw.get("cached_embeddings", family in {"wsi_classification", "wsi_vlm"}))),
+        cache_embeddings=bool(
+            raw.get("cache_embeddings", raw.get("cached_embeddings", family in {"wsi_classification", "wsi_vlm"}))
+        ),
         cache_tokens=bool(raw.get("cache_tokens", raw.get("cached_tokens", False))),
         dataset_id=str(raw.get("dataset_id", config.dataset.get("id", "phase15-synthetic-pathology-v1"))),
         dataset_revision=str(raw.get("dataset_revision", config.dataset.get("revision", "synthetic-v1"))),
-        preprocessing_revision=str(raw.get("preprocessing_revision", config.preprocessing_hash or "phase15-pathology-preprocess-v1")),
-        model_revision=str(raw.get("model_revision", config.base_model_revision or raw.get("backbone_revision", "offline-random-contract"))),
+        preprocessing_revision=str(
+            raw.get("preprocessing_revision", config.preprocessing_hash or "phase15-pathology-preprocess-v1")
+        ),
+        model_revision=str(
+            raw.get(
+                "model_revision", config.base_model_revision or raw.get("backbone_revision", "offline-random-contract")
+            )
+        ),
         embedding_store_revision=str(raw.get("embedding_store_revision", "phase08-hdf5-v1")),
         slide_reader_revision=str(raw.get("slide_reader_revision", "phase03-slide-reader-v1")),
         tile_index_revision=str(raw.get("tile_index_revision", "phase04-tile-index-v1")),
@@ -532,8 +563,17 @@ def _options(config: RunConfig) -> _Phase15Options:
         magnification=str(raw.get("magnification", "20x")),
         slide_height=slide_height,
         slide_width=slide_width,
-        tpu_status=str(raw.get("tpu_status", "cached_embeddings_static_aggregator" if family in {"wsi_classification", "wsi_vlm"} else "CPU_CONTRACT_ONLY")),
-        baseline=str(raw.get("baseline", "hoptimus_frozen_linear" if family == "tile_classification" else "mean_pooling")),
+        tpu_status=str(
+            raw.get(
+                "tpu_status",
+                "cached_embeddings_static_aggregator"
+                if family in {"wsi_classification", "wsi_vlm"}
+                else "CPU_CONTRACT_ONLY",
+            )
+        ),
+        baseline=str(
+            raw.get("baseline", "hoptimus_frozen_linear" if family == "tile_classification" else "mean_pooling")
+        ),
         split_policy=str(raw.get("split_policy", config.dataset.get("split_policy", "patient_disjoint"))),
         task_name=task_name,
         construction_seed=int(raw.get("construction_seed", config.seed)),
@@ -618,6 +658,7 @@ def _synthetic_slide_payloads(options: _Phase15Options, *, batch_size: int) -> t
         )
     return tuple(payloads)
 
+
 def _record_value(record: Any, name: str, default: Any = None) -> Any:
     if isinstance(record, Mapping):
         return record.get(name, default)
@@ -672,9 +713,13 @@ def patient_disjoint_split(
     train_patients = set(order[:train_count])
     validation_patients = set(order[train_count : train_count + validation_count])
     test_patients = set(order[train_count + validation_count :])
+
     def slides(group: set[str]) -> tuple[str, ...]:
         return tuple(sorted(slide for patient in group for slide in patients[patient]))
-    return PatientDisjointSplit(slides(train_patients), slides(validation_patients), slides(test_patients), slide_to_patient)
+
+    return PatientDisjointSplit(
+        slides(train_patients), slides(validation_patients), slides(test_patients), slide_to_patient
+    )
 
 
 # Explicit aliases make the split policy discoverable to recipe callers.
@@ -730,7 +775,9 @@ def pad_slide_embeddings(
     for batch_index, (embeddings, records) in enumerate(zip(slide_embeddings, slide_records, strict=True)):
         if embeddings.ndim != 2 or int(embeddings.shape[0]) != len(records) or int(embeddings.shape[1]) != dim:
             raise ValueError("each slide embedding matrix must align with its records and embedding dimension")
-        indices = _select_indices(records, min(max_tiles, len(records)), selector=selector, embeddings=embeddings, seed=seed + batch_index)
+        indices = _select_indices(
+            records, min(max_tiles, len(records)), selector=selector, embeddings=embeddings, seed=seed + batch_index
+        )
         count = len(indices)
         if count:
             tokens[batch_index, :count] = embeddings[indices]
@@ -807,7 +854,11 @@ class GatedAttentionMILAggregator(nn.Module):
     ) -> Any:
         if embeddings.ndim != 3 or int(embeddings.shape[-1]) != self.embedding_dim:
             raise ValueError(f"embeddings must be [B,T,{self.embedding_dim}]")
-        valid = torch.ones(embeddings.shape[:2], dtype=torch.bool, device=embeddings.device) if mask is None else mask.bool()
+        valid = (
+            torch.ones(embeddings.shape[:2], dtype=torch.bool, device=embeddings.device)
+            if mask is None
+            else mask.bool()
+        )
         if valid.shape != embeddings.shape[:2] or not bool(valid.any(dim=1).all()):
             raise ValueError("mask must align with embeddings and every slide needs one real tile")
         logits = self.score(torch.tanh(self.value(embeddings)) * torch.sigmoid(self.gate(embeddings))).squeeze(-1)
@@ -816,6 +867,7 @@ class GatedAttentionMILAggregator(nn.Module):
         attention = attention / attention.sum(dim=1, keepdim=True).clamp_min(torch.finfo(logits.dtype).eps)
         pooled = (embeddings * attention.unsqueeze(-1)).sum(dim=1)
         from medfm.models.pathology.aggregation import SlideAggregation
+
         return SlideAggregation(
             pooled,
             attention=attention,
@@ -857,13 +909,18 @@ class TransformerSlideAggregator(nn.Module):
     ) -> Any:
         if embeddings.ndim != 3 or int(embeddings.shape[-1]) != self.embedding_dim:
             raise ValueError(f"embeddings must be [B,T,{self.embedding_dim}]")
-        valid = torch.ones(embeddings.shape[:2], dtype=torch.bool, device=embeddings.device) if mask is None else mask.bool()
+        valid = (
+            torch.ones(embeddings.shape[:2], dtype=torch.bool, device=embeddings.device)
+            if mask is None
+            else mask.bool()
+        )
         if valid.shape != embeddings.shape[:2] or not bool(valid.any(dim=1).all()):
             raise ValueError("mask must align with embeddings and every slide needs one real tile")
         encoded = self.norm(self.encoder(embeddings, src_key_padding_mask=~valid))
         weights = valid.unsqueeze(-1).to(encoded.dtype)
         pooled = (encoded * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1)
         from medfm.models.pathology.aggregation import SlideAggregation
+
         return SlideAggregation(
             pooled,
             valid_mask=valid,
@@ -1123,7 +1180,9 @@ class _WSIVLMModel(nn.Module):
         ).clamp(0.0, 1.0)
         mpp = torch.full(mask.shape, self.tile_mpp, dtype=tokens.dtype, device=tokens.device)
         level = torch.zeros_like(mpp)
-        slide_index = torch.arange(tokens.shape[0], device=tokens.device, dtype=tokens.dtype).unsqueeze(1).expand_as(mpp)
+        slide_index = (
+            torch.arange(tokens.shape[0], device=tokens.device, dtype=tokens.dtype).unsqueeze(1).expand_as(mpp)
+        )
         coordinate_metadata = {
             "slide_x": coordinates[..., 0].float() * self.tile_mpp,
             "slide_y": coordinates[..., 1].float() * self.tile_mpp,
@@ -1527,7 +1586,9 @@ def _classification_task(config: RunConfig, options: _Phase15Options) -> nn.Modu
                 supported_modalities=(options.modality,),
             )
         return BinaryClassificationTask(head, supported_modalities=(options.modality,))
-    return ClassificationTask(head, task_type=TaskType.MULTICLASS_CLASSIFICATION, supported_modalities=(options.modality,))
+    return ClassificationTask(
+        head, task_type=TaskType.MULTICLASS_CLASSIFICATION, supported_modalities=(options.modality,)
+    )
 
 
 def _phase15_task(config: RunConfig, options: _Phase15Options, model: nn.Module) -> nn.Module:
@@ -1753,7 +1814,9 @@ def _group_aggregate(
     by_group: dict[str, list[int]] = defaultdict(list)
     for index, group in enumerate(groups):
         by_group[group].append(index)
-    out_y = [int(round(sum(y[index] for index in indices) / len(indices))) for group, indices in sorted(by_group.items())]
+    out_y = [
+        int(round(sum(y[index] for index in indices) / len(indices))) for group, indices in sorted(by_group.items())
+    ]
     out_s = [float(sum(s[index] for index in indices) / len(indices)) for group, indices in sorted(by_group.items())]
     return out_y, out_s, sorted(by_group)
 
@@ -1770,27 +1833,56 @@ def pathology_classification_metrics(
     valid_mask: Sequence[bool] | torch.Tensor | None = None,
 ) -> dict[str, MetricValue]:
     """Return tile/slide/patient metrics while excluding padded entries."""
-    y = labels.detach().cpu().reshape(-1) if isinstance(labels, torch.Tensor) else torch.as_tensor(list(labels), dtype=torch.int64)
-    s = scores.detach().cpu().reshape(-1) if isinstance(scores, torch.Tensor) else torch.as_tensor(list(scores), dtype=torch.float32)
+    y = (
+        labels.detach().cpu().reshape(-1)
+        if isinstance(labels, torch.Tensor)
+        else torch.as_tensor(list(labels), dtype=torch.int64)
+    )
+    s = (
+        scores.detach().cpu().reshape(-1)
+        if isinstance(scores, torch.Tensor)
+        else torch.as_tensor(list(scores), dtype=torch.float32)
+    )
     if y.numel() != s.numel():
         raise ValueError("labels and scores must have equal length")
     if valid_mask is not None:
-        valid = valid_mask.detach().cpu().reshape(-1).bool() if isinstance(valid_mask, torch.Tensor) else torch.as_tensor(list(valid_mask), dtype=torch.bool)
+        valid = (
+            valid_mask.detach().cpu().reshape(-1).bool()
+            if isinstance(valid_mask, torch.Tensor)
+            else torch.as_tensor(list(valid_mask), dtype=torch.bool)
+        )
         if valid.numel() != y.numel():
             raise ValueError("valid_mask must align with labels")
         y, s = y[valid], s[valid]
+
         def filter_ids(values: Sequence[str] | None) -> Sequence[str] | None:
-            return None if values is None else [str(value) for value, keep in zip(values, valid.tolist(), strict=True) if keep]
+            return (
+                None
+                if values is None
+                else [str(value) for value, keep in zip(values, valid.tolist(), strict=True) if keep]
+            )
+
         patient_ids, slide_ids, scanner_ids, site_ids, organ_ids = (
-            filter_ids(patient_ids), filter_ids(slide_ids), filter_ids(scanner_ids), filter_ids(site_ids), filter_ids(organ_ids)
+            filter_ids(patient_ids),
+            filter_ids(slide_ids),
+            filter_ids(scanner_ids),
+            filter_ids(site_ids),
+            filter_ids(organ_ids),
         )
     result: dict[str, MetricValue] = {}
     tile = classification_metrics(y, s, unit="per_tile")
     result.update({f"tile/{name}": value for name, value in tile.items()})
     slide_y, slide_s, slide_groups = _group_aggregate(y, s, slide_ids)
-    result.update({f"slide/{name}": value for name, value in classification_metrics(slide_y, slide_s, unit="per_slide").items()})
+    result.update(
+        {f"slide/{name}": value for name, value in classification_metrics(slide_y, slide_s, unit="per_slide").items()}
+    )
     patient_y, patient_s, _ = _group_aggregate(y, s, patient_ids or slide_ids)
-    result.update({f"patient/{name}": value for name, value in classification_metrics(patient_y, patient_s, unit="per_patient").items()})
+    result.update(
+        {
+            f"patient/{name}": value
+            for name, value in classification_metrics(patient_y, patient_s, unit="per_patient").items()
+        }
+    )
     for prefix, groups in (("scanner", scanner_ids), ("site", site_ids), ("organ", organ_ids)):
         if groups is not None:
             subgroup = classification_metrics(y, s, group_ids=groups, unit=f"per_{prefix}").get("subgroups")
@@ -1850,7 +1942,12 @@ def pathology_segmentation_metrics(
     """Report tile and reconstructed-slide dense metrics as separate units."""
     result = {f"tile/{name}": value for name, value in tile_segmentation_metrics(tile_predicted, tile_target).items()}
     if slide_predicted is not None and slide_target is not None:
-        result.update({f"slide/{name}": value for name, value in slide_segmentation_metrics(slide_predicted, slide_target).items()})
+        result.update(
+            {
+                f"slide/{name}": value
+                for name, value in slide_segmentation_metrics(slide_predicted, slide_target).items()
+            }
+        )
     return result
 
 

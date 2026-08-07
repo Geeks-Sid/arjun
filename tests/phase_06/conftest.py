@@ -4,7 +4,6 @@ import os
 
 import pytest
 
-
 GUARDS = {
     "gpu": "MEDFM_RUN_GPU_TESTS",
     "tpu": "MEDFM_RUN_TPU_TESTS",

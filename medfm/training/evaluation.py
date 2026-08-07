@@ -8,7 +8,6 @@ from typing import Any
 import torch
 from torch import nn
 
-from medfm.core.batch import MedicalBatch
 from medfm.core.task import TaskModule
 from medfm.training.backend import AcceleratorBackend
 from medfm.training.steps import TrainingStep

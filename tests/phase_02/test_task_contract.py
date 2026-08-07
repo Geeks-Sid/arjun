@@ -4,7 +4,6 @@ from dataclasses import replace
 
 import pytest
 import torch
-from contract_fixtures import DummyTaskModule, DummyVisualEncoder, make_batch
 
 from medfm.core import (
     LossOutput,
@@ -14,6 +13,7 @@ from medfm.core import (
     TaskType,
     UnsupportedModalityError,
 )
+from phase_02.contract_fixtures import DummyTaskModule, DummyVisualEncoder, make_batch
 
 
 def test_dummy_task_conforms_to_protocol():

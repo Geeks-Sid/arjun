@@ -33,7 +33,14 @@ def test_phase15_artifact_contains_reproducibility_and_limitations(tmp_path) -> 
             "output_dir": str(tmp_path),
         }
     )
-    artifact = make_phase15_artifact(config, {"tile/auroc": pathology_segmentation_metrics(torch.zeros(1, 1, 2, 2), torch.zeros(1, 1, 2, 2))["tile/dice/class_0"]})
+    artifact = make_phase15_artifact(
+        config,
+        {
+            "tile/auroc": pathology_segmentation_metrics(torch.zeros(1, 1, 2, 2), torch.zeros(1, 1, 2, 2))[
+                "tile/dice/class_0"
+            ]
+        },
+    )
     assert isinstance(artifact, EvaluationArtifact)
     assert artifact.reproducibility["config_hash"] == config.config_hash()
     assert artifact.limitations

@@ -2,10 +2,6 @@
 
 import pytest
 import torch
-from contract_fixtures import (
-    DummyLanguageModelAdapter,
-    TextOnlyLanguageModelAdapter,
-)
 
 from medfm.core import (
     GeneratedText,
@@ -17,6 +13,10 @@ from medfm.core import (
     ShapeContractError,
     TokenizedText,
     UnsupportedCapabilityError,
+)
+from phase_02.contract_fixtures import (
+    DummyLanguageModelAdapter,
+    TextOnlyLanguageModelAdapter,
 )
 
 

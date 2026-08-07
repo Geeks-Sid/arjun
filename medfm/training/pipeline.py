@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import inspect
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from torch import nn
+
 from medfm.core.enums import LoadingMode, TaskType
-from medfm.registry import ModelRegistry
-from medfm.registry import catalog
+from medfm.registry import ModelRegistry, catalog
 from medfm.registry.schema import BackendStatus, ModelSpec
 from medfm.training.backend import AcceleratorBackend, create_backend
 from medfm.training.config import RunConfig
@@ -150,10 +151,7 @@ def validate_capabilities(config: RunConfig, *, spec: ModelSpec | None = None) -
             BackendStatus.BLOCKED_MEMORY,
             BackendStatus.BLOCKED_UPSTREAM,
             BackendStatus.NOT_APPLICABLE,
-        } or (
-            support.status == BackendStatus.CPU_CONTRACT_ONLY
-            and config.accelerator.backend != "cpu"
-        ):
+        } or (support.status == BackendStatus.CPU_CONTRACT_ONLY and config.accelerator.backend != "cpu"):
             issues.append(
                 f"model {spec.model_id} is not accepted on {config.accelerator.backend}: {support.status.value}"
             )
@@ -170,9 +168,7 @@ def validate_capabilities(config: RunConfig, *, spec: ModelSpec | None = None) -
             # An empty tested_precisions record is common for contract-only
             # local models; only reject a non-empty declared matrix.
             if spec.tested_precisions:
-                issues.append(
-                    f"precision {config.accelerator.precision} has no registry evidence for {spec.model_id}"
-                )
+                issues.append(f"precision {config.accelerator.precision} has no registry evidence for {spec.model_id}")
         if config.task:
             task_name = str(config.task.get("type", config.task.get("name", ""))).upper()
             try:
@@ -206,6 +202,8 @@ def _invoke(builder: Callable[..., Any], candidates: tuple[tuple[Any, ...], ...]
             continue
         return builder(*args)
     raise PipelineBuildError(f"builder {builder!r} does not match any supported stage signature")
+
+
 def _prepare_distributed_model(
     model: Any,
     *,
@@ -244,8 +242,6 @@ def _prepare_distributed_model(
     )
 
 
-
-
 class TrainingPipeline:
     """Construct a run in the fixed registry→dataset→model→... order."""
 
@@ -274,9 +270,8 @@ class TrainingPipeline:
             # Recipe-local tiny models do not need a catalog entry. A caller
             # that names a registry model still receives the fail-closed report.
             if self.config.model_id not in {"tiny", "tiny_multitask", "local"}:
-                raise PipelineBuildError(
-                    f"unknown model {self.config.model_id!r}; register it before loading weights"
-                )
+                reason = f"unknown model {self.config.model_id!r}; register it before loading weights"
+                raise PipelineBuildError(reason) from None
         report = validate_capabilities(self.config, spec=spec)
         if not report.valid:
             raise PipelineBuildError("capability preflight failed: " + "; ".join(report.issues))
@@ -310,9 +305,7 @@ class TrainingPipeline:
         result.stages.append("backend")
 
         registry = self.builders.registry
-        result.registry = (
-            _invoke(registry, ((self.config,), ())) if registry is not None else ModelRegistry
-        )
+        result.registry = _invoke(registry, ((self.config,), ())) if registry is not None else ModelRegistry
         result.stages.append("registry")
 
         if self.builders.dataset is not None:
@@ -330,7 +323,9 @@ class TrainingPipeline:
 
         result.peft_model = result.model
         if self.builders.peft is not None:
-            result.peft_model = _invoke(self.builders.peft, ((result.model, self.config), (result.model,), (self.config, result.model)))
+            result.peft_model = _invoke(
+                self.builders.peft, ((result.model, self.config), (result.model,), (self.config, result.model))
+            )
         result.stages.append("peft")
         result.peft_model = _prepare_distributed_model(
             result.peft_model,

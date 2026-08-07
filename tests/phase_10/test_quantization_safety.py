@@ -44,10 +44,7 @@ def test_quantized_base_is_frozen_and_never_enters_optimizer() -> None:
     groups = optimizer_parameter_groups(model)
     optimizer = torch.optim.AdamW(groups)
     verify_quantized_optimizer_exclusion(model, optimizer)
-    assert all(
-        not any("base_layer" in name for name in group["parameter_names"])
-        for group in groups
-    )
+    assert all(not any("base_layer" in name for name in group["parameter_names"]) for group in groups)
 
 
 def test_qlora_rejects_full_base_trainability_and_quantized_optimizer_groups() -> None:
@@ -66,6 +63,7 @@ def test_zero_trainable_parameters_fails_audit() -> None:
     model.requires_grad_(False)
     with pytest.raises(Exception, match="zero trainable"):
         audit_trainable_parameters(model)
+
 
 def test_no_accidental_quantization_on_cpu_lora_path() -> None:
     model = _wrapped_linear()

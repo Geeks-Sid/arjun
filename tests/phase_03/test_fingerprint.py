@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import pandas as pd
-from synthetic import build_mixed_manifest, hid, manifest_row
 
 from medfm.data.fingerprint import fingerprint_manifest, recommend_shape_buckets
+from phase_03.synthetic import build_mixed_manifest, hid, manifest_row
 
 
 def test_fingerprint_counts_and_distributions() -> None:

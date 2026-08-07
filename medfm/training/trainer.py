@@ -190,11 +190,15 @@ class Trainer:
         self._oom_diagnostic: OOMDiagnostic | None = None
         self._last_metrics: dict[str, float] = {}
         self.memory_planner = memory_planner or planner_for_backend(self.backend.name, self.config.memory)
-        self.compilation_monitor = CompilationMonitor(
-            warmup_steps=self.config.accelerator.warmup_steps,
-            max_steady_state_compilations=self.config.accelerator.max_steady_state_compilations,
-            fail=self.config.accelerator.fail_on_recompilation_after_warmup,
-        ) if self.backend.name == "xla_tpu" else None
+        self.compilation_monitor = (
+            CompilationMonitor(
+                warmup_steps=self.config.accelerator.warmup_steps,
+                max_steady_state_compilations=self.config.accelerator.max_steady_state_compilations,
+                fail=self.config.accelerator.fail_on_recompilation_after_warmup,
+            )
+            if self.backend.name == "xla_tpu"
+            else None
+        )
         output_dir = Path(self.config.output_dir)
         self.run_dir = output_dir / self.config.config_hash()[:16]
         self.run_dir.mkdir(parents=True, exist_ok=True)
@@ -260,9 +264,7 @@ class Trainer:
             if parameter.requires_grad
         }
         optimizer_parameter_ids = {
-            id(parameter)
-            for group in self.optimizer.param_groups
-            for parameter in group["params"]
+            id(parameter) for group in self.optimizer.param_groups for parameter in group["params"]
         }
         if component_parameter_ids - optimizer_parameter_ids:
             if self.optimizer_bundle is not None:
@@ -362,14 +364,10 @@ class Trainer:
             else loss_output.total
         )
         count_value = (
-            loss_output.diagnostics.get("valid_count")
-            if isinstance(loss_output.diagnostics, Mapping)
-            else None
+            loss_output.diagnostics.get("valid_count") if isinstance(loss_output.diagnostics, Mapping) else None
         )
         if not isinstance(count_value, torch.Tensor):
-            count_value = torch.as_tensor(
-                max(0, int(loss_output.sample_count)), dtype=total.dtype, device=total.device
-            )
+            count_value = torch.as_tensor(max(0, int(loss_output.sample_count)), dtype=total.dtype, device=total.device)
         count_value = count_value.to(device=total.device, dtype=total.dtype)
         global_count = self.backend.reduce_sum(count_value)
         # DDP/XLA gradient reductions average replicas. Reweight each local
@@ -638,6 +636,7 @@ class Trainer:
         self.state.load(state)
         self._apply_stage(self.state.global_step, force=True, rebuild=False)
         return self.state
+
     def export_adapter(self, name: str | int = "adapter") -> Path:
         return self.checkpoint_manager.export_adapter(
             name,
@@ -697,6 +696,7 @@ def _loader_state_target(loader: Any) -> Any | None:
         return loader
     sampler = getattr(loader, "sampler", None)
     return sampler if callable(getattr(sampler, "load_state_dict", None)) else None
+
 
 def _looks_like_oom(error: BaseException) -> bool:
     if isinstance(error, torch.cuda.OutOfMemoryError):

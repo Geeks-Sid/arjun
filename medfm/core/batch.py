@@ -395,46 +395,26 @@ class MedicalBatch:
         changing its representation.
         """
         moved_targets = {
-            key: (
-                value.to(device, non_blocking=non_blocking)
-                if isinstance(value, torch.Tensor)
-                else value
-            )
+            key: (value.to(device, non_blocking=non_blocking) if isinstance(value, torch.Tensor) else value)
             for key, value in self.task_targets.items()
         }
         return replace(
             self,
             pixel_values=(
-                self.pixel_values.to(device, non_blocking=non_blocking)
-                if self.pixel_values is not None
-                else None
+                self.pixel_values.to(device, non_blocking=non_blocking) if self.pixel_values is not None else None
             ),
-            image_mask=(
-                self.image_mask.to(device, non_blocking=non_blocking)
-                if self.image_mask is not None
-                else None
-            ),
+            image_mask=(self.image_mask.to(device, non_blocking=non_blocking) if self.image_mask is not None else None),
             tile_coordinates=(
                 self.tile_coordinates.to(device, non_blocking=non_blocking)
                 if self.tile_coordinates is not None
                 else None
             ),
             spatial_metadata=[m.to(device) if m is not None else None for m in self.spatial_metadata],
-            input_ids=(
-                self.input_ids.to(device, non_blocking=non_blocking)
-                if self.input_ids is not None
-                else None
-            ),
+            input_ids=(self.input_ids.to(device, non_blocking=non_blocking) if self.input_ids is not None else None),
             attention_mask=(
-                self.attention_mask.to(device, non_blocking=non_blocking)
-                if self.attention_mask is not None
-                else None
+                self.attention_mask.to(device, non_blocking=non_blocking) if self.attention_mask is not None else None
             ),
-            labels=(
-                self.labels.to(device, non_blocking=non_blocking)
-                if self.labels is not None
-                else None
-            ),
+            labels=(self.labels.to(device, non_blocking=non_blocking) if self.labels is not None else None),
             task_targets=moved_targets,
             pinned=self.pinned and torch.device(device).type == "cpu",
         )

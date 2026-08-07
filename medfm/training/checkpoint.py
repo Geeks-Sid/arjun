@@ -9,14 +9,15 @@ import os
 import random
 import shutil
 import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import torch
 from torch import nn
 
-from medfm.peft.checkpoint import _read_safetensors, _write_safetensors
+from medfm.peft.checkpoint import _write_safetensors
 from medfm.training.config import RunConfig
 
 CHECKPOINT_SCHEMA_VERSION = 1
@@ -276,11 +277,9 @@ class CheckpointManager:
             raise
 
     save_checkpoint = save
+
     def _is_xla_replicated(self, run_config: RunConfig) -> bool:
-        return (
-            run_config.accelerator.backend == "xla_tpu"
-            and run_config.accelerator.distribution == "replicated"
-        )
+        return run_config.accelerator.backend == "xla_tpu" and run_config.accelerator.distribution == "replicated"
 
     def _skip_non_coordinator(self, run_config: RunConfig) -> bool:
         if not self._is_xla_replicated(run_config):
@@ -318,7 +317,6 @@ class CheckpointManager:
         if callable(synchronize):
             synchronize()
 
-
     def inspect(self, path: str | Path) -> CheckpointManifest:
         root = Path(path)
         manifest = self._read_manifest(root)
@@ -347,9 +345,7 @@ class CheckpointManager:
             allow_topology_change=allow_topology_change,
         )
         if manifest.kind != "resumable":
-            raise CheckpointCompatibilityError(
-                "adapter-only artifact cannot restore optimizer/training state"
-            )
+            raise CheckpointCompatibilityError("adapter-only artifact cannot restore optimizer/training state")
         use_distributed_storage = manifest.extra.get("storage_format") == "torch_distributed_checkpoint"
         if use_distributed_storage:
             if optimizer is not None:
@@ -465,7 +461,9 @@ class CheckpointManager:
             raise IncompleteCheckpointError("checkpoint has no training_state.json")
 
     @staticmethod
-    def _validate_compatibility(manifest: CheckpointManifest, run_config: RunConfig, *, allow_topology_change: bool) -> None:
+    def _validate_compatibility(
+        manifest: CheckpointManifest, run_config: RunConfig, *, allow_topology_change: bool
+    ) -> None:
         if manifest.run_config_hash != run_config.config_hash():
             raise CheckpointCompatibilityError(
                 "run configuration hash mismatch; refusing to resume under a changed scientific configuration"
@@ -488,12 +486,8 @@ def _requires_distributed_checkpoint(run_config: RunConfig, *, adapter_only: boo
     if adapter_only:
         return False
     accelerator = run_config.accelerator
-    return (
-        accelerator.backend == "cuda"
-        and accelerator.distribution == "fsdp"
-    ) or (
-        accelerator.backend == "xla_tpu"
-        and accelerator.distribution == "spmd_fsdp"
+    return (accelerator.backend == "cuda" and accelerator.distribution == "fsdp") or (
+        accelerator.backend == "xla_tpu" and accelerator.distribution == "spmd_fsdp"
     )
 
 
@@ -520,9 +514,7 @@ def _flatten_distributed_model_state(
 ) -> Mapping[str, Any]:
     if not components:
         return state["model"]
-    combined: dict[str, Any] = {
-        f"model.{key}": value for key, value in dict(state["model"]).items()
-    }
+    combined: dict[str, Any] = {f"model.{key}": value for key, value in dict(state["model"]).items()}
     for name in components:
         values = dict(state.get(f"component:{name}", {}))
         combined.update({f"{name}.{key}": value for key, value in values.items()})
@@ -607,9 +599,7 @@ def _prime_optimizer_for_checkpoint(optimizer: Any) -> None:
 
 def _file_hashes(root: Path, *, relative_to: Path) -> dict[str, str]:
     return {
-        path.relative_to(relative_to).as_posix(): _sha256(path)
-        for path in sorted(root.rglob("*"))
-        if path.is_file()
+        path.relative_to(relative_to).as_posix(): _sha256(path) for path in sorted(root.rglob("*")) if path.is_file()
     }
 
 

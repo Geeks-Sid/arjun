@@ -143,9 +143,7 @@ def wrap_model(
     if distribution == "single" or distribution == "replicated":
         if backend.name == "xla_tpu" and distribution == "replicated":
             if not replicated_tpu_accepted:
-                raise DistributedLaunchError(
-                    "TPU replicated wrapping requires a passing single-host acceptance marker"
-                )
+                raise DistributedLaunchError("TPU replicated wrapping requires a passing single-host acceptance marker")
         return model
     if backend.name == "cuda" and distribution == "ddp":
         if not torch.distributed.is_initialized():
@@ -165,6 +163,7 @@ def wrap_model(
             raise DistributedLaunchError("this PyTorch build lacks FSDP") from exc
         auto_wrap_policy = None
         if transformer_block_classes:
+
             def policy(module: nn.Module, recurse: bool, nonwrapped_numel: int) -> bool:
                 return transformer_auto_wrap_policy(
                     module=module,
@@ -177,9 +176,7 @@ def wrap_model(
         return FSDP(model, auto_wrap_policy=auto_wrap_policy, device_id=backend.device)
     if backend.name == "xla_tpu" and distribution == "spmd_fsdp":
         if not replicated_tpu_accepted:
-            raise DistributedLaunchError(
-                "TPU SPMD/FSDP is gated until replicated TPU acceptance passes"
-            )
+            raise DistributedLaunchError("TPU SPMD/FSDP is gated until replicated TPU acceptance passes")
         try:
             from torch_xla.distributed import spmd  # noqa: PLC0415
         except ImportError as exc:
