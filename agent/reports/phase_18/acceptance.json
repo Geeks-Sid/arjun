@@ -1,0 +1,72 @@
+{
+  "phase": "18",
+  "status": "passed",
+  "generated_by": "Geeks-Sid (omp phase execution)",
+  "generated_at": "2026-08-07T08:32:36.366036+00:00",
+  "smoke_command": "make smoke",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "test-matrix",
+      "description": "Level 1 (CPU contracts), Level 2 (synthetic GPU tiny models), Level 3 (gated real-checkpoint), and Level 4 (golden) test levels are defined with markers/guards and protected jobs; ordinary CPU jobs never run weights/network tests.",
+      "status": "passed",
+      "evidence": "pyproject markers level1..level4/golden/real_checkpoint + --strict-markers; tests/conftest.py real_checkpoint guard; Makefile test-level1/2/golden/protected; protected-hardware.yml L2-L4 jobs"
+    },
+    {
+      "id": "skip-and-waiver-discipline",
+      "description": "Unexplained skipped tests and expired waivers fail the gate.",
+      "status": "passed",
+      "evidence": "scripts/audit_skips.py (junit skips need a reason); scripts/audit_waivers.py; docs/release/waivers.md (empty); CI step wires both"
+    },
+    {
+      "id": "ci-and-quality-gates",
+      "description": "Formatting/lint, typecheck, unit tests, coverage, package build, docs/schema, phase-report and registry validation run in CI with machine-readable artifacts and safe caching.",
+      "status": "passed",
+      "evidence": ".github/workflows/ci.yml level1 job (lint/typecheck/pytest junit+coverage/build/secret scan/release-check/waiver audit); dependency-audit job (pip-audit + grype) nightly; uv cache only, no credentials/patient data"
+    },
+    {
+      "id": "registry-backend-status",
+      "description": "Every model registry entry resolves CPU/CUDA/TPU as supported, blocked, or explicitly untested.",
+      "status": "passed",
+      "evidence": "medfm/tools/release.py registry_backend_statuses(); all 5 BACKEND_KEYS resolved per model (UNTESTED/BLOCKED*/NOT_APPLICABLE); support_matrix.md generated"
+    },
+    {
+      "id": "security-and-privacy",
+      "description": "Path traversal/unsafe URIs, trust_remote_code/malicious checkpoint rejection, PHI redaction, prompt-injection isolation, gated download/license bypass, secrets/dependency/container scanning, and a vulnerability reporting process are in place.",
+      "status": "passed",
+      "evidence": "tests/phase_18/test_security.py (10 tests); scripts/scan_secrets.py + make security; docs/security_policy.md (severity SLA + incident response); manifest report_chars non-echo fix"
+    },
+    {
+      "id": "reliability-and-regression",
+      "description": "Interruption, checkpoint corruption, disk-full, cache corruption, deterministic modes, cross-backend tolerances, and portable export/load hold on CPU; golden regression pinning shapes/stats/logits/masks/structured/memory.",
+      "status": "passed",
+      "evidence": "tests/phase_18/test_reliability.py (5); tests/phase_18/test_golden_regression.py (8) vs pinned fixtures + manifest; cross-backend tolerance table"
+    },
+    {
+      "id": "release-docs-and-artifacts",
+      "description": "Release notes, checksums, compatibility/support matrix, known limitations, versioning/migration/deprecation/rollback, CUDA-QLoRA vs TPU-BF16 guidance, model/license/data summaries, and research-status labels are complete.",
+      "status": "passed",
+      "evidence": "docs/release/*  (9 docs + checksums.txt); docs/security_policy.md; README release section"
+    },
+    {
+      "id": "no-unsupported-claims",
+      "description": "No unsupported clinical claim and no unsupported accelerator/quantization claim ship.",
+      "status": "passed",
+      "evidence": "release.clinical_claims() clean; no_tpu_nf4() clean; no_eager_backend_imports() clean; registry backend statuses honest (UNTESTED/BLOCKED*); research disclaimers in all release docs"
+    },
+    {
+      "id": "final-gate-green",
+      "description": "All required tests pass; no unresolved critical/high security issue; no required acceptance result is unknown; bundles reproduce accepted outputs.",
+      "status": "passed",
+      "evidence": "make lint + make typecheck + make test (979 passed, 10 guarded skips with reasons) + validate_phase --phase 18 + make smoke; all phase reports 00..18 validate via release.phase_reports"
+    },
+    {
+      "id": "handoff",
+      "description": "Release notes, checksums, compatibility matrix, and rollback steps are published; tracked follow-ups open for deferred models/waivers and scheduled reviews.",
+      "status": "passed",
+      "evidence": "docs/release/release_notes.md, checksums.txt, compatibility_matrix.md, rollback.md, waivers.md; agent/reports/phase_18/next_phase_handoff.md + unresolved_issues.md"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_18/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_18/next_phase_handoff.md"
+}

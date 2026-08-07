@@ -1,0 +1,16 @@
+{
+  "history_stages": [
+    "deterministic",
+    "deterministic"
+  ],
+  "max": 1.0,
+  "mean": 0.5998042821884155,
+  "min": 0.0,
+  "shape": [
+    1,
+    8,
+    8,
+    8
+  ],
+  "std": 0.35971924662590027
+}

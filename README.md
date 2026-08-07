@@ -5,9 +5,9 @@ One framework for training and evaluating medical foundation models across
 with LoRA/QLoRA-first PEFT training on CPU (tests), NVIDIA CUDA GPUs, and
 Google Cloud TPUs (PyTorch/XLA).
 
-Status: Phase 01 (repository, environment, reproducibility) complete.
-See `implementation_plan/` for the phase-gated plan and `docs/` for the
-frozen v1 scope.
+Status: Phase 18 (CI, hardening, and release) complete.
+See `implementation_plan/` for the phase-gated plan and `docs/` for the frozen
+v1 scope. **Research release (0.1.0-rc) — not for clinical use.**
 
 ## Supported environment matrix
 
@@ -48,6 +48,14 @@ make test-distributed-gpu  # multi-GPU protected job
 make test-distributed-tpu  # multi-device TPU protected job
 make smoke                 # phase smoke checks
 make doctor                # runtime diagnostics (also: medfm doctor --json)
+make test-golden           # Level-4 golden regression (CPU; pinned fixtures)
+make test-level2           # Level-2 synthetic-GPU (tiny models; env-guarded)
+make test-protected        # Level-3 real-checkpoint smoke (env-guarded)
+make security              # secret/forbidden-data scan + lint
+make coverage              # coverage.xml + term-missing report
+make release-check         # Phase 18 release gate (medfm release validate)
+make release-matrix        # regenerate docs/release/support_matrix.md
+make ci                    # aggregate Phase 18 gate (lint+typecheck+test+security+release-check)
 ```
 
 Every command exits nonzero on failure.
@@ -75,6 +83,21 @@ batch geometry, and configuration hashes as canonical (deterministic) JSON.
 `medfm.training.tracking` provides a local-first `Tracker` protocol
 (`LocalJSONTracker` default; TensorBoard optional; MLflow/W&B reserved behind
 extras) with automatic redaction of sensitive keys.
+
+## Release and security
+
+- **Research release (0.1.0-rc)** — this software is **not for clinical use**
+  and makes no diagnostic, treatment, or safety claim.
+  `docs/release/` holds release notes, versioning/rollback policy, known
+  limitations, the model x task x backend support matrix, CUDA-QLoRA vs
+  TPU-BF16 guidance, and checksums.
+- Every model is resolved per-backend as supported / blocked / explicitly
+  untested (`docs/release/support_matrix.md`); several are blocked pending
+  license review.
+- Security and privacy: `docs/security_policy.md`; reports to the maintainer
+  per the severity SLA. The release gate (`make release-check`) validates the
+  registry, license/backend invariants, backend-neutral imports, TPU-NF4
+  policy, clinical-claims, and every phase acceptance report (00..18).
 
 ## License
 

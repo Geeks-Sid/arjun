@@ -458,7 +458,12 @@ def _check_optional_columns(row: pd.Series, columns: set[str], label: str, probl
     if "report_chars" in columns:
         value = row["report_chars"]
         if not _is_null(value) and not _is_non_negative_int(value):
-            problems.append(f"{label}: report_chars must be a non-negative integer; got {value!r}")
+            # Never echo the cell: callers may have put free text (potentially
+            # PHI) in this column; report only the expected type.
+            problems.append(
+                f"{label}: report_chars must be a non-negative integer; got {type(value).__name__} "
+                "(value not echoed: possible report text)"
+            )
     if "shape_bucket_kind" in columns:
         value = row["shape_bucket_kind"]
         if not _is_null(value) and (not isinstance(value, str) or not value):

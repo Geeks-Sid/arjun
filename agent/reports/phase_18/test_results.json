@@ -1,0 +1,146 @@
+{
+  "suite": "pytest",
+  "tests": [
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[memory_envelope.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[metrics_dice_iou.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[native3d_identity.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[preprocess_stats.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[structured_findings.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_fixture_matches_pinned_value[tiny_2d_logits.json]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_golden_manifest_hashes_are_intact",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_golden_regression.py::test_memory_envelope_holds_parameter_footprint",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_checksums_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_clinical_claim_without_disclaimer_flagged",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_eager_hostile_import_is_flagged",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_generate_support_matrix_covers_models",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_guarded_hostile_import_is_allowed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_license_registry_consistency_clean",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_no_eager_backend_imports_clean",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_registry_backend_statuses_resolvable",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_registry_models_expose_all_five_backends",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_tpu_nf4_config_flagged",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_release_tool.py::test_write_checksums_format",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_reliability.py::test_checkpoint_disk_full_leaves_no_partial",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_reliability.py::test_clean_environment_install_to_inference_rehearsal",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_reliability.py::test_cross_backend_tolerance_policy_is_documented",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_reliability.py::test_deterministic_mode_repeats_loss",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_reliability.py::test_training_interrupt_saves_resumable_checkpoint",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_audit_log_redacts_phi",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_gated_model_download_rejected_without_acceptance",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_malicious_pickle_checkpoint_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_control_characters_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_path_traversal_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_remote_file_host_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_report_chars_free_text_rejected_without_echo",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_traversal_without_base_dir_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_manifest_unsafe_uri_scheme_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_18/test_security.py::test_report_prompt_injection_stays_in_user_block",
+      "status": "passed"
+    },
+    {
+      "name": "tests/ -q (full repository suite)",
+      "status": "passed",
+      "summary": "979 passed, 10 skipped, 13 warnings in 60.24s (0:01:00)"
+    }
+  ]
+}

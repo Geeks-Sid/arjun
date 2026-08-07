@@ -1,0 +1,49 @@
+# Phase 18 files changed (work products)
+
+## Foundation / test matrix
+pyproject.toml                        (pytest level markers + --strict-markers)
+Makefile                              (test-level1/2, test-golden, test-protected,
+                                      security, coverage, build, release-check,
+                                      release-matrix, ci targets)
+tests/conftest.py                     (protected real_checkpoint guard)
+
+## Release gate tooling
+medfm/tools/release.py                (new)
+medfm/cli/release.py                  (new)
+medfm/cli/main.py                     (register `release` subcommand)
+tests/phase_18/test_release_tool.py   (new)
+
+## Security
+tests/phase_18/test_security.py       (new)
+scripts/scan_secrets.py               (new)
+docs/security_policy.md               (new)
+medfm/data/manifests/schema.py        (fix: report_chars value no longer echoed)
+
+## Reliability
+tests/phase_18/test_reliability.py    (new)
+
+## Golden regression
+scripts/generate_golden.py            (new)
+tests/phase_18/golden/*.json          (new, pinned; manifest.json)
+tests/phase_18/test_golden_regression.py (new)
+
+## CI
+.github/workflows/ci.yml              (new)
+.github/workflows/protected-hardware.yml (new)
+scripts/audit_skips.py                (new)
+scripts/audit_waivers.py              (new)
+
+## Release documentation / artifacts
+docs/release/{versioning,rollback,known_limitations,compatibility_matrix,
+              cuda_qlora_vs_tpu_bf16_lora,model_license_data_summary,
+              release_notes,waivers,support_matrix,checksums.txt}.md|txt (new)
+README.md                             (release status + Phase 18 commands)
+
+## Phase gate
+medfm/tools/validate_phase.py         (PHASE_18_REQUIRED_FILES +
+                                       _check_phase_18_ci_hardening + dispatch)
+
+## Phase 18 report
+agent/reports/phase_18/               (summary, acceptance, test_results,
+                                       files_changed, commands_executed,
+                                       unresolved_issues, next_phase_handoff)

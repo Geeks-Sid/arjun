@@ -1,0 +1,36 @@
+# Phase 18 commands executed
+
+## Acceptance gate
+make lint
+make typecheck
+make test
+python -m medfm.tools.validate_phase --phase 18
+
+## Smoke
+make smoke                                  # python -m medfm.tools.smoke --phase 01
+
+## Test matrix
+uv run --frozen pytest tests/phase_18 -q                 # 34 phase-18 tests
+uv run --frozen pytest tests/ -q                         # 979 passed, 10 skipped
+uv run --frozen pytest tests/phase_18/test_golden_regression.py -q
+uv run --frozen pytest tests/phase_18/test_security.py -q
+uv run --frozen pytest tests/phase_18/test_reliability.py -q
+
+## Release gate / security scans
+make security                          # scripts/scan_secrets.py + ruff
+make release-check                     # python -m medfm.cli.release validate
+python -m medfm.cli.release matrix
+python -m medfm.cli.release checksums
+python scripts/audit_waivers.py docs/release/waivers.md
+python scripts/audit_skips.py <junit>  # (CI; local check via test results reasons)
+
+## Golden generation
+uv run --frozen python scripts/generate_golden.py
+
+## Static checks per component
+uv run --frozen ruff check medfm/tools/release.py medfm/cli/release.py scripts/
+uv run --frozen ruff format --check <changed files>
+uv run --frozen mypy medfm/tools/release.py medfm/cli/release.py
+
+## Workflow validation
+python -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/ci.yml').read_text())"  # YAML valid

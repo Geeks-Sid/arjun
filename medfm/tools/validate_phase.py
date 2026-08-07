@@ -448,6 +448,35 @@ PHASE_17_REQUIRED_FILES = [
     "tests/phase_17/test_serving.py",
 ]
 
+PHASE_18_REQUIRED_FILES = [
+    ".github/workflows/ci.yml",
+    ".github/workflows/protected-hardware.yml",
+    "docs/security_policy.md",
+    "docs/release/compatibility_matrix.md",
+    "docs/release/cuda_qlora_vs_tpu_bf16_lora.md",
+    "docs/release/known_limitations.md",
+    "docs/release/model_license_data_summary.md",
+    "docs/release/release_notes.md",
+    "docs/release/rollback.md",
+    "docs/release/support_matrix.md",
+    "docs/release/versioning.md",
+    "docs/release/waivers.md",
+    "docs/release/checksums.txt",
+    "medfm/cli/release.py",
+    "medfm/tools/release.py",
+    "scripts/audit_skips.py",
+    "scripts/audit_waivers.py",
+    "scripts/generate_golden.py",
+    "scripts/scan_secrets.py",
+    "tests/conftest.py",
+    "tests/phase_18/__init__.py",
+    "tests/phase_18/test_golden_regression.py",
+    "tests/phase_18/test_reliability.py",
+    "tests/phase_18/test_release_tool.py",
+    "tests/phase_18/test_security.py",
+    "tests/phase_18/golden/manifest.json",
+]
+
 
 def _check_phase_08_pathology() -> list[str]:
     errors: list[str] = []
@@ -1374,6 +1403,146 @@ def _check_phase_17_inference() -> list[str]:
     return errors
 
 
+def _check_phase_18_ci_hardening() -> list[str]:
+    """Phase 18: CI workflows, release-gate self-checks, scans, markers,
+    golden fixtures, and skipped-test/waiver auditing."""
+
+    errors: list[str] = []
+
+    # 1. CI workflows declare the required Level-1 and protected jobs.
+    workflows = gov.REPO_ROOT / ".github" / "workflows"
+    expected_jobs = {
+        "ci.yml": {"level1", "dependency-audit"},
+        "protected-hardware.yml": {
+            "level2-gpu",
+            "level3-real-checkpoints",
+            "level4-golden-gpu",
+            "cuda-single",
+            "cuda-distributed",
+            "tpu-replicated",
+            "tpu-distributed",
+        },
+    }
+    for filename, jobs in expected_jobs.items():
+        path = workflows / filename
+        if not path.exists():
+            errors.append(f"missing CI workflow: {filename}")
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+            missing = sorted(job for job in jobs if f"  {job}:" not in text)
+            if missing:
+                errors.append(f"{filename} missing job(s): {missing}")
+        except OSError as exc:
+            errors.append(f"cannot read CI workflow {filename}: {exc}")
+
+    # 2. Release-gate self-checks (CPU-runnable; no hardware in this phase).
+    try:
+        from medfm.tools import release
+
+        errors.extend(release.registry_backend_statuses())
+        errors.extend(release.license_registry_consistency())
+        errors.extend(release.no_eager_backend_imports())
+        errors.extend(release.no_tpu_nf4())
+        errors.extend(release.clinical_claims())
+        errors.extend(release.report_metrics_claim())
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"Phase 18 release-gate self-check failed: {type(exc).__name__}: {exc}")
+
+    # 3. pytest markers for the level/security/reliability matrix are registered.
+    try:
+        import tomllib
+
+        pyproject = tomllib.loads((gov.REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+        registered = {
+            str(marker).split(":", 1)[0].strip()
+            for marker in pyproject["tool"]["pytest"]["ini_options"].get("markers", [])
+        }
+        required = {
+            "level1",
+            "level2",
+            "level3",
+            "level4",
+            "golden",
+            "real_checkpoint",
+            "security",
+            "reliability",
+        }
+        missing = sorted(required - registered)
+        if missing:
+            errors.append(f"pytest markers not registered: {missing}")
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"marker registration check failed: {type(exc).__name__}: {exc}")
+
+    # 4. Golden fixtures match their pinned SHA-256 manifest.
+    golden_dir = gov.REPO_ROOT / "tests" / "phase_18" / "golden"
+    try:
+        manifest = gov.load_json(golden_dir / "manifest.json")
+        for name, digest in dict(manifest.get("files", {})).items():
+            path = golden_dir / name
+            if not path.exists():
+                errors.append(f"golden fixture missing: {name}")
+                continue
+            import hashlib
+
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            if actual != digest:
+                errors.append(f"golden fixture drifted: {name} (re-run scripts/generate_golden.py)")
+    except OSError as exc:
+        errors.append(f"golden manifest unreadable: {exc}")
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"golden manifest check failed: {type(exc).__name__}: {exc}")
+
+    # 5. Audit scripts exit cleanly on the current tree.
+    import re
+    import subprocess
+
+    audit_commands = (
+        ("scripts/scan_secrets.py", ["--root", str(gov.REPO_ROOT)]),
+        ("scripts/audit_waivers.py", [str(gov.REPO_ROOT / "docs" / "release" / "waivers.md")]),
+    )
+    for script, args in audit_commands:
+        path = gov.REPO_ROOT / script
+        if not path.exists():
+            errors.append(f"missing audit script: {script}")
+            continue
+        try:
+            result = subprocess.run(
+                [sys.executable, str(path), *args],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=120,
+            )
+            if result.returncode != 0:
+                message = (result.stdout or result.stderr).strip()
+                errors.append(f"{script} failed: {message[:200]}")
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"{script} could not run: {type(exc).__name__}: {exc}")
+
+    # 6. Makefile exposes the Level-1..4 / security / release targets.
+    try:
+        makefile = (gov.REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+        for target in (
+            "test-level1",
+            "test-level2",
+            "test-golden",
+            "test-protected",
+            "security",
+            "release-check",
+            "release-matrix",
+            "coverage",
+            "build",
+            "ci",
+        ):
+            if not re.search(rf"^{target}:", makefile, flags=re.MULTILINE):
+                errors.append(f"Makefile missing target: {target}")
+    except OSError as exc:
+        errors.append(f"Makefile unreadable: {exc}")
+
+    return errors
+
+
 def _check_report(phase: str, errors: list[str]) -> None:
     report_dir = gov.REPO_ROOT / "agent" / "reports" / f"phase_{phase}"
     for name in REPORT_FILES:
@@ -1505,6 +1674,11 @@ def validate_phase(phase: str) -> list[str]:
             if not (gov.REPO_ROOT / rel).exists():
                 errors.append(f"missing required file: {rel}")
         errors.extend(_check_phase_17_inference())
+    elif phase == "18":
+        for rel in PHASE_18_REQUIRED_FILES:
+            if not (gov.REPO_ROOT / rel).exists():
+                errors.append(f"missing required file: {rel}")
+        errors.extend(_check_phase_18_ci_hardening())
 
     else:
         errors.append(f"no validator registered for phase {phase}")

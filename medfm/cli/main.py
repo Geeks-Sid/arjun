@@ -30,6 +30,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("infer", help="run bounded model inference")
     sub.add_parser("export", help="export validated deployment bundles")
     sub.add_parser("train", help="run a training recipe")
+    sub.add_parser("release", help="Phase 18 release gate (validate/matrix/checksums)")
 
     args, rest = parser.parse_known_args(argv)
     if args.command == "doctor":
@@ -71,6 +72,10 @@ def main(argv: list[str] | None = None) -> int:
         from medfm.cli import train as train_cli
 
         return train_cli.main(rest)
+    if args.command == "release":
+        from medfm.cli import release as release_cli
+
+        return release_cli.main(rest)
 
     parser.error(f"unknown command: {args.command}")  # pragma: no cover
     return 2  # pragma: no cover

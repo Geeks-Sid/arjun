@@ -1,0 +1,22 @@
+{
+  "findings": [
+    [
+      "left lower lobe opacity",
+      "present",
+      "left",
+      "",
+      "lung"
+    ],
+    [
+      "pleural effusion",
+      "absent",
+      "",
+      "",
+      ""
+    ]
+  ],
+  "parse_valid": true,
+  "parsed_keys": [
+    "findings"
+  ]
+}

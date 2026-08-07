@@ -1,0 +1,12 @@
+{
+  "files": {
+    "memory_envelope.json": "de5b82f3b39e9bae8a2b3f35647a08b563b33bae4ffda7c5487a6f6ea4eb9046",
+    "metrics_dice_iou.json": "8e518c1f6acc8f3083c9f620334963a60f4c1030c9971d94f5ac31905b10688f",
+    "native3d_identity.json": "1755bf8fcd52536dba0bc9d0bc7d8a3f1185e5cbf4ef363e73cf312ee0ed9ec4",
+    "preprocess_stats.json": "7bf6b51abb9d36d4600a244576e936e13ada59cc02f81ee483415cd031d8b632",
+    "structured_findings.json": "6519157f0df8f26497e8ef7b8484fc97c9dd28eccbb41137d3dec98ea0dd2330",
+    "tiny_2d_logits.json": "a5bdd94341b5a6ebc1d27d5c0cb55a7911c6f6dfcbc9f8c528dceb71c55fa782"
+  },
+  "note": "pinned by scripts/generate_golden.py; do not hand-edit without regenerating",
+  "schema_version": 1
+}

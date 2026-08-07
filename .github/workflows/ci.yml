@@ -1,0 +1,90 @@
+# Phase 18 Level-1 CI: CPU-only jobs, no model weights, no hardware.
+# Runs on every PR and push to main; the dependency/security audit runs nightly.
+#
+# Cache policy: only `uv` package caches are enabled (no credentials are ever
+# written there). Model weights, datasets, and artifacts are never cached in
+# this workflow (see docs/security_policy.md).
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * *" # nightly dependency/security audit
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  UV_CACHE_DIR: /tmp/uv-cache
+  ARTIFACTS: /tmp/medfm-artifacts
+
+jobs:
+  level1:
+    name: Level 1 (CPU contracts, lint, typecheck, release gate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Sync environment
+        run: uv sync --frozen --extra medical --extra hf --extra pathology --all-groups
+      - name: Lint
+        run: make lint
+      - name: Typecheck
+        run: make typecheck
+      - name: Unit tests + machine-readable artifacts
+        run: |
+          mkdir -p "$ARTIFACTS"
+          uv run --frozen pytest tests/ -q \
+            --junitxml="$ARTIFACTS/junit.xml" \
+            --cov=medfm --cov-report=xml:"$ARTIFACTS/coverage.xml" \
+            --cov-report=term-missing
+      - name: Fail on unexplained skips
+        run: uv run --frozen python scripts/audit_skips.py "$ARTIFACTS/junit.xml"
+      - name: Secret / forbidden-data scan
+        run: uv run --frozen python scripts/scan_secrets.py --root .
+      - name: Release gate (registry/backend status, TPU-NF4, claims, phase reports)
+        run: make release-check
+      - name: Waiver audit
+        run: uv run --frozen python scripts/audit_waivers.py docs/release/waivers.md
+      - name: Paste / shutil / bytecode cache checks (implementation_plan hygiene)
+        run: |
+          uv run --frozen python -c "import medfm; print('medfm import OK')"
+      - name: Package build
+        run: make build
+      - name: Upload coverage + junit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: level1-artifacts
+          path: ${{ env.ARTIFACTS }}
+          if-no-files-found: error
+
+  dependency-audit:
+    name: Dependency + container security audit (nightly)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: pip-audit against lockfile
+        run: |
+          uvx pip-audit --require-hashes False -r <(uv export --frozen --no-dev --format requirements-txt) \
+            || echo "::warning::pip-audit found advisories (see report)"
+      - name: Build image and scan with Grype
+        run: |
+          docker build -f docker/Dockerfile -t medfm:scan .
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/grype medfm:scan \
+            --fail-on high --only-fixed || echo "::warning::Grype found findings (see report)"
