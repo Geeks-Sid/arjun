@@ -9,16 +9,25 @@ Wave: 1.
 - [x] `fit_threshold` / `apply_threshold` / `_candidate_thresholds` → **keep** — operating-point
       selection on validation rows only is contract logic; no installed library matches the
       "fit on val / apply to test" split policy.
-- [x] `fit_calibration` (piecewise-constant histogram calibrator) → **keep** — MONAI has no
-      calibrator; sklearn's `IsotonicRegression` is **not installed** (new dep, out of scope);
-      torchmetrics not installed. Keep the deterministic histogram map.
-- [x] `expected_calibration_error` / `brier_score` → **keep** — same dependency situation
-      (torchmetrics `CalibrationError`/`BrierScore` would be the ideal target but is not
-      installed; adding it is an ADR-level choice, not part of this transfer wave). The current
-      torch implementations are already correct and tested.
+- [x] `fit_calibration` (piecewise-constant histogram calibrator) → **keep** — the
+      deterministic histogram map is test-pinned; sklearn's `IsotonicRegression` has
+      different fitting semantics and is explicitly not adopted.
+- [x] `expected_calibration_error` → **transfer** — `torchmetrics.classification.BinaryCalibrationError`
+      with equal-width bins and `norm="l1"` matches the repository's weighting and boundary
+      semantics across parity fixtures (including empty bins and degenerate predictions).
+- [x] `brier_score` → **keep** — torchmetrics 1.9 removed/deprecated `BrierScore`; retain
+      the hand-rolled torch operation rather than inventing a library substitute.
 - [x] `ThresholdSelection` / `CalibrationModel` dataclasses → **keep** (contract types).
 
 ## Tests
-`tests/phase_16/test_evaluation.py` (ECE, fit_calibration, thresholds).
+`tests/phase_16/test_evaluation.py` and
+`tests/phase_16/test_parity_calibration_torchmetrics.py` (ECE, fit_calibration, thresholds).
+
 ## Result
-Verified keep: validation-split thresholding, deterministic histogram calibration, ECE/Brier kernels, and contract dataclasses remain custom; no installed library provides the required semantics (`sklearn` and `torchmetrics` are unavailable). Source read confirmed the contracts. No parity drift measured. `uv run --frozen pytest tests/phase_16/test_evaluation.py tests/phase_16/test_specialized.py tests/phase_16/test_distributed.py` — 17 passed.
+Transferred `expected_calibration_error` to `BinaryCalibrationError(n_bins=bins, norm="l1")`;
+parity fixtures covered equal-width bin boundaries, weighting, empty bins, all-0 predictions,
+all-1 predictions, and empty input contract (`None` vs torchmetrics `nan`). Maximum measured
+drift was 0.0 in the executed fixtures. Kept `brier_score` because torchmetrics 1.9 has no
+`BrierScore`; kept histogram calibration, threshold helpers, and contract dataclasses because
+their semantics are custom/test-pinned. Files changed: `medfm/evaluation/calibration.py`,
+`tests/phase_16/test_parity_calibration_torchmetrics.py`, and this checklist.

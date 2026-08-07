@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 import torch
 
-from medfm.evaluation.advanced import classification_metrics
+from medfm.evaluation.advanced import _monai_dice_iou, classification_metrics
 from medfm.evaluation.metrics import MetricValue
 
 
@@ -44,8 +44,8 @@ def adjacent_slice_consistency(
         )
         for slice_index in range(max(0, mask.shape[0] - 1)):
             left, right = mask[slice_index], mask[slice_index + 1]
-            union = (left | right).sum()
-            scores.append(1.0 if union == 0 else float((left & right).sum() / union))
+            _, iou = _monai_dice_iou(cast(Any, left), cast(Any, right))
+            scores.append(iou)
     return _metric(
         "adjacent_slice_consistency",
         None if not scores else sum(scores) / len(scores),

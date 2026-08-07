@@ -71,20 +71,9 @@ def _rank_auc(y: torch.Tensor, p: torch.Tensor) -> float | None:
     negatives = int(y.numel() - positives)
     if positives == 0 or negatives == 0:
         return None
-    # Average ranks for ties; this is platform-stable and agrees with the
-    # Mann-Whitney definition of AUROC.
-    order = torch.argsort(p, stable=True)
-    sorted_scores = p[order]
-    ranks = torch.arange(1, len(sorted_scores) + 1, dtype=torch.float64)
-    i = 0
-    while i < len(sorted_scores):
-        j = i + 1
-        while j < len(sorted_scores) and sorted_scores[j] == sorted_scores[i]:
-            j += 1
-        ranks[i:j] = ranks[i:j].mean()
-        i = j
-    positive_rank_sum = ranks[y[order] == 1].sum()
-    return float((positive_rank_sum - positives * (positives + 1) / 2) / (positives * negatives))
+    from torchmetrics.classification import BinaryAUROC
+
+    return float(BinaryAUROC()(p, y))
 
 
 def _average_precision(y: torch.Tensor, p: torch.Tensor) -> float | None:
@@ -221,13 +210,9 @@ def _binary_classification_metrics(
 def _ece(y: torch.Tensor, p: torch.Tensor, bins: int) -> float | None:
     if not y.numel():
         return None
-    edges = torch.linspace(0.0, 1.0, bins + 1, dtype=p.dtype)
-    value = torch.tensor(0.0, dtype=torch.float64)
-    for index in range(bins):
-        mask = (p >= edges[index]) & ((p < edges[index + 1]) if index < bins - 1 else (p <= edges[index + 1]))
-        if bool(mask.any()):
-            value += mask.float().mean().to(torch.float64) * (p[mask].mean() - y[mask].float().mean()).abs()
-    return float(value)
+    from torchmetrics.classification import BinaryCalibrationError
+
+    return float(BinaryCalibrationError(n_bins=bins, norm="l1")(p, y))
 
 
 def classification_metrics(
@@ -590,13 +575,29 @@ def _monai_spatial_summary(
     return _repo_value(hd95_raw), _repo_value(assd_raw), _repo_value(surface_raw)
 
 
+def _monai_dice_iou(pred: NDArray[Any], truth: NDArray[Any]) -> tuple[float, float]:
+    """Compute non-empty Dice and IoU with MONAI's DiceMetric."""
+    from monai.metrics.meandice import DiceMetric
+
+    pred_tensor = torch.as_tensor(pred, dtype=torch.bool).unsqueeze(0).unsqueeze(0)
+    truth_tensor = torch.as_tensor(truth, dtype=torch.bool).unsqueeze(0).unsqueeze(0)
+    dice_raw = DiceMetric(
+        include_background=False,
+        reduction="mean",
+        ignore_empty=False,
+    )(pred_tensor, truth_tensor)
+    value = float(_tensor(dice_raw).reshape(-1)[0])
+    dice = value if math.isfinite(value) else 0.0
+    iou = dice / (2.0 - dice) if dice < 2.0 else 0.0
+    return dice, iou
+
+
 def _spatial_summary(
     pred: NDArray[Any], truth: NDArray[Any], spacing: tuple[float, ...], tolerance_mm: float
 ) -> dict[str, float | None | str]:
     pred_count = int(pred.sum())
     truth_count = int(truth.sum())
-    intersection = int((pred & truth).sum())
-    union = int((pred | truth).sum())
+
     dice: float
     iou: float
     surface: float
@@ -611,8 +612,7 @@ def _spatial_summary(
         hd95 = assd = None
         empty_case = "prediction_empty" if pred_count == 0 else "target_empty"
     else:
-        dice = 2.0 * intersection / (pred_count + truth_count)
-        iou = intersection / union if union else 1.0
+        dice, iou = _monai_dice_iou(pred, truth)
         hd95, assd, surface = _monai_spatial_summary(pred, truth, spacing, tolerance_mm)
         empty_case = "neither_empty"
     return {

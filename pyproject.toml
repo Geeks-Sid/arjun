@@ -32,6 +32,12 @@ medical = [
     "highdicom>=0.25",
     "SimpleITK>=2.5",
     "scikit-image>=0.25",
+    # Clinical evaluation metrics / calibration / generation-text scoring.
+    # All permissively licensed (Apache-2.0 / BSD-3); evaluation is core
+    # runtime so these ship with the base `medical` extra (see ADR-0012).
+    "torchmetrics>=1.4",
+    "scikit-learn>=1.5",
+    "rouge-score>=0.1.2",
 ]
 # Pathology / whole-slide imaging (CPU-only readers; GPU accel is separate)
 pathology = [

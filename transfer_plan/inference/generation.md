@@ -18,9 +18,14 @@ Wave: 1.
       installed `jsonschema.Draft202012Validator`, returning privacy-safe validator names
       rather than raw input in errors.
 - [x] `require_valid_output` / `GenerationResult` → **keep**.
+- [x] `_rouge_l` (in `medfm/evaluation/advanced.py`) → **keep** — the kernel is owned by the
+      advanced-metrics transfer and its exact token-table semantics cannot be delegated from
+      `generation.py`; the parity fixture is recorded in
+      `tests/phase_17/test_parity_generation_rouge.py`.
 
 ## Tests
-`tests/phase_17/test_inference.py`, `tests/phase_09/test_language.py`.
+`tests/phase_17/test_inference.py`, `tests/phase_09/test_language.py`,
+`tests/phase_17/test_parity_generation_rouge.py`.
 
 ## Result
 - `generate`/`_call_generator`/`_decode_output`, `build_safe_prompt`, `select_length_bucket`, and
@@ -29,12 +34,18 @@ Wave: 1.
 - `validate_json_output`: **keep** (no source change); it already parses JSON then validates
   with the installed `jsonschema.Draft202012Validator` and returns only validator names,
   preserving privacy-safe errors without raw output.
-- Parity drift: none measured; direct valid/invalid smoke check passed.
-- Files changed: this checklist only.
-- Verification: `uv run --frozen pytest tests/phase_17/test_inference.py tests/phase_05/test_model_registry.py`
-  (30 passed); `uv run --frozen pytest tests/phase_09/test_language.py` (6 passed);
-  `uv run --frozen ruff check medfm/inference/generation.py medfm/inference/pipeline.py
-  medfm/inference/bundle.py` (passed); `uv run --frozen ruff format --check
-  medfm/inference/generation.py medfm/inference/pipeline.py medfm/inference/bundle.py`
-  (3 files already formatted); `uv run --frozen mypy medfm/inference/generation.py
-  medfm/inference/pipeline.py medfm/inference/bundle.py` (passed).
+- `_rouge_l`: **keep**; the kernel lives in `medfm/evaluation/advanced.py` (owned by the
+  advanced-metrics agent), so `generation.py` was not edited. For ordinary token sequences
+  (`["left", "lung", "opacity"]` vs `["left", "lung"]`), RougeScorer parity was exact:
+  precision/recall/F1 drift `(0, 0, 0)`. For the clinical punctuation fixture
+  (`["left-lower", "lobe"]` vs `["left", "lower", "lobe"]`), repo DP
+  precision/recall/F1 was `(0.5, 0.3333333333, 0.4)` while the existing
+  `advanced._rouge_l` returned recall `1.0` and RougeScorer's default tokenization returned
+  `(1.0, 1.0, 1.0)`, with DP-to-library drift `(0.5, 0.6666666667, 0.6)`; this exceeds
+  the `1e-6` gate and prevents transfer.
+- Files changed: this checklist and the parity fixture
+  `tests/phase_17/test_parity_generation_rouge.py`; `medfm/inference/generation.py` was
+  intentionally unchanged.
+- Verification: `uv run --frozen pytest tests/phase_17/test_inference.py
+  tests/phase_16/test_evaluation.py tests/phase_16/test_specialized.py` (20 passed);
+  `uv run --frozen pytest tests/phase_17/test_parity_generation_rouge.py` (2 passed).

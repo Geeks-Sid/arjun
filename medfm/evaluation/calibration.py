@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import torch
+from torchmetrics.classification import BinaryCalibrationError
 
 from medfm.evaluation.schemas import ClinicalUnit, EvaluationSchemaError, EvaluationSplit
 
@@ -241,6 +242,7 @@ def expected_calibration_error(
     *,
     bins: int = 10,
 ) -> float | None:
+    """Compute top-label ECE with equal-width bins and L1 aggregation."""
     if bins < 1:
         raise ValueError("bins must be positive")
     y = _labels(labels)
@@ -249,13 +251,9 @@ def expected_calibration_error(
         raise ValueError("labels and scores must align")
     if not y.numel():
         return None
-    edges = torch.linspace(0.0, 1.0, bins + 1)
-    total = torch.tensor(0.0, dtype=torch.float64)
-    for index in range(bins):
-        mask = (p >= edges[index]) & ((p < edges[index + 1]) if index < bins - 1 else (p <= edges[index + 1]))
-        if bool(mask.any()):
-            total += mask.float().mean().to(torch.float64) * (p[mask].mean() - y[mask].float().mean()).abs()
-    return float(total)
+
+    value = BinaryCalibrationError(n_bins=bins, norm="l1")(p, y)
+    return None if not bool(torch.isfinite(value)) else float(value)
 
 
 # Backward-compatible names used in reports and notebooks.
