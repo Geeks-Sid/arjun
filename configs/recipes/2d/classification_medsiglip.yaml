@@ -1,0 +1,65 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: medsiglip
+  repository: https://huggingface.co/google/medsiglip-448
+  revision: 9cea28a1a1195f665105faa6e8544c112fd960a4
+  checkpoint_source: phase05_local_checkpoint
+dataset:
+  id: approved-radiology-classification
+  revision: manifest-revision-required
+  split_policy: patient_first_site_then_time
+  label_manifest: manifests/classification_labels.json
+task:
+  type: MULTILABEL_CLASSIFICATION
+recipe:
+  id: classification-medsiglip
+  family: classification
+  backbone: medsiglip
+  modality: XRAY_2D
+  mode: production
+  offline_tiny: false
+  stage: A
+  use_lora: false
+  image_size: 448
+  channels: 3
+  patch_size: 14
+  head: linear
+  metrics: [auroc, auprc, brier, ece, operating_points, subgroups]
+  require_one_batch_overfit: true
+accelerator:
+  backend: cuda
+  precision: bf16
+  distribution: single
+batch:
+  microbatch_per_device: 8
+  gradient_accumulation_steps: 1
+  global_batch_size: 8
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+freeze_schedule:
+  - until_step: 1000
+    train: [task_head]
+  - train: [task_head, vision_lora]
+peft:
+  enabled: false
+memory:
+  gradient_checkpointing:
+    vision: false
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: safetensors
+  save_optimizer: true
+seed: 13
+max_steps: 1000
+epochs: 10
+save_every_steps: 100
+output_dir: artifacts/runs/phase13/classification_medsiglip
+dataset_hash: approved-manifest-sha256-required
+preprocessing_hash: medsiglip-448-preprocess-v1
+base_model_revision: 9cea28a1a1195f665105faa6e8544c112fd960a4

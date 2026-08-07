@@ -1,0 +1,29 @@
+python -m pytest tests/phase_11 -q
+Result: 21 passed.
+
+python -m medfm.tools.smoke --phase 11 --json
+Result: passed; task_heads_decoders_losses check passed.
+
+ruff format medfm/models/heads medfm/models/decoders medfm/tasks tests/phase_11 medfm/tools/smoke.py medfm/tools/validate_phase.py
+Result: completed; only the final touched files were reformatted.
+
+ruff check medfm/models/heads medfm/models/decoders medfm/tasks tests/phase_11 medfm/tools/smoke.py medfm/tools/validate_phase.py
+Result: OK.
+
+python -m compileall -q medfm/models/heads medfm/models/decoders medfm/tasks medfm/tools/smoke.py medfm/tools/validate_phase.py
+Result: passed with no output.
+
+CPU/CUDA Phase 11 head/decoder/loss/projection forward-backward smoke
+Result: CPU and CUDA passed; both produced finite losses and [2, 1, 8, 8] segmentation logits.
+
+3D segmentation forward-backward smoke
+Result: passed on the available CUDA device; finite Dice+CE loss and [2, 2, 4, 8, 8] logits.
+
+python -c dependency probe for torch_xla
+Result: torch_xla unavailable; TPU execution was not claimed.
+
+python -m pytest -q
+Result: not used as an acceptance signal. Collection stopped with three environment/repository-baseline errors: missing safetensors for Phase 03 and duplicate test module basenames between older phase directories. Phase 11 isolated tests passed.
+
+python -m medfm.tools.validate_phase --phase 11
+Result: passed after the required Phase 11 report artifacts were published.

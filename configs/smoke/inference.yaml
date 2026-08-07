@@ -1,0 +1,18 @@
+task: classification
+modality: XRAY_2D
+backend: cpu
+model_id: smoke-mean-classifier
+model_revision: builtin-smoke-v1
+preprocess_hash: smoke-identity-v1
+limits:
+  max_batch_size: 2
+  max_image_pixels: 4096
+  max_volume_voxels: 4096
+  max_output_tokens: 64
+input:
+  synthetic:
+    shape: [1, 1, 32, 32]
+    value: 0.25
+model:
+  type: mean_classifier
+  classes: 2

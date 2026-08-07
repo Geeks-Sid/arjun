@@ -1,0 +1,66 @@
+{
+  "phase": "17",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T17:33:16-04:00",
+  "smoke_command": "python -m medfm.cli.infer classification --config configs/smoke/inference.yaml",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "portable-bundle",
+      "description": "Adapter-only bundles contain the declared layout, canonical CPU artifacts, checksums, base revisions, runtime support, and no resumable training state.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_bundle.py; bundle validator and fallback tensor round-trip; docs/inference/bundle_schema.json"
+    },
+    {
+      "id": "inference-pipelines",
+      "description": "Classification, segmentation, retrieval, VLM, and WSI pipelines validate task/modality and enforce bounded request contracts through the shared backend abstraction.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_inference.py; CLI smoke returned a versioned classification response; 15 Phase 17 tests passed"
+    },
+    {
+      "id": "3d-and-nifti",
+      "description": "Sliding-window Gaussian reconstruction, original-coordinate restoration, NIfTI reopen checks, and derived-geometry validation are implemented.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_inference.py and test_geometry.py; NIfTI round-trip test passed in the available environment"
+    },
+    {
+      "id": "reviewed-dicom",
+      "description": "DICOM SEG creation is gated by explicit reviewed highdicom policy and preserves only hashed source references in operational contracts.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_geometry.py::test_dicom_export_requires_explicit_reviewed_workflow; medfm/inference/export_dicom.py"
+    },
+    {
+      "id": "vlm-safety",
+      "description": "Clinical-style VLM decoding is deterministic by default, research sampling is gated, structured output is validated, prompt text is isolated, and token/output limits are enforced.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_inference.py; GenerationConfig, generate, and prompt-isolation contracts"
+    },
+    {
+      "id": "serving-and-adapters",
+      "description": "The serving layer validates before adapter loading, supports requested-only bounded adapter caching, backpressure, timeouts, versioned responses, and stale-state reset.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_serving.py; medfm/inference/server.py; docs/inference/request_schema.json and response_schema.json"
+    },
+    {
+      "id": "audit-and-privacy",
+      "description": "Operational audit events record required hashes and runtime fields without raw inputs, while clinical audit data is role-gated and deletable under retention policy.",
+      "status": "passed",
+      "evidence": "tests/phase_17/test_serving.py; medfm/inference/audit.py; docs/inference/deployment_matrix.md"
+    },
+    {
+      "id": "accelerator-parity",
+      "description": "One portable bundle is empirically loaded and compared on CPU, CUDA, and TPU with warmup and stable XLA compilation counts.",
+      "status": "not_applicable",
+      "justification": "The acceptance environment provides CPU execution only; the bundle/runtime contracts, fixed TPU bucket policy, and warmup API are implemented, but no CUDA or TPU hardware evidence is claimed."
+    },
+    {
+      "id": "external-license-evidence",
+      "description": "Production deployment licenses, blocked bundles, and real-checkpoint latency/memory measurements are populated.",
+      "status": "not_applicable",
+      "justification": "The repository contains synthetic fixtures and framework contracts rather than approved production weights or an external deployment review; docs/inference/license_catalog.md defines the fail-closed gate."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_17/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_17/next_phase_handoff.md"
+}

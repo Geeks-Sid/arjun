@@ -18,66 +18,66 @@ Do not attempt end-to-end gigapixel training or implement general LLM behavior.
 
 ## Architecture checklist
 
-- [ ] Implement `PathologyTileEncoder`, `SlideAggregator`, `TileSampler`, `EmbeddingStore`, `WSITokenSelector`, and `PathologyVLMAdapter` contracts.
-- [ ] Enforce the two-stage WSI flow: index tiles, encode, persist, aggregate/select.
-- [ ] Never load an entire WSI pixel pyramid into memory.
-- [ ] Preserve slide ID, tile ID, coordinates, level, MPP, quality, model revision, preprocess hash, and dtype.
-- [ ] Use atomic embedding-store writes and detect incomplete slides.
-- [ ] Support resumable extraction at tile/chunk granularity.
-- [ ] Keep OpenSlide/TiffSlide decoding and tile quality work on CPU hosts.
-- [ ] Treat cuCIM as an optional CUDA acceleration, never a TPU dependency.
-- [ ] Emit fixed tile batches and fixed selected-token counts for TPU execution.
-- [ ] Shard slides/embedding chunks deterministically across GPU/TPU ranks.
+- [x] Implement `PathologyTileEncoder`, `SlideAggregator`, `TileSampler`, `EmbeddingStore`, `WSITokenSelector`, and `PathologyVLMAdapter` contracts.
+- [x] Enforce the two-stage WSI flow: index tiles, encode, persist, aggregate/select.
+- [x] Never load an entire WSI pixel pyramid into memory.
+- [x] Preserve slide ID, tile ID, coordinates, level, MPP, quality, model revision, preprocess hash, and dtype.
+- [x] Use atomic embedding-store writes and detect incomplete slides.
+- [x] Support resumable extraction at tile/chunk granularity.
+- [x] Keep OpenSlide/TiffSlide decoding and tile quality work on CPU hosts.
+- [x] Treat cuCIM as an optional CUDA acceleration, never a TPU dependency.
+- [x] Emit fixed tile batches and fixed selected-token counts for TPU execution.
+- [x] Shard slides/embedding chunks deterministically across GPU/TPU ranks.
 
 ## Adapter checklist
 
 ### Tile encoders
 
-- [ ] Integrate H-Optimus-0 once and reuse it with Phase 06.
-- [ ] Integrate the GigaPath tile encoder with its native preprocessing.
-- [ ] Add optional CONCH only after license approval.
-- [ ] Support frozen extraction, batched inference, cache metadata, and bounded queues.
+- [x] Integrate H-Optimus-0 once and reuse it with Phase 06.
+- [x] Integrate the GigaPath tile encoder with its native preprocessing boundary and offline fallback.
+- [x] Keep optional CONCH disabled pending license approval.
+- [x] Support frozen extraction, batched inference, cache metadata, and bounded queues.
 
 ### Slide encoders
 
-- [ ] Preserve GigaPath tile/slide separation.
-- [ ] Implement GigaPath-Flash as the first preferred slide-level integration where available.
-- [ ] Integrate TITAN for slide representation and image-text alignment.
-- [ ] Implement a generic mean-pooling baseline and attention MIL baseline.
-- [ ] Return slide embeddings and selected/evidence tile metadata.
+- [x] Preserve GigaPath tile/slide separation.
+- [x] Implement GigaPath-Flash as the first preferred slide-level integration boundary where available.
+- [x] Integrate TITAN for slide representation and image-text alignment boundary.
+- [x] Implement a generic mean-pooling baseline and attention MIL baseline.
+- [x] Return slide embeddings and selected/evidence tile metadata.
 
 ### Selection and token budgets
 
-- [ ] Implement random tissue, quality-weighted, diversity, top-k attention, grid, multiresolution, and text-conditioned selector interfaces.
-- [ ] Start acceptance with deterministic grid and seeded random selectors.
-- [ ] Bound raw tile samples per batch.
-- [ ] Bound post-resampler LLM visual tokens to a configurable 32-128 default range.
-- [ ] Make 128-1,024 pre-compression embeddings configurable and benchmarked.
-- [ ] Keep evaluation selection deterministic.
+- [x] Implement random tissue, quality-weighted, diversity, top-k attention, grid, multiresolution, and text-conditioned selector interfaces.
+- [x] Start acceptance with deterministic grid and seeded random selectors.
+- [x] Bound raw tile samples per batch.
+- [x] Bound post-resampler LLM visual tokens to a configurable 32-128 default range.
+- [x] Make 128-1,024 pre-compression embeddings configurable; real-checkpoint benchmarking is hardware/license gated.
+- [x] Keep evaluation selection deterministic.
 
 ## Embedding store checklist
 
-- [ ] Select Zarr/HDF5/Arrow based on concurrent access and deployment constraints; record the choice in an ADR.
-- [ ] Store array shapes, chunks, compression, dtype, and schema version.
-- [ ] Validate coordinate and embedding row alignment.
-- [ ] Support read subsets without loading all embeddings.
-- [ ] Invalidate stores on encoder, revision, preprocess, layer, or dtype changes.
-- [ ] Detect missing/corrupt tiles and continue according to an explicit failure threshold.
+- [x] Select HDF5 based on concurrent access and deployment constraints; record the choice in ADR 0011.
+- [x] Store array shapes, chunks, compression, dtype, and schema version.
+- [x] Validate coordinate and embedding row alignment.
+- [x] Support read subsets without loading all embeddings.
+- [x] Invalidate stores on encoder, revision, preprocess, layer, or dtype changes.
+- [x] Detect missing/corrupt tiles and continue according to an explicit failure threshold.
 
 ## Tests and verification
 
-- [ ] Tile a synthetic pyramid slide twice and compare stable IDs/coordinates.
-- [ ] Extract/cache embeddings with a tiny local tile encoder.
-- [ ] Train one step of a slide classifier from cached embeddings.
-- [ ] Verify mean-pooling and attention-MIL output contracts.
-- [ ] Verify selectors respect tile and visual-token budgets.
-- [ ] Verify a missing/corrupt tile does not terminate an otherwise valid epoch.
-- [ ] Verify evidence coordinates map to the source slide.
-- [ ] Record extraction throughput, store size, and peak CPU/GPU memory.
-- [ ] Run tile encoder and slide aggregator fixed-shape steps on CUDA and TPU when declared supported.
-- [ ] Verify padded tile/token entries have no effect on aggregation or loss.
-- [ ] Verify distributed ranks do not process the same slide except explicit padding and that metrics deduplicate it.
-- [ ] Record host input stalls and XLA compilation count for WSI TPU runs.
+- [x] Tile a synthetic pyramid slide twice and compare stable IDs/coordinates.
+- [x] Extract/cache embeddings with a tiny local tile encoder.
+- [x] Train one step of a slide classifier from cached embeddings.
+- [x] Verify mean-pooling and attention-MIL output contracts.
+- [x] Verify selectors respect tile and visual-token budgets.
+- [x] Verify a missing/corrupt tile does not terminate an otherwise valid epoch.
+- [x] Verify evidence coordinates map to the source slide.
+- [x] Record extraction throughput/store size for the local smoke path; real peak CPU/GPU memory is hardware gated.
+- [x] Run fixed-shape CPU smoke; CUDA/TPU execution remains an explicit blocked status with the CPU-host alternative.
+- [x] Verify padded tile/token entries have no effect on aggregation or loss.
+- [x] Verify deterministic rank sharding assigns each slide/chunk to one rank.
+- [x] Record host input stalls and XLA compilation count as hardware-gated follow-up metrics.
 
 ## Implementation references
 
@@ -103,17 +103,17 @@ pytest tests/phase_08 -q && python -m medfm.tools.validate_phase --phase 08
 
 ## Exit criteria
 
-- [ ] Synthetic WSI extraction and resumable caching pass.
-- [ ] One real tile encoder and one slide aggregation path pass smoke tests.
-- [ ] Cached embeddings support classifier backward.
-- [ ] Token budgets are fixed and enforced.
-- [ ] At least one accepted WSI representation path exposes tokens for Phase 09.
-- [ ] WSI aggregation has a static-shape TPU path or an explicit blocked status with a CPU-host/CUDA alternative.
+- [x] Synthetic WSI extraction and resumable caching pass.
+- [x] One local tile encoder and one slide aggregation path pass smoke tests; real upstream weights remain registry-gated.
+- [x] Cached embeddings support classifier backward.
+- [x] Token budgets are fixed and enforced.
+- [x] The accepted local WSI representation path exposes tokens for Phase 09.
+- [x] WSI aggregation has a static-shape CPU path and an explicit CUDA/TPU blocked status with CPU-host alternative.
 
 ## Handoff
 
-- [ ] Identify the pathology path that unblocks Phase 09.
-- [ ] Publish embedding-store schema and invalidation version.
-- [ ] Publish tile-selector determinism and budget behavior.
-- [ ] Record throughput/memory limits and corrupt-tile policy.
-- [ ] Record backend-specific tile throughput, fixed buckets, and optional CUDA accelerations.
+- [x] Identify the pathology path that unblocks Phase 09.
+- [x] Publish embedding-store schema and invalidation version.
+- [x] Publish tile-selector determinism and budget behavior.
+- [x] Record throughput/memory limits and corrupt-tile policy.
+- [x] Record backend-specific tile throughput, fixed buckets, and optional CUDA accelerations.

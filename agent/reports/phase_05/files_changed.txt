@@ -1,0 +1,26 @@
+# Phase 05 Files Changed
+
+medfm/registry/__init__.py
+medfm/registry/schema.py
+medfm/registry/core.py
+medfm/registry/weights.py
+medfm/registry/acceptance.py
+medfm/registry/catalog.py
+medfm/registry/plugins.py
+medfm/registry/smoke.py
+medfm/cli/models.py
+medfm/cli/accelerator.py
+medfm/cli/main.py
+medfm/tools/validate_phase.py
+tests/phase_05/conftest.py
+tests/phase_05/test_model_registry.py
+tests/phase_05/test_weights.py
+tests/phase_05/test_smoke.py
+tests/phase_05/test_cli.py
+agent/reports/phase_05/summary.md
+agent/reports/phase_05/files_changed.txt
+agent/reports/phase_05/commands_executed.txt
+agent/reports/phase_05/test_results.json
+agent/reports/phase_05/acceptance.json
+agent/reports/phase_05/unresolved_issues.md
+agent/reports/phase_05/next_phase_handoff.md

@@ -1,0 +1,35 @@
+schema_version: 1
+model_id: local
+model: {id: local, family: phase13_offline_tiny, checkpoint_source: offline_random_contract, revision: phase13-1}
+dataset: {id: phase13-synthetic-multilabel-v1, revision: synthetic-v1, split_policy: patient_first_site_then_time}
+task: {type: MULTILABEL_CLASSIFICATION}
+recipe:
+  id: classification-multilabel-smoke
+  family: classification
+  backbone: medsiglip
+  modality: XRAY_2D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: A
+  use_lora: false
+  image_size: 32
+  channels: 1
+  patch_size: 8
+  head: mlp
+  head_hidden: 16
+accelerator: {backend: cpu, precision: fp32, distribution: single}
+batch: {microbatch_per_device: 2, gradient_accumulation_steps: 1, global_batch_size: 2}
+optimizer: {name: adamw, lr: 0.01, weight_decay: 0.0}
+freeze_schedule:
+  - train: [task_head]
+peft: {enabled: false}
+memory: {use_cache_during_training: false}
+tracking: {kind: local_json}
+checkpoint: {format: torch, save_optimizer: true}
+seed: 13
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase13/classification_multilabel_smoke
+base_model_revision: medsiglip-offline-random-contract
+preprocessing_hash: phase13-classification-preprocess-v1

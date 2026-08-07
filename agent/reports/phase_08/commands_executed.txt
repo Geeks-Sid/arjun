@@ -1,0 +1,5 @@
+python -m pytest tests/phase_08 -q
+python -m medfm.tools.smoke --phase 08 --json
+ruff format medfm/models/pathology tests/phase_08
+ruff check medfm/models/pathology medfm/models/visual/specs.py medfm/tools/smoke.py medfm/tools/validate_phase.py medfm/data/readers/pathology.py medfm/data/transforms/pathology.py tests/phase_08
+python -m medfm.tools.validate_phase --phase 08

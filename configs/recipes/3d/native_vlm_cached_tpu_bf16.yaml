@@ -1,0 +1,69 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase14_native_3d_vlm
+  checkpoint_source: offline_random_contract
+  revision: phase14-1
+dataset:
+  id: phase14-synthetic-ct-vqa-v1
+  revision: synthetic-v1
+  split_policy: patient_first_site_then_time
+  manifest_hash: phase14-approved-manifest-required
+task:
+  type: VISUAL_QUESTION_ANSWERING
+recipe:
+  phase: 14
+  id: native-vlm-cached-tpu-bf16
+  family: native_3d_vlm
+  backbone: generic-monai-3d
+  modality: CT_3D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: B
+  input_strategy: fixed_crop
+  crop_shape: [16, 16, 16]
+  shape_buckets: [[16, 16, 16]]
+  bridge: perceiver
+  visual_tokens: 32
+  text_tokens: 8
+  cache_tokens: true
+  use_lora: true
+  stage4_features: false
+  tpu_status: cached_tokens_generic_monai_contract
+accelerator:
+  static_shapes: true
+  backend: xla_tpu
+  precision: bf16
+  distribution: replicated
+  tpu_replicated_accepted: false
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 1
+  global_batch_size: 1
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [bridge, language_lora]
+  - train: [bridge, language_lora]
+peft:
+  enabled: true
+  rank: 4
+  alpha: 8
+  dropout: 0.0
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1420
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase14/native_vlm_cached_tpu_bf16
+base_model_revision: generic-monai-3d-offline-random-contract
+preprocessing_hash: phase14-native-vlm-preprocess-v1

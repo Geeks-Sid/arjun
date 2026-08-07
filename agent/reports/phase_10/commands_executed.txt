@@ -1,0 +1,30 @@
+pytest tests/phase_10 -q
+Result: 19 passed.
+
+PYTHONPATH=. pytest tests/phase_09 tests/phase_10 -q
+Result: 29 passed.
+
+ruff check medfm/peft medfm/cli/peft.py medfm/tools/validate_phase.py tests/phase_10
+Result: OK.
+
+python -m compileall -q medfm/peft medfm/cli/peft.py medfm/tools/validate_phase.py tests/phase_10
+Result: passed with no output.
+
+python -m medfm.cli.peft inspect --model medsiglip_448 --format json
+Result: resolved_model_id=medsiglip_448, architecture=vision, selected_count=12.
+
+python -c "from medfm.tools.validate_phase import _check_phase_10_peft; print(_check_phase_10_peft())"
+Result: [] (Phase 10 behavioral validator passed).
+
+python -c dependency probe
+Result: cuda=True, bitsandbytes=False, transformers=False, torch_xla=False.
+
+Tiny CUDA BF16 LoRA optimizer step on an 8 GB NVIDIA GeForce RTX 4060 Laptop GPU
+Result: one AdamW step completed on cuda:0 with bfloat16 input; finite loss 0.3217633366584778.
+
+pytest tests -q
+Result: not used as an acceptance signal: existing phase test collection does not add the repository root to sys.path under this pytest invocation and reports ModuleNotFoundError for medfm before executing tests. Isolated Phase 09/10 regression command above passed.
+pytest tests/phase_10 -q && python -m medfm.tools.validate_phase --phase 10
+Result: 19 passed; Phase 10 gate passed.
+python -m medfm.cli.peft inspect --model medsiglip_448
+Result: text inspection completed; architecture=vision and selected=12.

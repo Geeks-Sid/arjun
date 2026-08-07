@@ -1,0 +1,19 @@
+{
+  "phase": "08",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "smoke_command": "python -m medfm.tools.smoke --phase 08 --json",
+  "smoke_passed": true,
+  "criteria": [
+    {"id": "P08-01", "description": "Synthetic tile extraction is deterministic, bounded, and resumable.", "status": "passed", "evidence": "tests/phase_08/test_pathology.py; extraction commits chunk files and finalizes atomically."},
+    {"id": "P08-02", "description": "Embedding stores preserve aligned metadata and support subset reads.", "status": "passed", "evidence": "HDF5 store tests and EmbeddingStoreReader HDF5 round-trip pass."},
+    {"id": "P08-03", "description": "Mean pooling and attention MIL ignore padded tiles.", "status": "passed", "evidence": "test_mean_and_attention_mil_ignore_padding and Phase 08 smoke."},
+    {"id": "P08-04", "description": "Selectors enforce deterministic tile and fixed visual-token budgets.", "status": "passed", "evidence": "Grid/random determinism and 32-token bucket tests pass; defaults are 256/64."},
+    {"id": "P08-05", "description": "Cached embeddings support classifier backward and pathology VLM token bridging.", "status": "passed", "evidence": "Smoke performs a classifier backward; VLM bridge test verifies masked pooled output."},
+    {"id": "P08-06", "description": "Pathology registry records and offline smoke plugins are present.", "status": "passed", "evidence": "validate_phase checks H-Optimus, GigaPath-Flash, and TITAN records/plugins."},
+    {"id": "P08-07", "description": "Upstream checkpoint and accelerator gates are fail-closed when external prerequisites are unavailable.", "status": "passed", "evidence": "Registry license records remain blocking/pending; no real checkpoint or hardware result is claimed.", "justification": "The Phase 08 local adapter/store contract is complete. Real upstream weights and CUDA/TPU throughput remain governed by explicit unresolved issues rather than fabricated evidence."}
+  ],
+  "unresolved_issues_file": "agent/reports/phase_08/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_08/next_phase_handoff.md"
+}

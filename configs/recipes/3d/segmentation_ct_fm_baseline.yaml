@@ -1,0 +1,63 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase14_native_3d
+  checkpoint_source: offline_random_contract
+  revision: phase14-1
+dataset:
+  id: phase14-synthetic-ct-lesions-v1
+  revision: synthetic-v1
+  split_policy: patient_first_site_then_time
+  fingerprint_hash: phase14-fingerprint-v1
+task:
+  type: BINARY_SEGMENTATION
+recipe:
+  phase: 14
+  id: segmentation-ct-fm-baseline
+  family: native_3d_segmentation
+  backbone: ct-fm
+  modality: CT_3D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: A
+  input_strategy: fixed_crop
+  crop_shape: [16, 16, 16]
+  shape_buckets: [[16, 16, 16]]
+  positive_sampling_ratio: 0.75
+  blend_mode: gaussian
+  window_overlap: 0.25
+  deep_supervision: false
+  use_lora: false
+  tpu_status: generic_monai_3d_contract
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.01
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [decoder]
+  - train: [decoder]
+peft:
+  enabled: false
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1410
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase14/segmentation_ct_fm_baseline
+base_model_revision: ct-fm-offline-random-contract
+preprocessing_hash: phase14-ct-fm-segmentation-preprocess-v1

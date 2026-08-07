@@ -1,0 +1,34 @@
+# Phase 04 Commands Executed
+
+All from the repository root with the project venv (`.venv/bin/`).
+
+```bash
+# Base layer sanity + prior-phase regression
+python -c "<PreprocessSpec/TransformPipeline import smoke>"
+pytest tests/phase_03 -q
+
+# Per-module test runs during implementation
+pytest tests/phase_04/test_radiology2d.py -q
+pytest tests/phase_04/test_ct.py tests/phase_04/test_mri.py -q
+pytest tests/phase_04/test_patch_samplers.py tests/phase_03/test_samplers.py -q
+pytest tests/phase_04/test_pathology.py -q
+pytest tests/phase_04/test_textprep.py tests/phase_04/test_vlm_masking.py -q
+pytest tests/phase_04/test_collators.py -q
+
+# Smoke command (phase spec)
+pytest tests/phase_04/test_end_to_end_transforms.py -q
+
+# Lint / format / type gates
+ruff check --fix medfm tests
+ruff format medfm tests
+ruff check medfm tests
+ruff format --check medfm tests
+mypy
+
+# Phase + full-suite test runs
+pytest tests/phase_04 -q          # 198 passed, 2 skipped
+pytest tests/ -q                  # all pass, 8 protected-hardware skips
+
+# Acceptance command (phase spec)
+pytest tests/phase_04 -q && python -m medfm.tools.validate_phase --phase 04
+```

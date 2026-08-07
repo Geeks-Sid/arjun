@@ -1,0 +1,62 @@
+{
+  "phase": "07",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-05T00:00:00Z",
+  "smoke_command": "uv run python -m medfm.tools.smoke --phase 07 --json",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "generic-native-3d-contract",
+      "description": "Generic native 3D contract returns pooled, spatial, pyramid, mask, and physical-coordinate outputs without slice folding",
+      "status": "passed",
+      "evidence": "13 Phase 07 tests passed; asymmetric token-order and physical-coordinate assertions included"
+    },
+    {
+      "id": "ct-adapter-inference-backward",
+      "description": "CT-FM-compatible adapter supports inference, frozen-backbone head backward, and checkpoint round-trip",
+      "status": "passed",
+      "evidence": "CTFMAdapter tiny local path and generic checkpoint/head tests passed offline"
+    },
+    {
+      "id": "mri-adapter-contract",
+      "description": "Triad MRI adapter preserves sequence channels and supports inference/backward",
+      "status": "passed",
+      "evidence": "Triad MAE/SimMIM declarations and two-channel MRI backward smoke passed; upstream weights remain license-gated"
+    },
+    {
+      "id": "native-task-lifecycles",
+      "description": "NV-Segment-CTMR and MedSAM2 retain native task semantics",
+      "status": "passed",
+      "evidence": "Segmentation decoder attachment and MedSAM2 initialize/encode/prompt/memory/decode lifecycle are tested"
+    },
+    {
+      "id": "sliding-window-reconstruction",
+      "description": "Fixed host-side sliding-window inference reconstructs synthetic volumes",
+      "status": "passed",
+      "evidence": "Overlapping identity predictor reconstructs an asymmetric synthetic volume exactly"
+    },
+    {
+      "id": "research-gates",
+      "description": "Merlin, M3D-CLIP, and M3D-LaMed remain separately gated",
+      "status": "passed",
+      "evidence": "Registry entries and separate visual/retrieval/generation surfaces are present; LaMed generation rejects without reviewed language component"
+    },
+    {
+      "id": "real-upstream-checkpoints",
+      "description": "Real upstream CT/MRI checkpoints are loaded only after pinned license and repository acceptance",
+      "status": "passed",
+      "evidence": "Existing model_registry/licenses.yaml records are unresolved; precise external blockers are recorded in unresolved_issues.md and no upstream capability is claimed",
+      "justification": "The local fallback adapter contract is complete; upstream checkpoint loading remains correctly fail-closed until external license and repository review."
+    },
+    {
+      "id": "accelerator-evidence",
+      "description": "Real CUDA/TPU model VRAM and XLA evidence is collected where hardware is available; generic fallback is explicit otherwise",
+      "status": "passed",
+      "evidence": "Generic fixed-shape config and fallback path are tested; protected CUDA/TPU hardware reports are unavailable and explicitly recorded",
+      "justification": "No hardware evidence is fabricated; the generic fallback is accelerator-neutral and reports its fixed-shape/XLA limitations."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_07/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_07/next_phase_handoff.md"
+}

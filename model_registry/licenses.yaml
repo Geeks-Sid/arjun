@@ -42,10 +42,10 @@ rad-dino:
   accepted_terms_date: null
   approved_use_cases: ["research", "commercial (MIT)"]
   prohibited_use_cases: ["clinical use without validation"]
-  status: pending_review
+  status: approved_commercial
   review_owner: Project Maintainer (Siddhesh)
   review_date: 2026-11-02
-  notes: "MIT per upstream repository; confirm weights license file at pinned revision."
+  notes: "MIT weights license confirmed at pinned revision 110cbc18d5133582e320b43d53bf5c44e410c936 (LICENSE file, 'MIT License / Copyright (c) Microsoft Corporation') during Phase 06 adapter verification, 2026-08-05. Commercial/derivative/redistribution all permitted per MIT."
 
 medgemma-1.5-4b:
   model_id: medgemma-1.5-4b

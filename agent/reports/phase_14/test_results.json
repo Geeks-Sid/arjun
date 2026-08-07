@@ -1,0 +1,25 @@
+{
+  "phase": "14",
+  "tests": [
+    {"name": "test_phase14_recipe_families_are_pinned[classification_ct_fm_cuda.yaml-classification]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[classification_triad_mri.yaml-classification]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[segmentation_ct_fm_baseline.yaml-segmentation]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[native_vlm_cached_tpu_bf16.yaml-native_3d_vlm]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[slice_sequence_vlm_uniform.yaml-slice_sequence_vlm]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[language_conditioned_segmentation.yaml-language_conditioned_segmentation]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_native_3d_classification_keeps_volume_semantics", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_segmentation_records_positive_sampling_and_restores_space", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_native_vlm_exposes_coordinates_cache_and_ablations", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_slice_sequence_is_distinct_and_preserves_selector_metadata", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_recipe_families_are_pinned[native_vlm_structured_findings.yaml-native_3d_vlm]", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_language_conditioned_segmentation_has_fixed_query_contract", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_phase14_pipeline_one_batch_smoke_and_checkpoint_resume", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_volume_policy_is_fingerprint_driven_but_static", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_native_3d_classification_reports_patient_and_study_units", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_native_3d_segmentation_reports_surface_lesion_and_volume_metrics", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_sliding_window_gaussian_blending_covers_every_voxel", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_language_segmentation_separates_mask_and_query_grounding", "status": "passed", "command": "python -m pytest tests/phase_14 -q"},
+    {"name": "test_vlm_ablation_and_slice_budget_contracts", "status": "passed", "command": "python -m pytest tests/phase_14 -q"}
+  ],
+  "summary": {"passed": 19, "failed": 0, "skipped": 0}
+}

@@ -1,0 +1,66 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase15_pathology_segmentation
+  checkpoint_source: offline_random_contract
+  revision: phase15-1
+dataset:
+  id: phase15-synthetic-roi-tiles-v1
+  revision: synthetic-v1
+  split_policy: patient_disjoint
+  annotation_type: roi_tile_mask_pairs
+task:
+  type: SEMANTIC_SEGMENTATION
+recipe:
+  phase: 15
+  id: pathology-segmentation-tile-unet
+  family: pathology_segmentation
+  backbone: conventional-unet
+  modality: PATHOLOGY_TILE
+  mode: offline_tiny
+  offline_tiny: true
+  stage: 1
+  baseline: conventional_tile_unet
+  tile_shape: [16, 16]
+  tile_shape_buckets: [[16, 16]]
+  tile_mpp: 0.5
+  magnification: 20x
+  blend_mode: constant
+  overlap: 0.25
+  stitch_on_host: true
+  output_coordinate_system: SLIDE_PIXELS_LEVEL0
+  evaluate_levels: [tile, slide]
+  tpu_status: fixed_tile_decoder_host_stitch_contract
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+  static_shapes: true
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [decoder]
+  - train: [decoder]
+peft:
+  enabled: false
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1541
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase15/segmentation_tile_unet
+base_model_revision: conventional-tile-unet-offline-random-contract
+preprocessing_hash: phase15-pathology-segmentation-v1

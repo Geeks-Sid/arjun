@@ -1,0 +1,40 @@
+schema_version: 1
+model_id: local
+model: {id: local, family: external-vlm, revision: offline-random-contract}
+dataset: {id: phase13-synthetic-vqa-v1, revision: synthetic-v1, split_policy: patient_first_site_then_time}
+task: {type: VISUAL_QUESTION_ANSWERING}
+recipe:
+  id: external-vlm-perceiver-32
+  family: external_vlm
+  backbone: medsiglip
+  modality: XRAY_2D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: 1
+  use_lora: false
+  image_size: 32
+  channels: 1
+  patch_size: 8
+  visual_tokens: 32
+  text_tokens: 8
+  bridge: perceiver
+  prompt_revision: phase13-vqa-prompt-v1
+  cached_visual_tokens: true
+  static_bucket: {visual_tokens: 32, text_tokens: 8}
+accelerator: {backend: cpu, precision: fp32, distribution: single}
+batch: {microbatch_per_device: 2, gradient_accumulation_steps: 1, global_batch_size: 2}
+optimizer: {name: adamw, lr: 0.001, weight_decay: 0.0}
+freeze_schedule: [{train: [bridge]}]
+peft: {enabled: false}
+quantization: {enabled: false}
+memory: {use_cache_during_training: false}
+tracking: {kind: local_json}
+checkpoint: {format: torch, save_optimizer: true}
+seed: 13
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase13/external_vlm_perceiver_32
+dataset_hash: phase13-synthetic-vqa-v1
+preprocessing_hash: phase13-external-vlm-preprocess-v1
+base_model_revision: offline-random-contract

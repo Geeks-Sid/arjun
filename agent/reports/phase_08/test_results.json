@@ -1,0 +1,8 @@
+{
+  "phase": "08",
+  "tests": [
+    {"name": "tests/phase_08", "status": "passed", "detail": "7 passed"},
+    {"name": "phase_08_smoke", "status": "passed", "detail": "1 check passed"},
+    {"name": "phase_08_ruff", "status": "passed", "detail": "no diagnostics"}
+  ]
+}

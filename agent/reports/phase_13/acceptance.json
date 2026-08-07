@@ -1,0 +1,102 @@
+{
+  "phase": "13",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "smoke_command": "python -m pytest tests/phase_13 -q && python -m medfm.tools.validate_phase --phase 13",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "P13-01",
+      "description": "The 2D recipe matrix is typed, pinned, deterministic, and separated from the model-agnostic training engine.",
+      "status": "passed",
+      "evidence": "All 24 configs under configs/recipes/2d parse through RunConfig; offline builders record recipe, dataset, preprocessing, prompt, and model revisions; Phase 13 recipe tests pass."
+    },
+    {
+      "id": "P13-02",
+      "description": "Classification baselines cover MedSigLIP, RAD-DINO, H-Optimus tile, FlexiCT-2D, frozen-head, and staged LoRA variants with binary and multilabel targets.",
+      "status": "passed",
+      "evidence": "classification_medsiglip.yaml, classification_raddino.yaml, classification_hoptimus_tile.yaml, classification_flexict_2d.yaml, classification_smoke.yaml, classification_multilabel_smoke.yaml, and classification_development_lora.yaml are present; the focused suite verifies task-head and vision-LoRA optimizer groups."
+    },
+    {
+      "id": "P13-03",
+      "description": "Classification evaluation exposes AUROC, AUPRC, calibration, operating points, subgroup metrics, and explicit clinical units.",
+      "status": "passed",
+      "evidence": "classification_metrics returns AUROC/AUPRC/Brier/ECE/operating-points/subgroup MetricValue records; tests verify exact discrimination values, per-patient units, denominators, and subgroup records."
+    },
+    {
+      "id": "P13-04",
+      "description": "Frozen-encoder segmentation and promptable segmentation recipes train a decoder through the shared pipeline.",
+      "status": "passed",
+      "evidence": "segmentation_smoke.yaml and segmentation_promptable_smoke.yaml complete CPU optimizer-step smokes; promptable data carries prompt_map and preserves TaskType.PROMPTABLE_SEGMENTATION."
+    },
+    {
+      "id": "P13-05",
+      "description": "Segmentation evaluation reports per-class Dice, surface Dice, sensitivity, false positives per image, and original-space mask restoration.",
+      "status": "passed",
+      "evidence": "segmentation_metrics and restore_mask_to_original are covered by tests; the segmentation smoke records finite segmentation losses and the coordinate-restoration test verifies crop placement and zero padding."
+    },
+    {
+      "id": "P13-06",
+      "description": "The native 2D MedGemma path supports VQA and structured findings with masked language loss, fixed visual-token buckets, and explicit mixed-task weights.",
+      "status": "passed",
+      "evidence": "native_vlm_smoke.yaml and native_structured_findings_smoke.yaml complete one-step CPU runs; structured findings use StructuredGenerationTask validation; native_structured_findings_smoke.yaml records VQA/findings/impression/report weights."
+    },
+    {
+      "id": "P13-07",
+      "description": "External-encoder VLM recipes cover linear and Perceiver bridges with 32/64/128 visual-token configurations and staged bridge/language/vision roles.",
+      "status": "passed",
+      "evidence": "external_vlm_linear_64.yaml, external_vlm_perceiver_32.yaml, external_vlm_perceiver_128.yaml, external_vlm_cuda_qlora.yaml, external_vlm_stage3_vision_lora.yaml, and external_vlm_tpu_cached.yaml parse; offline bridge builds and token-bucket metadata are tested; external_vlm_smoke.yaml completes one step."
+    },
+    {
+      "id": "P13-08",
+      "description": "Native and external VLM visual-dependence ablations expose image, no-image, and shuffled-image conditions without hiding a failed grounding result.",
+      "status": "passed",
+      "evidence": "run_visual_dependence_ablation returns deltas and explicit pass criteria; the test verifies mode/mask behavior and preserves both criteria. Offline random weights are not treated as grounding evidence."
+    },
+    {
+      "id": "P13-09",
+      "description": "Evaluation artifacts include reproducibility hashes, clinical units, memory fields, and explicit limitations.",
+      "status": "passed",
+      "evidence": "make_phase13_artifact and EvaluationArtifact are covered by tests; artifact serialization includes config hash, seed, dataset/preprocessing/model provenance, units, memory, and limitations."
+    },
+    {
+      "id": "P13-10",
+      "description": "Run metadata records effective batch geometry and trainable/total parameters including task components.",
+      "status": "passed",
+      "evidence": "Trainer metadata now passes accumulation and task components to capture_run_metadata; native accumulation reports metadata effective_batch_size=2 and gradient_accumulation_steps=2; final CPU smokes report positive trainable counts."
+    },
+    {
+      "id": "P13-11",
+      "description": "Phase 13 acceptance tests and recipe validator pass.",
+      "status": "passed",
+      "evidence": "python -m pytest tests/phase_13 -q reports 19 passed; the final python -m medfm.tools.validate_phase --phase 13 gate passes after report artifacts are written."
+    },
+    {
+      "id": "P13-12",
+      "description": "CUDA BF16/NF4 and TPU BF16 profiles are published with explicit backend policies and no mislabeled TPU QLoRA path.",
+      "status": "not_applicable",
+      "justification": "The workstation has no torch_xla or bitsandbytes and production checkpoint paths are intentionally unavailable; static CUDA/TPU recipes and fail-closed PEFT policy are present, but no hardware result is fabricated."
+    },
+    {
+      "id": "P13-13",
+      "description": "Protected production-data metrics, clinical baselines, external-site grounding, and representative large-model memory results are accepted.",
+      "status": "not_applicable",
+      "justification": "Only synthetic/offline random contract data was available. The implementation records the required metric and artifact interfaces, while clinical validation, majority/conventional baselines, external-site evaluation, and representative model VRAM remain release-blocking follow-up evidence."
+    },
+    {
+      "id": "P13-14",
+      "description": "A compatible Phase 13 checkpoint can be resumed without changing scientific configuration.",
+      "status": "passed",
+      "evidence": "A classification smoke checkpoint was created and resumed with the unchanged config; resume returned success at global_step=1. A changed max_steps config was correctly rejected as a configuration-hash mismatch."
+    },
+    {
+      "id": "P13-15",
+      "description": "Model cards, known limitations, and protected handoff commands are published for each recipe family.",
+      "status": "passed",
+      "evidence": "docs/recipes/phase13_2d_model_cards.md and agent/reports/phase_13/next_phase_handoff.md record family-specific contracts, provenance, clinical-safety limits, and CUDA/TPU evidence gates."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_13/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_13/next_phase_handoff.md"
+}

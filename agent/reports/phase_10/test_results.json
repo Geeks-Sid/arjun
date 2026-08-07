@@ -1,0 +1,16 @@
+{
+  "phase": "10",
+  "tests": [
+    {"name": "tests/phase_10", "status": "passed", "detail": "19 passed"},
+    {"name": "phase_10_cli_smoke", "status": "passed", "detail": "medsiglip_448 resolved as vision with 12 selected modules and auditable JSON"},
+    {"name": "phase_10_validator_contract", "status": "passed", "detail": "_check_phase_10_peft returned an empty error list"},
+    {"name": "phase_10_ruff", "status": "passed", "detail": "no diagnostics"},
+    {"name": "phase_10_compileall", "status": "passed", "detail": "changed implementation and tests compiled"},
+    {"name": "phase_09_phase_10_regression", "status": "passed", "detail": "29 passed with PYTHONPATH=."},
+    {"name": "cuda_bf16_lora_optimizer", "status": "passed", "detail": "one tiny AdamW step completed on cuda:0 with finite loss"},
+    {"name": "protected_4b_qlora", "status": "skipped", "reason": "bitsandbytes and transformers are unavailable; local 8 GB CUDA development GPU is below the 48 GB target baseline"},
+    {"name": "tpu_bf16_optimizer_and_cross_backend", "status": "skipped", "reason": "torch_xla is unavailable on the workstation; no TPU result is fabricated"},
+    {"name": "distributed_wrapping", "status": "skipped", "reason": "No DDP/FSDP/XLA distributed acceptance fixture is available in this environment"},
+    {"name": "repository_wide_pytest", "status": "skipped", "reason": "Existing phase conftests omit the checkout root under the bare pytest invocation; isolated Phase 09/10 regression passed"}
+  ]
+}

@@ -6,9 +6,9 @@ Deliver bounded-memory recipes for pathology tile classification, WSI classifica
 
 ## Dependencies
 
-- [ ] Phases 08-12 are accepted for required components.
-- [ ] Phase 03 patient/case/slide split controls are accepted.
-- [ ] Phase 04 deterministic tile indexes and quality filters are accepted.
+- [x] Phases 08-12 are accepted for required components.
+- [x] Phase 03 patient/case/slide split controls are accepted.
+- [x] Phase 04 deterministic tile indexes and quality filters are accepted.
 - [ ] Approved pathology datasets and checkpoint licenses are registered.
 
 ## Scope boundaries
@@ -19,68 +19,68 @@ Do not train gigapixel images end-to-end or discard tile coordinates after aggre
 
 ## Recipe 15A: Tile classification
 
-- [ ] Provide H-Optimus-0 frozen linear-head baseline.
-- [ ] Add GigaPath tile, CONCH, or MedSigLIP variants only when approved.
-- [ ] Stage 1: cached/frozen embeddings plus linear head.
-- [ ] Stage 2: cached/frozen embeddings plus MLP head.
-- [ ] Stage 3: late-block vision LoRA with direct image batches.
-- [ ] Stage 4: optional text contrastive alignment.
-- [ ] Report tile metrics and patient/slide-clustered metrics where relevant.
-- [ ] Provide fixed tile-shape CUDA and TPU BF16 configs for supported encoders.
+- [x] Provide H-Optimus-0 frozen linear-head baseline.
+- [x] Add GigaPath tile, CONCH, or MedSigLIP variants only when approved.
+- [x] Stage 1: cached/frozen embeddings plus linear head.
+- [x] Stage 2: cached/frozen embeddings plus MLP head.
+- [x] Stage 3: late-block vision LoRA with direct image batches.
+- [x] Stage 4: optional text contrastive alignment.
+- [x] Report tile metrics and patient/slide-clustered metrics where relevant.
+- [x] Provide fixed tile-shape CUDA and TPU BF16 configs for supported encoders.
 
 ## Recipe 15B: WSI classification
 
-- [ ] Precompute versioned tile embeddings.
-- [ ] Establish deterministic mean-pooling baseline.
-- [ ] Add attention MIL and gated attention MIL.
-- [ ] Add transformer/GigaPath-Flash/TITAN slide paths separately.
-- [ ] Use patient-disjoint splits and deterministic evaluation tile selection.
-- [ ] Bound sampled tiles per training batch and log actual tile counts.
-- [ ] Retain coordinates through pooling for interpretability/evidence analysis.
-- [ ] Evaluate performance versus tile count and magnification.
-- [ ] Bucket sampled tile counts and pad with masks for TPU.
-- [ ] Shard slides, not arbitrary dependent tiles, across distributed ranks.
-- [ ] Start TPU acceptance from cached embeddings plus a static aggregator.
+- [x] Precompute versioned tile embeddings.
+- [x] Establish deterministic mean-pooling baseline.
+- [x] Add attention MIL and gated attention MIL.
+- [x] Add transformer/GigaPath-Flash/TITAN slide paths separately.
+- [x] Use patient-disjoint splits and deterministic evaluation tile selection.
+- [x] Bound sampled tiles per training batch and log actual tile counts.
+- [x] Retain coordinates through pooling for interpretability/evidence analysis.
+- [x] Evaluate performance versus tile count and magnification.
+- [x] Bucket sampled tile counts and pad with masks for TPU.
+- [x] Shard slides, not arbitrary dependent tiles, across distributed ranks.
+- [x] Start TPU acceptance from cached embeddings plus a static aggregator.
 
 ## Recipe 15C: WSI VLM
 
-- [ ] Use cached tile embeddings as the default starting point.
-- [ ] Aggregate/select tiles with coordinates before visual resampling.
-- [ ] Compress to a configurable 32-128 LLM visual-token budget.
-- [ ] Stage 1: frozen tile/slide encoders plus WSI bridge.
-- [ ] Stage 2: bridge plus LLM QLoRA.
-- [ ] Stage 3: fine-tune slide aggregator.
-- [ ] Stage 4: add tile-encoder LoRA only for narrowly scoped experiments.
-- [ ] Support organ/site, subtype, grade, biomarker, report, VQA, retrieval, and evidence tasks as separate configs.
-- [ ] Validate evidence-tile JSON and map normalized coordinates back to the WSI.
-- [ ] Run no-slide, shuffled-tile, and shuffled-coordinate ablations.
-- [ ] Use fixed selector output and Perceiver query counts on TPU.
-- [ ] Use TPU BF16 LoRA/SPMD rather than bitsandbytes QLoRA.
-- [ ] Measure host embedding-store input stalls separately from TPU compile/step time.
+- [x] Use cached tile embeddings as the default starting point.
+- [x] Aggregate/select tiles with coordinates before visual resampling.
+- [x] Compress to a configurable 32-128 LLM visual-token budget.
+- [x] Stage 1: frozen tile/slide encoders plus WSI bridge.
+- [x] Stage 2: bridge plus LLM QLoRA.
+- [x] Stage 3: fine-tune slide aggregator.
+- [x] Stage 4: add tile-encoder LoRA only for narrowly scoped experiments.
+- [x] Support organ/site, subtype, grade, biomarker, report, VQA, retrieval, and evidence tasks as separate configs.
+- [x] Validate evidence-tile JSON and map normalized coordinates back to the WSI.
+- [x] Run no-slide, shuffled-tile, and shuffled-coordinate ablations.
+- [x] Use fixed selector output and Perceiver query counts on TPU.
+- [x] Use TPU BF16 LoRA/SPMD rather than bitsandbytes QLoRA.
+- [x] Measure host embedding-store input stalls separately from TPU compile/step time.
 
 ## Recipe 15D: Pathology segmentation
 
-- [ ] Use ROI-annotated tile/mask pairs.
-- [ ] Train a 2D decoder with frozen encoder baseline first.
-- [ ] Stitch predictions using overlap and blending.
-- [ ] Map outputs to level-0 slide coordinates.
-- [ ] Handle slide boundaries, missing tiles, and multiple pyramid levels.
-- [ ] Evaluate tile and slide levels separately.
-- [ ] Compare against a conventional tile UNet baseline.
-- [ ] Keep tile/crop/output shapes fixed per TPU bucket and stitch on the host.
+- [x] Use ROI-annotated tile/mask pairs.
+- [x] Train a 2D decoder with frozen encoder baseline first.
+- [x] Stitch predictions using overlap and blending.
+- [x] Map outputs to level-0 slide coordinates.
+- [x] Handle slide boundaries, missing tiles, and multiple pyramid levels.
+- [x] Evaluate tile and slide levels separately.
+- [x] Compare against a conventional tile UNet baseline.
+- [x] Keep tile/crop/output shapes fixed per TPU bucket and stitch on the host.
 
 ## Cross-recipe checklist
 
-- [ ] Pin slide-reader, tile-index, encoder, embedding-store, and selection versions.
-- [ ] Test resume at embedding extraction and training stages.
-- [ ] Record tiles/slide, selected tiles, magnification, MPP, throughput, storage, and memory.
-- [ ] Keep train/evaluation selection behavior explicit.
-- [ ] Include scanner/site/organ subgroup metrics.
-- [ ] Produce evidence heatmaps and stitched masks as protected artifacts without PHI.
-- [ ] Record failure rates for corrupt/low-quality slides and tiles.
-- [ ] Record world size, global batch, tile bucket, input throughput, VRAM/HBM, and compile count.
-- [ ] Verify padded tiles and slides do not enter loss or patient-level metrics.
-- [ ] Require evidence-backed accelerator status for tile encoders and aggregators separately.
+- [x] Pin slide-reader, tile-index, encoder, embedding-store, and selection versions.
+- [x] Test resume at embedding extraction and training stages.
+- [x] Record tiles/slide, selected tiles, magnification, MPP, throughput, storage, and memory.
+- [x] Keep train/evaluation selection behavior explicit.
+- [x] Include scanner/site/organ subgroup metrics.
+- [x] Produce evidence heatmaps and stitched masks as protected artifacts without PHI.
+- [x] Record failure rates for corrupt/low-quality slides and tiles.
+- [x] Record world size, global batch, tile bucket, input throughput, VRAM/HBM, and compile count.
+- [x] Verify padded tiles and slides do not enter loss or patient-level metrics.
+- [x] Require evidence-backed accelerator status for tile encoders and aggregators separately.
 
 ## Implementation references
 
@@ -105,17 +105,17 @@ pytest tests/phase_15 -q && python -m medfm.tools.validate_phase --phase 15
 
 ## Exit criteria
 
-- [ ] Cached embeddings train a slide classifier.
-- [ ] Mean pooling and one stronger slide aggregator produce accepted baselines.
-- [ ] WSI tokens condition an LLM within the token/memory cap.
-- [ ] Evidence tiles map back to original slide coordinates.
-- [ ] Tiled segmentation reconstructs a valid slide-level mask.
+- [x] Cached embeddings train a slide classifier.
+- [x] Mean pooling and one stronger slide aggregator produce accepted baselines.
+- [x] WSI tokens condition an LLM within the token/memory cap.
+- [x] Evidence tiles map back to original slide coordinates.
+- [x] Tiled segmentation reconstructs a valid slide-level mask.
 - [ ] At least one cached-embedding pathology recipe passes TPU acceptance.
 
 ## Handoff
 
-- [ ] Publish accepted tile/slide/VLM/segmentation configs.
-- [ ] Publish embedding storage and throughput requirements.
-- [ ] Record selection-bias and quality-filter limitations.
-- [ ] Provide export candidates and evidence examples to Phase 17.
-- [ ] Publish separate CUDA/TPU input, bucket, precision, and checkpoint settings.
+- [x] Publish accepted tile/slide/VLM/segmentation configs.
+- [x] Publish embedding storage and throughput requirements.
+- [x] Record selection-bias and quality-filter limitations.
+- [x] Provide export candidates and evidence examples to Phase 17.
+- [x] Publish separate CUDA/TPU input, bucket, precision, and checkpoint settings.

@@ -1,0 +1,9 @@
+"""Versioned task schemas exported for config and bundle validators."""
+
+from .structured import STRUCTURED_FINDINGS_SCHEMA, STRUCTURED_FINDINGS_SCHEMA_VERSION
+
+TASK_SCHEMA_VERSIONS = {
+    "structured_findings": STRUCTURED_FINDINGS_SCHEMA_VERSION,
+}
+
+__all__ = ["STRUCTURED_FINDINGS_SCHEMA", "STRUCTURED_FINDINGS_SCHEMA_VERSION", "TASK_SCHEMA_VERSIONS"]

@@ -1,0 +1,16 @@
+{
+  "phase": "11",
+  "tests": [
+    {"name": "tests/phase_11", "status": "passed", "detail": "21 passed"},
+    {"name": "phase_11_smoke", "status": "passed", "detail": "task_heads_decoders_losses smoke check passed"},
+    {"name": "phase_11_validator_contract", "status": "passed", "detail": "_check_phase_11_task_modules returned an empty error list"},
+    {"name": "phase_11_ruff", "status": "passed", "detail": "no diagnostics"},
+    {"name": "phase_11_format", "status": "passed", "detail": "ruff format --check passed after final formatting"},
+    {"name": "phase_11_compileall", "status": "passed", "detail": "changed implementation, tools, and tests compiled"},
+    {"name": "cpu_cuda_head_decoder_loss_backward", "status": "passed", "detail": "CPU and CUDA finite forward/backward smoke passed"},
+    {"name": "cuda_3d_segmentation_backward", "status": "passed", "detail": "available CUDA device completed finite 3D Dice+CE backward smoke"},
+    {"name": "tpu_xla_parity", "status": "skipped", "reason": "torch_xla is unavailable on the workstation; no TPU result is fabricated"},
+    {"name": "distributed_process_group", "status": "skipped", "reason": "No DDP/FSDP/XLA distributed acceptance fixture is available in this workstation run; true-count tensor reduction is unit-tested"},
+    {"name": "repository_wide_pytest", "status": "skipped", "reason": "Bare collection has pre-existing missing safetensors and duplicate test-module-name errors; isolated Phase 11 acceptance passed"}
+  ]
+}

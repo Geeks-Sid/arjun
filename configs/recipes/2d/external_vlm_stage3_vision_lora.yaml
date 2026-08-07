@@ -1,0 +1,73 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: vlm
+  revision: production-checkpoint-required
+  checkpoint_source: phase05_local_checkpoint
+dataset:
+  id: approved-vqa-structured-findings
+  revision: manifest-revision-required
+  split_policy: patient_first_site_then_time
+task:
+  type: VISUAL_QUESTION_ANSWERING
+recipe:
+  id: external-vlm-stage3-vision-lora
+  family: external_vlm
+  backbone: rad-dino
+  modality: XRAY_2D
+  mode: production
+  offline_tiny: false
+  stage: 3
+  use_lora: true
+  lora_rank: 8
+  image_size: 518
+  channels: 3
+  patch_size: 14
+  visual_tokens: 64
+  text_tokens: 512
+  bridge: perceiver
+  prompt_revision: phase13-vqa-prompt-v1
+  cached_visual_tokens: false
+  static_bucket: {visual_tokens: 64, text_tokens: 512}
+  gating_evidence: frozen_vision_improvement_required
+accelerator:
+  backend: cuda
+  precision: bf16
+  distribution: single
+  attention: sdpa
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 16
+  global_batch_size: 16
+optimizer: {name: adamw, lr: 0.00002, weight_decay: 0.0}
+freeze_schedule:
+  - until_step: 1000
+    train: [bridge, language_lora]
+  - train: [bridge, language_lora, vision_lora, vision.backbone.norm]
+peft:
+  enabled: true
+  rank: 8
+  alpha: 16
+  dropout: 0.05
+  target_policy: architecture_default
+quantization:
+  enabled: true
+  method: bitsandbytes_nf4
+  load_in_4bit: true
+  quant_type: nf4
+  double_quant: true
+  compute_dtype: bfloat16
+memory:
+  gradient_checkpointing: {language: true, vision: true}
+  use_cache_during_training: false
+tracking: {kind: local_json}
+checkpoint: {format: safetensors, save_optimizer: true}
+seed: 13
+max_steps: 2000
+epochs: 4
+save_every_steps: 100
+output_dir: artifacts/runs/phase13/external_vlm_stage3_vision_lora
+dataset_hash: approved-manifest-sha256-required
+preprocessing_hash: rad-dino-518-preprocess-v1
+base_model_revision: production-checkpoint-required

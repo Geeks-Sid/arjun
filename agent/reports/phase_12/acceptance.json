@@ -1,0 +1,96 @@
+{
+  "phase": "12",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "smoke_command": "python -m pytest tests/phase_12 -q && python -m medfm.tools.validate_phase --phase 12",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "P12-01",
+      "description": "Typed RunConfig loading, canonical hashing, explicit staged pipeline construction, capability preflight, and dry-run/model-summary are available.",
+      "status": "passed",
+      "evidence": "tests/phase_12/test_config_backend.py passes; CPU dry-run reports allocated=false; the tiny pipeline constructs registry, dataset, model, PEFT, optimizer, task, evaluator, trainer, and checkpoint stages."
+    },
+    {
+      "id": "P12-02",
+      "description": "CPU, CUDA, and lazy XLA-TPU AcceleratorBackend implementations keep device-specific APIs behind the backend boundary.",
+      "status": "passed",
+      "evidence": "CPU and CUDA one-step runs pass; backend imports remain lazy for torch_xla; backend-neutrality checks and backend capability gates are present; XLA model preparation re-ties weights after placement."
+    },
+    {
+      "id": "P12-03",
+      "description": "Task-specific forward-and-loss semantics are exposed through a shared TrainingStep interface for classification, segmentation, 2D VLM, and 3D VLM families.",
+      "status": "passed",
+      "evidence": "medfm/training/steps.py provides the shared protocol and family adapters; CPU and CUDA tiny 2D/3D VLM smokes pass through VLMTrainingStep and ThreeDVLMTrainingStep, alongside classification and segmentation smokes."
+    },
+    {
+      "id": "P12-04",
+      "description": "Precision, attention, accumulation, clipping, FP32 sensitive scalar handling, NF4 policy, cache policy, and backend compatibility are explicit.",
+      "status": "passed",
+      "evidence": "RunConfig validation and backend autocast/scaler paths are implemented; optimizer clipping and loss-output FP32 promotion are covered by the Phase 12 suite; cache disabling and gradient-checkpointing are applied at the backend model boundary."
+    },
+    {
+      "id": "P12-05",
+      "description": "Deterministic distributed sampling, bounded static-shape buckets, warmup, XLA loader boundaries, and padded-sample masking are implemented.",
+      "status": "passed",
+      "evidence": "medfm/training/data.py and distributed.py provide resumable sampler state, epoch set_epoch propagation, bounded bucket plans, repeated-bucket warmup, process-group initialization, backend dataloader wrapping, pinned/nonblocking batch transfer, and sample masks."
+    },
+    {
+      "id": "P12-06",
+      "description": "Optimizer groups, quantized-base rejection, freeze boundary transitions, scheduler preservation, and gradient audits are explicit.",
+      "status": "passed",
+      "evidence": "Phase 12 tests pass accumulation, freeze-boundary, and optimizer behavior; construction rejects duplicate, frozen, or quantized trainable parameters."
+    },
+    {
+      "id": "P12-07",
+      "description": "Memory planning reserves headroom, estimates resource classes, emits ordered OOM guidance, and never mutates scientific configuration automatically.",
+      "status": "passed",
+      "evidence": "OOM suggestion ordering and configuration immutability pass; CPU and CUDA results include memory plans and CUDA peak allocated/reserved measurements."
+    },
+    {
+      "id": "P12-08",
+      "description": "Atomic resumable checkpoints include model, component, optimizer, scheduler/scaler, RNG, sampler, topology, hashes, metrics, and best-criterion state; adapter-only exports are separate.",
+      "status": "passed",
+      "evidence": "Checkpoint corruption is rejected, completed-checkpoint resume is a no-op, CPU safetensors adapter export tests pass, and a fresh single-rank torch.distributed.checkpoint save/restore smoke verifies model and AdamW state."
+    },
+    {
+      "id": "P12-09",
+      "description": "Local tracking, provenance capture, redaction, pre-collective non-finite checks, failure reports, interruption checkpoints, and evaluator reductions are implemented.",
+      "status": "passed",
+      "evidence": "Training results and run artifacts contain source/runtime/topology/memory metadata; tracking and failure-report paths are implemented under medfm/training; finite-loss guards run before collectives."
+    },
+    {
+      "id": "P12-10",
+      "description": "CPU contract and acceptance validation pass for the Phase 12 implementation.",
+      "status": "passed",
+      "evidence": "python -m pytest tests/phase_12 -q reports 12 passed; python -m medfm.tools.validate_phase --phase 12 passes."
+    },
+    {
+      "id": "P12-11",
+      "description": "Tiny CUDA baseline optimizer steps and CPU/CUDA one-step parity are verified on available hardware.",
+      "status": "passed",
+      "evidence": "CUDA classification, 2D segmentation, 3D segmentation, and 2D/3D VLM each complete one optimizer step; accelerator parity reports absolute loss delta 0.0 at atol 1e-3."
+    },
+    {
+      "id": "P12-12",
+      "description": "TPU PJRT optimizer steps, stable compilation, replicated reduction, SPMD/FSDP checkpointing, and portable TPU export are verified.",
+      "status": "not_applicable",
+      "justification": "torch_xla is not installed on this workstation; no TPU result is fabricated. The XLA backend, loader, metrics, compilation gate, and policy paths remain explicit and fail closed."
+    },
+    {
+      "id": "P12-13",
+      "description": "CUDA DDP/FSDP and multi-rank topology-change checkpoint/resume acceptance are verified.",
+      "status": "not_applicable",
+      "justification": "Only one CUDA device was available for this run. Distributed launch and wrapping helpers are implemented, and the single-rank DCP branch is smoke-tested, but no multi-device result is claimed."
+    },
+    {
+      "id": "P12-14",
+      "description": "Phase 12 recipe schema, memory profiles, checkpoint compatibility rules, and protected accelerator command guidance are handed off.",
+      "status": "passed",
+      "evidence": "next_phase_handoff.md records schema extension points, known-safe smoke settings, compatibility rules, DCP/SPMD checkpoint rules, and constrained GPU/TPU launch, profile, parity, and checkpoint commands."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_12/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_12/next_phase_handoff.md"
+}

@@ -442,12 +442,28 @@ class EmbeddingStoreReader(Reader):
             raise ReaderError(f"embedding store root {self._root} is not a directory")
 
     def supports(self, path: Path) -> bool:
-        return path.is_dir() and any(path.glob("*.safetensors"))
+        return path.is_dir() and (any(path.glob("*.safetensors")) or any(path.glob("*.h5")))
 
     def list_slides(self) -> list[str]:
-        return sorted(p.stem for p in self._root.glob("*.safetensors"))
+        return sorted({p.stem for p in (*self._root.glob("*.safetensors"), *self._root.glob("*.h5"))})
 
     def read_slide(self, slide_key: str) -> PayloadRead:
+        h5_path = self._root / f"{slide_key}.h5"
+        if h5_path.is_file():
+            from medfm.models.pathology import EmbeddingStore
+
+            stored = EmbeddingStore(self._root).read_slide(slide_key)
+            return PayloadRead(
+                tensors={"image": stored.embeddings},
+                pathology=PathologyMetadata(tile_coordinates=stored.coords[:, :2]),
+                source_metadata={
+                    "reader": self.reader_id,
+                    "reader_version": self.reader_version,
+                    "slide_key_hash": hash_identifier(slide_key),
+                    "store_schema_version": stored.metadata.get("schema_version"),
+                    "model_revision": stored.metadata.get("model_revision"),
+                },
+            )
         from safetensors.torch import load as st_load
 
         path = self._root / f"{slide_key}.safetensors"

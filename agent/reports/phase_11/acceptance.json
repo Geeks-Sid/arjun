@@ -1,0 +1,25 @@
+{
+  "phase": "11",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "smoke_command": "pytest tests/phase_11 -q && python -m medfm.tools.validate_phase --phase 11",
+  "smoke_passed": true,
+  "criteria": [
+    {"id": "P11-01", "description": "Encoder-independent classification heads and explicit pooling operators cover pooled, spatial-token, and MIL inputs with capability failures instead of silent substitutions.", "status": "passed", "evidence": "tests/phase_11/test_heads_and_losses.py exercises linear, MLP, attention, multilabel, ordinal, MIL, CLS, masked-mean, GeM, top-k, empty-token rows, and pooled-only capability errors."},
+    {"id": "P11-02", "description": "Mandatory BCE-with-logits and cross-entropy baselines plus configured focal, label-smoothing, asymmetric multilabel, ordinal, class-weight, and masked reductions are implemented.", "status": "passed", "evidence": "Hand-computed BCE/CE values, optional-loss finite backward checks, and the Phase 11 isolated suite pass."},
+    {"id": "P11-03", "description": "A shared segmentation output contract and minimal 2D/3D UNet/FPN decoders preserve deep supervision and native output semantics.", "status": "passed", "evidence": "tests/phase_11/test_segmentation.py verifies 2D/3D UNet and FPN shapes, deep supervision, promptable/transformer interfaces, and native output preservation."},
+    {"id": "P11-04", "description": "Dice+CE/Dice+BCE defaults and explicit focal, Tversky, boundary, class-volume, deep-supervision, sample, and voxel masking paths remain finite for empty/full targets.", "status": "passed", "evidence": "Segmentation loss tests, masked boundary smoke, deep-supervision backward, and 2D/3D task wrapper tests pass."},
+    {"id": "P11-05", "description": "Language-conditioned segmentation encodes text separately, fuses it with spatial visual features, supports 2D/3D, and zeros missing queries without reshaping text into masks.", "status": "passed", "evidence": "Language decoder gradient tests cover visual/text gradients and 2D/3D shapes; test_task_wrappers.py covers separate batch text embeddings and a missing query mask."},
+    {"id": "P11-06", "description": "Retrieval projections normalize image/text representations, learn a bounded logit scale, filter same-patient negatives, and expose a distributed-negative protocol boundary.", "status": "passed", "evidence": "Alignment tests verify L2 normalization, same-patient filtering, all-filtered failure, and RetrievalTask shared-output consumption."},
+    {"id": "P11-07", "description": "2D/3D box heads, normalized/physical spacing and affine conversion, L1, IoU, and GIoU-style losses are available with valid-mask broadcasting.", "status": "passed", "evidence": "Box head/conversion tests plus task-wrapper localization and multi-box masked IoU smoke pass."},
+    {"id": "P11-08", "description": "Structured findings use a versioned JSON schema, count parse/schema errors before scoring, and only retain invalid raw output through an access-controlled debug sink.", "status": "passed", "evidence": "Structured validation tests assert valid/invalid counts, parse/schema split, no default raw retention, and rejection of an unauthorized debug sink."},
+    {"id": "P11-09", "description": "Multitask composition supports fixed and scheduled positive finite weights, fixed task signatures, weighting extension points, per-task diagnostics, and true-count reduction.", "status": "passed", "evidence": "Multitask backward/schedule tests and uneven true-count reduction tests pass; validator composes classification, segmentation, and alignment in one synthetic graph."},
+    {"id": "P11-10", "description": "Phase 11 implementation remains adapter-independent and accelerator-neutral with CPU/CUDA finite forward/backward coverage.", "status": "passed", "evidence": "Source imports only shared core contracts in task/head/decoder modules; CPU/CUDA mixed head/decoder/loss/projection backward smoke and CUDA 3D segmentation smoke passed."},
+    {"id": "P11-11", "description": "TPU/XLA head and loss parity executes on the declared topology.", "status": "not_applicable", "justification": "torch_xla is not installed on the workstation; tensor-only implementations and no fabricated TPU result are reported."},
+    {"id": "P11-12", "description": "A distributed process-group run verifies uneven-count reduction and backend wrapping.", "status": "not_applicable", "justification": "No DDP/FSDP/XLA distributed acceptance fixture is available in this workstation run; the backend boundary and true-count reduction helper are implemented and unit-tested."},
+    {"id": "P11-13", "description": "Phase 11 acceptance integrates required modules, tests, smoke behavior, report schema, and non-unknown criteria.", "status": "passed", "evidence": "python -m medfm.tools.validate_phase --phase 11 passes after the report artifacts are present; isolated Phase 11 suite has 21 passing tests."}
+  ],
+  "unresolved_issues_file": "agent/reports/phase_11/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_11/next_phase_handoff.md"
+}

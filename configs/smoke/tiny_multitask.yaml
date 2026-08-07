@@ -1,0 +1,56 @@
+schema_version: 1
+model_id: tiny_multitask
+model:
+  id: tiny_multitask
+  family: vision
+  revision: local
+
+dataset:
+  name: synthetic_tiny
+  split: train
+
+task:
+  name: multiclass_classification
+
+accelerator:
+  backend: cpu
+  distribution: single
+  precision: fp32
+  world_size: 1
+  compile: false
+  attention: sdpa
+  static_shapes: false
+
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+  drop_last: false
+  pad_final_batch: false
+
+memory:
+  max_gpu_memory_gb: 46
+  reserve_gpu_memory_gb: 2
+  micro_batch_size: 2
+  gradient_accumulation_steps: 1
+  activation_checkpointing: false
+  use_cache_during_training: false
+  log_peak_memory: true
+
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+  warmup_steps: 0
+  max_grad_norm: 1.0
+
+seed: 17
+max_steps: 1
+epochs: 1
+output_dir: artifacts/smoke
+tracking:
+  kind: local_json
+checkpoint:
+  format: resumable
+extensions:
+  shape_buckets: {}

@@ -1,0 +1,52 @@
+schema_version: 1
+phase: "09"
+attention:
+  cuda_default: sdpa
+  flash_attention_optional: true
+  xla_default: xla
+shape_buckets:
+  visual_tokens: [32, 64, 128]
+  text_tokens: [256, 512, 1024]
+mode_capabilities:
+  native:
+    registry_name: native_medgemma
+    language_adapter: medgemma_native
+    requires_native_connector: true
+    dataset_visual_placeholders: false
+  external:
+    registry_name: external_encoder_bridge
+    language_adapter: generic_hf_causal
+    requires_inputs_embeds: true
+    dataset_visual_placeholders: false
+bridges:
+  smoke:
+    type: linear
+    trainable: true
+  default:
+    type: mlp
+    intermediate_dim: 256
+    trainable: true
+  fixed_query:
+    type: perceiver_resampler
+    query_count: 64
+    trainable: true
+training_stages:
+  stage_1:
+    trainable_modules: [bridge, boundary]
+    frozen_modules: [vision, language]
+  stage_2:
+    trainable_modules: [bridge, boundary, language_lora]
+    frozen_modules: [vision]
+  stage_3:
+    trainable_modules: [bridge, boundary, language_lora, vision_lora]
+  stage_4:
+    weighted_multitask: true
+loss:
+  ignore_index: -100
+  supervise_assistant_only: true
+  mask_visual_tokens: true
+  mask_prompt_tokens: true
+xla:
+  dynamic_visual_pruning: false
+  max_steady_state_compilations: 0
+  tied_embedding_retie_after_placement: true

@@ -1,0 +1,78 @@
+{
+  "phase": "15",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T15:59:52-04:00",
+  "smoke_command": "python -m pytest tests/phase_15 -q && python -m medfm.cli.train --config configs/recipes/pathology/wsi_classification_smoke.yaml --format json && python -m medfm.tools.smoke --phase 15 --json && python -m medfm.tools.validate_phase --phase 15",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "P15-01",
+      "description": "Tile classification publishes frozen linear, MLP, vision LoRA, and optional text-alignment stages with fixed tile buckets.",
+      "status": "passed",
+      "evidence": "Five tile profiles build through build_phase15_recipe, covering stages 1-4 plus the fixed-shape TPU BF16 contract; the focused suite exercises stages 1-4 and the contrastive alignment loss, with one-step pipeline coverage for the tile family."
+    },
+    {
+      "id": "P15-02",
+      "description": "WSI classification precomputes versioned bounded tile embeddings and provides mean, attention MIL, gated attention MIL, transformer, and static TPU profiles.",
+      "status": "passed",
+      "evidence": "Five WSI classification configs build with Phase 08 embedding-store revision, bounded tile counts, masked fixed buckets, retained tile coordinates, and shard_unit=slide; focused tests cover all four aggregator paths."
+    },
+    {
+      "id": "P15-03",
+      "description": "WSI classification uses patient-disjoint splits, explicit train/evaluation selectors, actual tile-count logging, and tile-count/magnification evaluation rows.",
+      "status": "passed",
+      "evidence": "patient_disjoint_split, metadata selector fields, actual_tile_count masks, and evaluate_wsi_tile_counts_and_magnification are covered by tests and the Phase 15 validator."
+    },
+    {
+      "id": "P15-04",
+      "description": "WSI VLM uses cached tile embeddings, coordinate-aware selection before fixed Perceiver resampling, 32/64/128 visual-token budgets, and staged bridge/language LoRA contracts.",
+      "status": "passed",
+      "evidence": "Cached smoke, report, task-specific, and TPU VLM configs build; tests verify fixed output width, source coordinates, selector revision, visual ablations, and one-step VLM training."
+    },
+    {
+      "id": "P15-05",
+      "description": "Organ/site, subtype, grade, biomarker, report, VQA, retrieval, and evidence localization tasks are separate WSI VLM configurations.",
+      "status": "passed",
+      "evidence": "Dedicated YAML profiles exist under configs/recipes/pathology/ and the task-type test verifies report, VQA, and retrieval mappings; the validator builds every offline profile."
+    },
+    {
+      "id": "P15-06",
+      "description": "Evidence tiles map normalized coordinates to level-0 WSI geometry and validate as PHI-safe JSON.",
+      "status": "passed",
+      "evidence": "Stitching tests cover level-downsample mapping, deterministic ranking, normalized round trips, malformed geometry, missing tiles, and JSON validation; the VLM smoke emits valid evidence JSON."
+    },
+    {
+      "id": "P15-07",
+      "description": "Tiled pathology segmentation uses ROI tile/mask pairs, decoder-first training, overlap/blending, slide boundaries, missing tiles, pyramid levels, and separate tile/slide metrics.",
+      "status": "passed",
+      "evidence": "Segmentation smoke and conventional tile UNet configs build and complete one CPU optimizer step; host stitching tests cover overlap, boundaries, missing tiles, pyramid levels, and coverage, while evaluation tests cover tile/slide units."
+    },
+    {
+      "id": "P15-08",
+      "description": "Recipe metadata records memory, throughput, storage/input-stall, bucket, world-size, batch, padding, and backend status without inventing runtime measurements.",
+      "status": "passed",
+      "evidence": "PathologyRecipeMetadata and backend_observability serialize these fields; focused metadata assertions and the Phase 15 validator pass."
+    },
+    {
+      "id": "P15-09",
+      "description": "Phase 15 CLI dispatch, smoke checks, focused tests, and acceptance validation are registered end to end.",
+      "status": "passed",
+      "evidence": "The CLI smoke completed one CPU optimizer step; python -m pytest tests/phase_15 -q reported 41 passed; the Phase 15 smoke reported one passed check; the validator passed after report artifacts were populated."
+    },
+    {
+      "id": "P15-10",
+      "description": "At least one cached-embedding pathology recipe passes TPU acceptance on hardware.",
+      "status": "not_applicable",
+      "justification": "This workstation has no torch_xla/PJRT TPU runtime. Cached-embedding TPU BF16 profiles are published with static buckets, fixed selectors, explicit SPMD/LoRA policy, and non-accepted hardware status; no TPU result is claimed."
+    },
+    {
+      "id": "P15-11",
+      "description": "Production checkpoint, dataset, evidence, and clinical limitations remain explicit and fail closed.",
+      "status": "passed",
+      "evidence": "The model cards, unresolved-issues report, pinned config metadata, and artifact limitations state that offline tiny/synthetic outputs are contract evidence only and that approved weights, protected cohorts, and external validation remain required."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_15/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_15/next_phase_handoff.md"
+}

@@ -1,3 +1,5 @@
+external_repos/
+
 idea.md
 __pycache__/
 *.pyc

@@ -1,0 +1,61 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase14_language_conditioned_3d_segmentation
+  checkpoint_source: offline_random_contract
+  revision: phase14-1
+dataset:
+  id: phase14-synthetic-ct-query-lesions-v1
+  revision: synthetic-v1
+  split_policy: patient_first_site_then_time
+task:
+  type: LANGUAGE_CONDITIONED_SEGMENTATION
+recipe:
+  phase: 14
+  id: language-conditioned-3d-segmentation
+  family: language_conditioned_3d_segmentation
+  backbone: ct-fm
+  modality: CT_3D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: A
+  input_strategy: fixed_crop
+  crop_shape: [16, 16, 16]
+  shape_buckets: [[16, 16, 16]]
+  query_count: 4
+  text_tokens: 8
+  deep_supervision: false
+  use_lora: false
+  tpu_status: generic_monai_3d_contract
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.005
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [decoder, bridge]
+  - train: [decoder, bridge]
+peft:
+  enabled: false
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1440
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase14/language_conditioned_segmentation
+base_model_revision: ct-fm-offline-random-contract
+preprocessing_hash: phase14-language-segmentation-preprocess-v1

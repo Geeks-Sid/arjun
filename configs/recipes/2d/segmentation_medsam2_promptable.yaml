@@ -1,0 +1,68 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: medsam2
+  repository: phase05-approved-medsam2-checkpoint
+  revision: production-checkpoint-required
+  checkpoint_source: phase05_local_checkpoint
+dataset:
+  id: approved-promptable-segmentation
+  revision: manifest-revision-required
+  split_policy: patient_first_site_then_time
+task:
+  type: PROMPTABLE_SEGMENTATION
+recipe:
+  id: segmentation-medsam2-promptable
+  family: promptable_segmentation
+  backbone: medsam2
+  modality: XRAY_2D
+  mode: production
+  offline_tiny: false
+  stage: A
+  use_lora: false
+  image_size: 1024
+  channels: 3
+  patch_size: 16
+  decoder_hidden: 32
+  prompt_source: point_or_box
+  validation: original_resolution
+  sampling: prompt_balanced_crop
+  tiled_validation:
+    window: [1024, 1024]
+    batch_size: 4
+accelerator:
+  backend: cuda
+  precision: bf16
+  distribution: single
+  attention: sdpa
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 8
+  global_batch_size: 8
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+freeze_schedule:
+  - until_step: 1000
+    train: [decoder]
+  - train: [decoder, vision_lora]
+peft:
+  enabled: false
+memory:
+  gradient_checkpointing:
+    vision: true
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: safetensors
+seed: 13
+max_steps: 1000
+epochs: 10
+save_every_steps: 100
+output_dir: artifacts/runs/phase13/segmentation_medsam2_promptable
+dataset_hash: approved-manifest-sha256-required
+preprocessing_hash: medsam2-promptable-preprocess-v1
+base_model_revision: production-checkpoint-required

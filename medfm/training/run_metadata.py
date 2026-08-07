@@ -16,6 +16,7 @@ import hashlib
 import json
 import platform
 import subprocess
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -94,6 +95,12 @@ class RunMetadata:
 
     extra: dict[str, Any] = field(default_factory=dict)
 
+    # Launcher/topology details (defaults preserve Phase 01 constructor compatibility).
+    rank: int = 0
+    local_rank: int = 0
+    host_index: int = 0
+    sharding_mesh: dict[str, Any] = field(default_factory=dict)
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -114,8 +121,8 @@ def _accelerator_details(backend: str) -> dict[str, Any]:
         "cuda_version": None,
         "driver_version": None,
         "gpu_models": [],
-        "device_count": 0,
-        "topology": None,
+        "device_count": 1 if backend == "cpu" else 0,
+        "topology": "cpu" if backend == "cpu" else None,
         "xla_metrics_report": None,
         "peak_memory_bytes": None,
         "nccl_available": None,
@@ -164,12 +171,17 @@ def capture_run_metadata(
     gradient_accumulation_steps: int = 1,
     world_size: int | None = None,
     model: Any | None = None,
+    components: Mapping[str, Any] | None = None,
     base_model_revision: str | None = None,
     adapter_config: dict[str, Any] | None = None,
     dataset_manifest_sha256: str | None = None,
     preprocessing_config: dict[str, Any] | None = None,
     shape_buckets: dict[str, Any] | None = None,
     compiler_flags: dict[str, str] | None = None,
+    rank: int = 0,
+    local_rank: int = 0,
+    host_index: int = 0,
+    sharding_mesh: dict[str, Any] | None = None,
     extra: dict[str, Any] | None = None,
 ) -> RunMetadata:
     """Capture run metadata. ``world_size`` defaults to the local device count."""
@@ -187,8 +199,15 @@ def capture_run_metadata(
 
     trainable: int | None = None
     total: int | None = None
-    if model is not None:
-        params = list(model.parameters())
+    modules = [model, *(components or {}).values()]
+    params_by_id: dict[int, Any] = {}
+    for module in modules:
+        if module is None or not hasattr(module, "parameters"):
+            continue
+        for parameter in module.parameters():
+            params_by_id.setdefault(id(parameter), parameter)
+    if params_by_id:
+        params = tuple(params_by_id.values())
         total = sum(p.numel() for p in params)
         trainable = sum(p.numel() for p in params if p.requires_grad)
 
@@ -225,4 +244,8 @@ def capture_run_metadata(
         total_parameters=total,
         peak_memory_bytes=details["peak_memory_bytes"],
         extra=dict(extra or {}),
+        rank=rank,
+        local_rank=local_rank,
+        host_index=host_index,
+        sharding_mesh=dict(sharding_mesh or {}),
     )

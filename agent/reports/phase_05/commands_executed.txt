@@ -1,0 +1,32 @@
+# Phase 05 Commands Executed
+
+All from the repository root via `uv run` (project venv).
+
+```bash
+# Phase-local test suite (50 tests)
+uv run pytest tests/phase_05 -q
+
+# Full repository regression (no cross-phase breakage)
+uv run pytest tests/ -q
+# -> 593 passed, 10 skipped (protected-hardware guards)
+
+# Lint + format + strict typing (phase gate standard)
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+uv run --frozen mypy
+# -> All checks passed; 206 files formatted; no issues in 82 source files
+
+# Phase smoke command
+uv run python -m medfm.cli.models list --format json
+# -> 17 roster models, all BLOCKED with structured license reasons
+
+# CLI inspection exercised directly
+uv run python -m medfm.cli.models list
+uv run python -m medfm.cli.models list --ready-only --format json
+
+# test_results.json generated from a live pytest run (report hook)
+uv run python <generate test_results.json>  # pytest.main(plugins=[hook])
+
+# Acceptance gate
+uv run pytest tests/phase_05 -q && uv run python -m medfm.tools.validate_phase --phase 05
+```

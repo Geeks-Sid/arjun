@@ -1,0 +1,106 @@
+{
+  "phase": "15",
+  "tests": [
+    {
+      "name": "test_pathology_recipes_are_pinned_and_bounded (22 published configs)",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_tile_stage_matrix_and_contrastive_alignment",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_wsi_aggregators_keep_coordinates_and_masks",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_wsi_vlm_fixed_tokens_coordinates_and_ablations",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_patient_split_and_tile_count_magnification_evaluation",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_pathology_metrics_exclude_padded_entries",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_one_step_pipeline_for_each_recipe_family",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_task_types_for_language_variants",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_selector_budget_is_fixed_and_padding_is_masked",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_stitching_blends_overlap_and_reports_missing_tiles",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_stitching_maps_pyramid_level_to_level0",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_evidence_coordinates_round_trip_and_rank_deterministically",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_evidence_json_is_phi_safe_and_rejects_invalid_geometry",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_invalid_stitching_geometry_fails_fast",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_pathology_segmentation_reports_tile_and_slide_units",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_phase15_artifact_contains_reproducibility_and_limitations",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "test_phase15_training_checkpoint_resume",
+      "status": "passed",
+      "command": "python -m pytest tests/phase_15 -q"
+    },
+    {
+      "name": "phase15_smoke_check",
+      "status": "passed",
+      "command": "python -m medfm.tools.smoke --phase 15 --json"
+    },
+    {
+      "name": "phase15_cli_one_step",
+      "status": "passed",
+      "command": "python -m medfm.cli.train --config configs/recipes/pathology/wsi_classification_smoke.yaml --format json"
+    },
+    {
+      "name": "phase15_acceptance_validator",
+      "status": "passed",
+      "command": "python -m medfm.tools.validate_phase --phase 15"
+    }
+  ],
+  "summary": {"passed": 41, "failed": 0, "skipped": 0}
+}

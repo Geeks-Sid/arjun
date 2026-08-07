@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.local/schemas/phase16/prediction-artifact-v1.json",
+  "title": "MedFM Phase 16 Prediction Artifact",
+  "type": "object",
+  "required": ["schema_version", "artifact_id", "task", "clinical_unit", "split", "predictions", "provenance"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 1},
+    "clinical_unit": {"enum": ["patient", "study", "slide", "scan", "tile", "query", "sample"]},
+    "split": {"enum": ["train", "validation", "test", "external", "temporal", "holdout"]},
+    "predictions": {"type": "array", "items": {"$ref": "#/$defs/prediction"}},
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "properties": {
+        "patient_id": {"type": ["string", "null"]},
+        "study_id": {"type": ["string", "null"]},
+        "slide_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "prediction": {
+      "type": "object",
+      "required": ["schema_version", "sample_id", "prediction", "target", "clinical_unit", "identity", "split"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "sample_id": {"type": "string", "minLength": 1},
+        "prediction": {},
+        "target": {},
+        "clinical_unit": {"type": "string"},
+        "identity": {"$ref": "#/$defs/identity"},
+        "split": {"type": "string"},
+        "groups": {"type": "object", "additionalProperties": {"type": "string"}},
+        "is_padding": {"type": "boolean"},
+        "metadata": {"type": "object"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["model_hash", "data_hash", "preprocess_hash", "backend", "precision", "topology", "bucket", "checkpoint_format"],
+      "properties": {
+        "model_hash": {"type": "string", "minLength": 1},
+        "data_hash": {"type": "string", "minLength": 1},
+        "preprocess_hash": {"type": "string", "minLength": 1},
+        "backend": {"type": "string", "minLength": 1},
+        "precision": {"type": "string", "minLength": 1},
+        "topology": {"type": "string", "minLength": 1},
+        "bucket": {"type": "string", "minLength": 1},
+        "checkpoint_format": {"type": "string", "minLength": 1},
+        "model_revision": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

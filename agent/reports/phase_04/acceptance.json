@@ -1,0 +1,66 @@
+{
+  "phase": "04",
+  "status": "passed",
+  "generated_by": "Kimi Code",
+  "generated_at": "2026-08-05T19:32:17Z",
+  "smoke_command": "pytest tests/phase_04/test_end_to_end_transforms.py -q",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "pipeline-composition",
+      "description": "Explicit deterministic/stochastic stages; cache boundary after deterministic canonicalization with stochastic transforms excluded from cache keys; recorded transform history for spatial inversion; final tensors validated against the selected PreprocessSpec; seedable randomness per worker/epoch/sample; host-only execution with optional accelerator path gated by parity tests",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/{base,specs,pipeline}.py; ADR 0010; tests/phase_04/test_end_to_end_transforms.py (spec conformance, seed reproducibility, cache-key non-contamination), test_radiology2d.py worker-stream tests"
+    },
+    {
+      "id": "radiology-2d",
+      "description": "Grayscale decode with MONOCHROME1 correction; aspect-preserving letterbox and optional body-region crop; 1/3-channel output; view/longitudinal metadata preserved; conservative rotation/translation/scale/intensity/noise augmentation; config-gated horizontal flips, vertical flips off by default; no color jitter",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/radiology2d.py; tests/phase_04/test_radiology2d.py (MONOCHROME1 math, letterbox inversion roundtrip, flip gating, augmentation determinism)"
+    },
+    {
+      "id": "ct-preprocessing",
+      "description": "HU conversion with unit verification; orientation canonicalization and resample-to-spacing; configurable clipping and single/multi-window channels with model/config-specific presets; foreground/body crop with invertible coordinates; distinct image/label/mask interpolation policies",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/{ct,spatial3d}.py; tests/phase_04/test_ct.py (unit rejection, window math, interpolation-order difference, mask reconstruction in original physical coordinates)"
+    },
+    {
+      "id": "mri-preprocessing",
+      "description": "Explicit sequence identification with aliases and no silent substitution; orientation/spacing canonicalization; foreground z-score and robust percentile normalization; multi-sequence stacking with missing-sequence masks; bias-field correction as explicit offline-only operation",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/mri.py; tests/phase_04/test_mri.py (alias resolution, missing/malformed sequence rejection, missing-sequence mask, deterministic explicit bias-field)"
+    },
+    {
+      "id": "patch-sampling-3d",
+      "description": "Random, foreground, class-balanced, box, lesion-centred, and grid samplers returning origin, original shape, physical bounding box, target-positive flag, and sampling probability; measurable/configurable positive proportion; determinism under fixed seeds; explicit padding metadata for small volumes",
+      "status": "passed",
+      "evidence": "medfm/data/samplers/patches.py; tests/phase_04/test_patch_samplers.py (600-trial empirical positive ratio, grid coverage, padding metadata, seed determinism)"
+    },
+    {
+      "id": "pathology-preprocessing",
+      "description": "Thumbnails and tissue masks; background/blur/artifact filters; MPP normalization with deterministic tile extraction; persisted tile ids, level-0 coordinates, size, level, MPP, tissue fraction, quality; separately hashable stain normalization/augmentation; coordinates verified against the source slide; zero-tissue slides handled",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/pathology.py; tests/phase_04/test_pathology.py (deterministic tile indexes across runs, in-bounds coordinates, zero-tissue slide, stain-step hashes)"
+    },
+    {
+      "id": "text-vlm-preparation",
+      "description": "Unicode normalization and configurable PHI checks; report section parsing with missing/empty handling; report text treated as data never instructions; prompt-template assignment and conversation formatting; token-count/truncation logging without sensitive text; system/user/visual-placeholder/boilerplate masked from LM loss; supervised-token counts recorded and zero-supervision rejected",
+      "status": "passed",
+      "evidence": "medfm/data/textprep/; tests/phase_04/test_textprep.py + test_vlm_masking.py (assistant-only supervision, placeholder masking, caplog privacy assertions, zero-supervision rejection)"
+    },
+    {
+      "id": "collators-and-buckets",
+      "description": "Classification, 2D/3D segmentation, contrastive, multi-image VL, volume VL, and WSI VL collators; explicit padding masks; ordering/metadata preserved; fixed visual/text token limits validated; mixed modalities fail outside MultitaskCollator; bounded static bucket sets with bucket ids and complete masks; train-only pad/drop final batches with eval never dropped; unplanned-bucket errors; separately configured validation buckets",
+      "status": "passed",
+      "evidence": "medfm/data/collators/; tests/phase_04/test_collators.py (TPU-static repeated-batch identical shapes, out-of-bucket policy, final-batch policy, padding invariance, multitask declared-mix gating)"
+    },
+    {
+      "id": "timing-instrumentation",
+      "description": "Host preprocessing and device input wait measured independently on CUDA and TPU",
+      "status": "passed",
+      "evidence": "medfm/data/transforms/timing.py; tests/phase_04/test_end_to_end_transforms.py CPU measurement passing; CUDA/TPU measurement tests marked and skipped pending protected runners (documented in unresolved_issues.md)"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_04/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_04/next_phase_handoff.md"
+}

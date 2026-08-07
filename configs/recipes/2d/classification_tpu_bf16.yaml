@@ -1,0 +1,70 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: medsiglip
+  revision: production-checkpoint-required
+  checkpoint_source: phase05_local_checkpoint
+dataset:
+  id: approved-radiology-classification
+  revision: manifest-revision-required
+  split_policy: patient_first_site_then_time
+task:
+  type: BINARY_CLASSIFICATION
+recipe:
+  id: classification-tpu-bf16
+  family: classification
+  backbone: medsiglip
+  modality: XRAY_2D
+  mode: production
+  offline_tiny: false
+  stage: A
+  use_lora: false
+  image_size: 448
+  channels: 3
+  patch_size: 14
+  head: linear
+  matched_effective_global_batch: 32
+  static_bucket: [448, 448]
+  no_recompile_gate: required
+  portable_export_gate: required
+accelerator:
+  backend: xla_tpu
+  precision: bf16
+  distribution: replicated
+  attention: sdpa
+  static_shapes: true
+  fail_on_recompilation_after_warmup: true
+  max_steady_state_compilations: 1
+  warmup_steps: 2
+batch:
+  microbatch_per_device: 8
+  gradient_accumulation_steps: 4
+  global_batch_size: 32
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+freeze_schedule:
+  - until_step: 1000
+    train: [task_head]
+  - train: [task_head, vision_lora]
+peft:
+  enabled: false
+memory:
+  gradient_checkpointing:
+    vision: true
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+  save_optimizer: true
+seed: 13
+max_steps: 1000
+epochs: 10
+save_every_steps: 100
+output_dir: artifacts/runs/phase13/classification_tpu_bf16
+dataset_hash: approved-manifest-sha256-required
+preprocessing_hash: medsiglip-448-preprocess-v1
+base_model_revision: production-checkpoint-required

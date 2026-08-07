@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.local/schemas/phase16/metric-result-v1.json",
+  "title": "MedFM Phase 16 Metric Result",
+  "type": "object",
+  "required": ["schema_version", "name", "value", "unit", "sample_count", "metadata"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "name": {"type": "string", "minLength": 1},
+    "value": {"type": ["number", "null"]},
+    "clinical_unit": {"type": "string"},
+    "unit": {"type": "string", "minLength": 1},
+    "sample_count": {"type": "integer", "minimum": 0},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}

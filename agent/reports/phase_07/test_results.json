@@ -1,0 +1,9 @@
+{
+  "phase": "07",
+  "tests": [
+    {"name": "tests/phase_07", "status": "passed", "detail": "13 passed"},
+    {"name": "tests/phase_05 tests/phase_06", "status": "passed", "detail": "134 passed"},
+    {"name": "native 3D smoke", "status": "passed", "detail": "contract outputs and identity sliding-window reconstruction"},
+    {"name": "targeted Ruff", "status": "passed", "detail": "no diagnostics"}
+  ]
+}

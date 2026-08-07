@@ -1,0 +1,206 @@
+{
+  "phase": "05",
+  "exit_code": 0,
+  "tests": [
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_list_text_and_json",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_list_filters",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_show_includes_use_cases",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_validate_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_validate_local_weights",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_estimate_memory",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_inspect_modules",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_accelerator_report",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_metadata_commands_use_no_network",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_smoke_dummy",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_cli_smoke_no_adapter",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_accelerator_validate_model_cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_cli.py::test_accelerator_validate_model_rejects_nf4_on_tpu_preallocation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_incomplete_license_record",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_approved_license_without_use_cases",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_gated_license_without_acceptance_fields",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_blocked_unapproved_license_allowed_with_reason",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_research_models_never_in_deployment_catalog",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_unpinned_revision_for_ready",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_contradictory_capabilities",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_task_output_mismatch",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_missing_normalization",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_reject_duplicate_ids_and_unsafe_aliases",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_backend_support_must_cover_all_backends",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_supported_status_requires_smoke_evidence",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_blocked_backend_requires_reason",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_deprecation_requires_replacement",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_registry_schema_version_frozen",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_cuda_success_does_not_mutate_tpu_status",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_record_backend_result_rejects_wrong_revision",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_record_backend_result_failure_keeps_untested",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_backend_filter_and_accelerator_report",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_validate_backend_rejects_nf4_on_tpu_before_allocation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_validate_backend_rejects_cuda_only_extensions_on_tpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_validate_backend_rejects_unknown_backend_and_mode",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_capability_metadata_fields",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_model_registry.py::test_peft_capability_requires_modules_or_confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_smoke.py::test_dummy_plugin_completes_local_smoke",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_smoke.py::test_smoke_without_adapter_raises_structured_error",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_smoke.py::test_smoke_blocked_model_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_smoke.py::test_v1_catalog_registers_ready_or_blocked_with_reasons",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_smoke.py::test_v1_catalog_research_never_in_deployment",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_verify_file_hashes_ok_and_mismatch",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_verify_file_hashes_missing_and_extra",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_partial_download_detection",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_inspect_weights_report",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_download_policy",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_download_rejects_partial_result",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_gated_access_blocks_until_accepted",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_05/test_weights.py::test_resolve_local_path_uses_no_network",
+      "status": "passed"
+    }
+  ]
+}

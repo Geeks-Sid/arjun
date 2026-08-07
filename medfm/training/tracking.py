@@ -11,9 +11,15 @@ All trackers redact configured sensitive keys before anything is written.
 from __future__ import annotations
 
 import json
+import math
 import time
+import traceback
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
+
+import torch
+
+from medfm.core.serialization import canonical_json
 
 REDACTED = "<redacted>"
 
@@ -34,17 +40,92 @@ def redact_mapping(
     values: dict[str, Any],
     sensitive_fragments: tuple[str, ...] = DEFAULT_SENSITIVE_FRAGMENTS,
 ) -> dict[str, Any]:
-    """Return a copy with sensitive keys redacted, recursing into nested dicts."""
+    """Return a copy with sensitive keys redacted, including nested containers."""
+
+    def redact(value: Any) -> Any:
+        if isinstance(value, dict):
+            return redact_mapping(value, sensitive_fragments)
+        if isinstance(value, list):
+            return [redact(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(redact(item) for item in value)
+        return value
+
     redacted: dict[str, Any] = {}
     for key, value in values.items():
         lowered = str(key).lower()
-        if any(fragment in lowered for fragment in sensitive_fragments):
-            redacted[key] = REDACTED
-        elif isinstance(value, dict):
-            redacted[key] = redact_mapping(value, sensitive_fragments)
-        else:
-            redacted[key] = value
+        redacted[key] = REDACTED if any(fragment in lowered for fragment in sensitive_fragments) else redact(value)
     return redacted
+
+
+class NonFiniteTrainingError(RuntimeError):
+    """Loss or gradients became NaN/Inf; collectives must not proceed."""
+
+
+def assert_finite_loss(loss: torch.Tensor, *, step: int | None = None) -> None:
+    """Fail before distributed reductions when the loss is not finite."""
+    if not isinstance(loss, torch.Tensor) or loss.ndim != 0:
+        raise NonFiniteTrainingError(f"training loss must be a scalar tensor (step={step})")
+    if not bool(torch.isfinite(loss.detach()).all()):
+        raise NonFiniteTrainingError(f"non-finite training loss at step {step}")
+
+
+def gradient_finite_report(model: torch.nn.Module) -> dict[str, Any]:
+    """Return a detached gradient audit without synchronizing accelerator state."""
+    nonfinite: list[str] = []
+    missing: list[str] = []
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        if parameter.grad is None:
+            missing.append(name)
+        elif not bool(torch.isfinite(parameter.grad.detach()).all()):
+            nonfinite.append(name)
+    return {
+        "missing_gradient_names": missing,
+        "nonfinite_gradient_names": nonfinite,
+        "finite": not nonfinite,
+    }
+
+
+def assert_finite_gradients(model: torch.nn.Module, *, step: int | None = None) -> dict[str, Any]:
+    report = gradient_finite_report(model)
+    if report["nonfinite_gradient_names"]:
+        raise NonFiniteTrainingError(
+            f"non-finite gradients at step {step}: "
+            + ", ".join(report["nonfinite_gradient_names"][:8])
+        )
+    return report
+
+
+class FailureReporter:
+    """Persist actionable failure context next to the last safe checkpoint."""
+
+    def __init__(self, run_dir: str | Path) -> None:
+        self.run_dir = Path(run_dir)
+        self.run_dir.mkdir(parents=True, exist_ok=True)
+
+    def write(
+        self,
+        error: BaseException,
+        *,
+        config: dict[str, Any] | None = None,
+        command: list[str] | None = None,
+        last_safe_checkpoint: str | Path | None = None,
+        extra: dict[str, Any] | None = None,
+    ) -> Path:
+        payload = {
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "traceback": traceback.format_exc(),
+            "config": redact_mapping(dict(config or {})),
+            "command": list(command or ()),
+            "last_safe_checkpoint": str(last_safe_checkpoint) if last_safe_checkpoint is not None else None,
+            "extra": redact_mapping(dict(extra or {})),
+        }
+        path = self.run_dir / "failure.json"
+        path.write_text(canonical_json(payload) + "\n", encoding="utf-8")
+        return path
 
 
 @runtime_checkable

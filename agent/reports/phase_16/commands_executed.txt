@@ -1,0 +1,11 @@
+python -m pytest tests/phase_13/test_evaluation.py tests/phase_14/test_evaluation.py tests/phase_15/test_evaluation.py -q
+python -m pytest tests/phase_16 -q
+python -m medfm.cli.evaluate --config configs/smoke/evaluation.yaml --format json
+python -c "from medfm.tools.validate_phase import _check_phase_16_evaluation; print(_check_phase_16_evaluation())"
+python -m medfm.tools.validate_phase --phase 16
+ruff format medfm/evaluation medfm/cli/evaluate.py tests/phase_16 medfm/tools/validate_phase.py
+ruff check medfm/evaluation medfm/cli/evaluate.py tests/phase_16 medfm/tools/validate_phase.py
+python -m pytest -q  # environment-wide collection remains blocked by unrelated missing safetensors and duplicate historical test module names
+python -m pytest tests/phase_16 -q && python -m medfm.tools.validate_phase --phase 16
+python -m medfm.cli.evaluate --config configs/smoke/evaluation.yaml
+python -m medfm.tools.validate_phase --phase 16 && ruff check medfm/evaluation medfm/cli/evaluate.py tests/phase_16 medfm/tools/validate_phase.py

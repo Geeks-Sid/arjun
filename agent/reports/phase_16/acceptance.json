@@ -1,0 +1,84 @@
+{
+  "phase": "16",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T16:35:17-04:00",
+  "smoke_command": "python -m medfm.cli.evaluate --config configs/smoke/evaluation.yaml --format json",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "schemas",
+      "description": "Versioned prediction, metric-result, and report schemas validate persisted evaluation payloads.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_distributed.py::test_prediction_schema_json_is_machine_valid; docs/evaluation/*.json"
+    },
+    {
+      "id": "clinical-units",
+      "description": "Metrics declare patient, study, slide, scan, or per-example clinical units and reject malformed identity/split declarations.",
+      "status": "passed",
+      "evidence": "17 focused Phase 16 tests passed; smoke report clinical_unit is per_patient."
+    },
+    {
+      "id": "classification",
+      "description": "Classification evaluation reports discrimination, calibration, confusion, operating-point, subgroup, and cluster-bootstrap metrics.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_evaluation.py and medfm/evaluation/advanced.py"
+    },
+    {
+      "id": "segmentation-localization",
+      "description": "Segmentation and localization evaluation includes overlap, surface, physical-distance, lesion, volume, and box metrics.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_evaluation.py and medfm/evaluation/advanced.py"
+    },
+    {
+      "id": "retrieval-generation",
+      "description": "Retrieval and generation evaluation covers both retrieval directions and structured clinical error categories.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_evaluation.py and medfm/evaluation/advanced.py"
+    },
+    {
+      "id": "specialized",
+      "description": "Native 3D, slice-sequence, pathology, and small-lesion evaluation helpers preserve declared units and strategies.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_specialized.py"
+    },
+    {
+      "id": "ablations",
+      "description": "Visual-dependence ablations and fixed evaluation controls are available with deterministic gates.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_evaluation.py::test_visual_grounding_gate_fails_shuffled_inputs_within_margin"
+    },
+    {
+      "id": "distributed-parity",
+      "description": "Distributed reductions, padding removal, shared seeds, and backend tolerances prevent denominator and parity errors.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_distributed.py; CPU smoke artifact persisted successfully."
+    },
+    {
+      "id": "human-review",
+      "description": "Human review is versioned, access-controlled, blinded, and records clinically relevant error categories and agreement.",
+      "status": "passed",
+      "evidence": "tests/phase_16/test_evaluation.py::test_review_protocol_and_agreement_are_access_controlled"
+    },
+    {
+      "id": "report-safety",
+      "description": "Reports include provenance, limitations, checksums, and an explicit prohibition on unsupported clinical-validation claims.",
+      "status": "passed",
+      "evidence": "Smoke report checksum 393894b0f57aa6e42cb080609079b16e559e6fdfd2b056f93e5358978739e2da; validator returned []"
+    },
+    {
+      "id": "external-evidence",
+      "description": "External-site and approved human-review evidence are available for clinical release.",
+      "status": "not_applicable",
+      "justification": "Phase 16 implements the evidence capture and release limitation contracts; no external-site or approved human-review dataset was supplied."
+    },
+    {
+      "id": "accelerator-parity",
+      "description": "CUDA and TPU runs have been empirically compared against CPU on the same fixture.",
+      "status": "not_applicable",
+      "justification": "The acceptance fixture runs on CPU; backend-neutral comparison APIs and tolerances are implemented, but no accelerator execution evidence is claimed."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_16/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_16/next_phase_handoff.md"
+}

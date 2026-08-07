@@ -1,0 +1,14 @@
+{
+  "phase": "06",
+  "exit_code": 0,
+  "tests": [
+    {"name": "tests/phase_06/test_adapter_contract.py", "status": "passed", "count": 28},
+    {"name": "tests/phase_06/test_lora.py", "status": "passed", "count": 11},
+    {"name": "tests/phase_06/test_checkpoint.py", "status": "passed", "count": 6},
+    {"name": "tests/phase_06/test_raddino_medsiglip.py", "status": "passed", "count": 11},
+    {"name": "tests/phase_06/test_other_adapters.py", "status": "passed", "count": 12},
+    {"name": "tests/phase_06/test_registry_cli.py", "status": "passed", "count": 12},
+    {"name": "tests/phase_06/test_backend_neutrality.py", "status": "passed", "count": 4}
+  ],
+  "total": 84
+}

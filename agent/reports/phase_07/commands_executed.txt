@@ -1,0 +1,5 @@
+uv run pytest tests/phase_07 -q
+uv run pytest tests/phase_05 tests/phase_06 -q
+uv run python -m medfm.tools.smoke --phase 07 --json
+uv run ruff check medfm/models/visual/native_3d.py medfm/models/visual/ct_fm.py medfm/models/visual/triad.py medfm/models/visual/native_tasks.py medfm/models/visual/research_3d.py medfm/models/visual/specs.py medfm/models/visual/__init__.py medfm/tools/smoke.py medfm/tools/validate_phase.py tests/phase_07
+uv run python -m medfm.tools.validate_phase --phase 07

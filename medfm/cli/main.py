@@ -24,6 +24,12 @@ def main(argv: list[str] | None = None) -> int:
     doctor.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
     sub.add_parser("data", help="dataset manifest tools (fingerprint/inspect/migrate/split)")
+    sub.add_parser("models", help="model registry and capabilities tools")
+    sub.add_parser("peft", help="LoRA/QLoRA inspection and adapter tools")
+    sub.add_parser("accelerator", help="accelerator validation and parity tools")
+    sub.add_parser("infer", help="run bounded model inference")
+    sub.add_parser("export", help="export validated deployment bundles")
+    sub.add_parser("train", help="run a training recipe")
 
     args, rest = parser.parse_known_args(argv)
     if args.command == "doctor":
@@ -37,6 +43,34 @@ def main(argv: list[str] | None = None) -> int:
         from medfm.tools import data_tools
 
         return data_tools.main(rest)
+    if args.command == "models":
+        from medfm.cli import models as models_cli
+
+        return models_cli.main(rest)
+    if args.command == "peft":
+        from medfm.cli import peft as peft_cli
+
+        return peft_cli.main(rest)
+    if args.command == "accelerator":
+        from medfm.cli import accelerator as accel_cli
+
+        return accel_cli.main(rest)
+    if args.command == "evaluate":
+        from medfm.cli import evaluate as evaluate_cli
+
+        return evaluate_cli.main(rest)
+    if args.command == "infer":
+        from medfm.cli import infer as infer_cli
+
+        return infer_cli.main(rest)
+    if args.command == "export":
+        from medfm.cli import export as export_cli
+
+        return export_cli.main(rest)
+    if args.command == "train":
+        from medfm.cli import train as train_cli
+
+        return train_cli.main(rest)
 
     parser.error(f"unknown command: {args.command}")  # pragma: no cover
     return 2  # pragma: no cover

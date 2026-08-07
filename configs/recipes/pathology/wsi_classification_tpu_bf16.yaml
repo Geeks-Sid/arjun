@@ -1,0 +1,71 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase15_pathology_wsi
+  checkpoint_source: offline_random_contract
+  revision: phase15-1
+dataset:
+  id: phase15-synthetic-wsi-classification-v1
+  revision: synthetic-v1
+  split_policy: patient_disjoint
+  manifest_hash: approved-manifest-required
+task:
+  type: BINARY_CLASSIFICATION
+recipe:
+  phase: 15
+  id: wsi-classification-tpu-bf16
+  family: wsi_classification
+  backbone: generic-static-aggregator
+  modality: PATHOLOGY_WSI
+  mode: offline_tiny
+  offline_tiny: true
+  stage: 1
+  aggregator: mean
+  cache_embeddings: true
+  embedding_store_revision: phase08-hdf5-v1
+  tile_shape: [16, 16]
+  tile_shape_buckets: [[16, 16]]
+  max_tiles_per_slide: 8
+  tile_count_buckets: [8]
+  tile_mpp: 0.5
+  magnification: 20x
+  selector: grid
+  train_selector: grid
+  eval_selector: grid
+  baseline: cached_embeddings_static_mean
+  tpu_status: cached_embeddings_static_aggregator_contract
+  input_stall_metric: host_embedding_store_input_stall_ms
+accelerator:
+  backend: xla_tpu
+  precision: bf16
+  distribution: replicated
+  static_shapes: true
+  tpu_replicated_accepted: false
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 1
+  global_batch_size: 1
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [task_head]
+  - train: [task_head]
+peft:
+  enabled: false
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1523
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase15/wsi_classification_tpu_bf16
+base_model_revision: generic-static-aggregator-v1
+preprocessing_hash: phase15-wsi-preprocess-v1

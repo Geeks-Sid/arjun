@@ -1,0 +1,48 @@
+schema_version: 1
+evaluation:
+  id: phase16-evaluation-smoke
+  artifact_id: phase16-smoke-predictions
+  report_id: phase16-smoke-report
+  task: classification
+  clinical_unit: patient
+  split: test
+  output_dir: artifacts/smoke/phase16
+  provenance:
+    model_hash: phase16-model-smoke-v1
+    data_hash: phase16-data-smoke-v1
+    preprocess_hash: phase16-preprocess-smoke-v1
+    backend: cpu
+    precision: fp32
+    topology: single
+    bucket: tiny-4
+    checkpoint_format: safetensors
+    model_revision: offline-random-contract
+  predictions:
+    - sample_id: p0-study0
+      prediction: 0.10
+      target: 0
+      identity: {patient_id: p0, study_id: study0}
+      groups: {site: site_a, sex: female}
+    - sample_id: p0-study1
+      prediction: 0.20
+      target: 0
+      identity: {patient_id: p0, study_id: study1}
+      groups: {site: site_a, sex: female}
+    - sample_id: p1-study2
+      prediction: 0.80
+      target: 1
+      identity: {patient_id: p1, study_id: study2}
+      groups: {site: site_b, sex: male}
+    - sample_id: p1-study3
+      prediction: 0.90
+      target: 1
+      identity: {patient_id: p1, study_id: study3}
+      groups: {site: site_b, sex: male}
+  metric_options: {}
+  baselines:
+    required: [random_majority, frozen_linear_probe, lora, conventional_task]
+  ablations:
+    visual_grounding_margin: 0.05
+  human_review:
+    status: not_run
+    limitation: approved protected review subset is required before release

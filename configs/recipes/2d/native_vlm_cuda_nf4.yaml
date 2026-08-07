@@ -1,0 +1,91 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: vlm
+  repository: https://huggingface.co/google/medgemma-1.5-4b-it
+  revision: production-checkpoint-required
+  checkpoint_source: phase05_local_checkpoint
+dataset:
+  id: approved-vqa-structured-findings
+  revision: manifest-revision-required
+  split_policy: patient_first_site_then_time
+task:
+  type: VISUAL_QUESTION_ANSWERING
+recipe:
+  id: native-vlm-cuda-nf4
+  family: native_vlm
+  backbone: medgemma-1.5-4b
+  modality: XRAY_2D
+  mode: production
+  offline_tiny: false
+  stage: B
+  use_lora: true
+  lora_rank: 16
+  image_size: 896
+  channels: 3
+  patch_size: 14
+  visual_tokens: 64
+  text_tokens: 512
+  prompt_revision: phase13-vqa-prompt-v1
+  mixed_task_weights:
+    vqa: 1.0
+    classification_generation: 0.5
+    findings: 1.0
+    impression: 0.75
+    report: 0.25
+  generation:
+    do_sample: false
+    temperature: 0.0
+    max_new_tokens: 128
+  schema_validation: structured_findings_v1
+  ablations: [none, shuffle]
+  memory_policy: frozen_vision_microbatch_1_accumulation_16_no_kv_cache
+accelerator:
+  backend: cuda
+  precision: bf16
+  distribution: single
+  attention: sdpa
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 16
+  global_batch_size: 16
+optimizer:
+  name: adamw
+  lr: 0.00002
+  weight_decay: 0.0
+  groups:
+    language_lora: {lr: 0.00002, weight_decay: 0.0}
+freeze_schedule:
+  - train: [language_lora]
+peft:
+  enabled: true
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_policy: architecture_default
+quantization:
+  enabled: true
+  method: bitsandbytes_nf4
+  load_in_4bit: true
+  quant_type: nf4
+  double_quant: true
+  compute_dtype: bfloat16
+memory:
+  gradient_checkpointing:
+    language: true
+    vision: true
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: safetensors
+  save_optimizer: true
+seed: 13
+max_steps: 1000
+epochs: 3
+save_every_steps: 100
+output_dir: artifacts/runs/phase13/native_vlm_cuda_nf4
+dataset_hash: approved-manifest-sha256-required
+preprocessing_hash: medgemma-native-896-preprocess-v1
+base_model_revision: production-checkpoint-required

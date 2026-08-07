@@ -1,0 +1,46 @@
+Phase 13 commands executed (2026-08-06)
+
+1. python -m py_compile medfm/recipes/phase13.py medfm/cli/train.py medfm/training/optimizer.py
+   PASS
+2. python -m pytest tests/phase_13 -q
+   PASS: 19 passed
+3. python -m pytest tests/phase_01/test_run_metadata.py tests/phase_12 -q
+   PASS: 19 passed
+4. python -m medfm.cli.train --config configs/recipes/2d/classification_smoke.yaml --format json
+   PASS: one optimizer step; effective batch 2; trainable parameters 33
+5. python -m medfm.cli.train --config configs/recipes/2d/segmentation_smoke.yaml --format json
+   PASS: two optimizer steps; effective batch 2; trainable parameters 1498
+6. python -m medfm.cli.train --config configs/recipes/2d/native_vlm_smoke.yaml --format json
+   PASS: one optimizer step; effective batch 2; trainable parameters 81472
+7. python -m medfm.cli.train --config configs/recipes/2d/external_vlm_smoke.yaml --format json
+   PASS: one optimizer step; effective batch 2; trainable parameters 8448
+8. python -m medfm.cli.train --config configs/recipes/2d/classification_multilabel_smoke.yaml --format json
+   PASS: one optimizer step; multilabel task and trainable task head
+9. python -m medfm.cli.train --config configs/recipes/2d/segmentation_promptable_smoke.yaml --format json
+   PASS: one optimizer step; promptable task and decoder trainability
+10. python -m medfm.cli.train --config configs/recipes/2d/native_structured_findings_smoke.yaml --format json
+    PASS: one optimizer step; structured generation task validation path
+11. python -m medfm.cli.train --config configs/recipes/2d/native_vlm_smoke.yaml --format json | metadata projection
+    PASS: metadata effective batch 2 and gradient_accumulation_steps 2
+12. Compatible checkpoint resume using classification_smoke.yaml
+    PASS: resumed at global_step 1; optimizer_steps 1
+13. Resume with changed --max-steps 2
+    PASS negative test: config hash mismatch rejected
+14. Parse all configs/recipes/2d/*.yaml through RunConfig
+    PASS: 24 configs; families classification, segmentation, promptable_segmentation, native_vlm, external_vlm
+15. python -m medfm.tools.validate_phase --phase 13 (before report artifacts)
+    EXPECTED FAIL: report files did not yet exist; recipe validator itself returned no errors
+16. python -m pytest -q
+    ENVIRONMENT BLOCKED: collection fails because optional safetensors is unavailable and duplicate test module basenames in phases 02/06 and 04/08 trigger pytest import-mismatch errors
+17. pytest tests/phase_13 -q
+    ENVIRONMENT BLOCKED: bare pytest executable did not include the project package on sys.path; equivalent python -m pytest command passes
+18. python -m ruff check medfm/recipes/phase13.py medfm/training/trainer.py medfm/training/run_metadata.py tests/phase_13
+    PASS: focused Phase 13 implementation/test lint is clean
+19. python -m py_compile medfm/recipes/phase13.py medfm/training/trainer.py medfm/training/run_metadata.py medfm/tools/validate_phase.py tests/phase_13/test_recipes.py tests/phase_13/conftest.py
+    PASS
+20. python -m pytest tests/phase_13 -q && python -m medfm.tools.validate_phase --phase 13
+    PASS: 19 tests; Phase 13 gate passed
+21. python -m medfm.cli.train --config configs/recipes/2d/classification_smoke.yaml --format json
+    PASS: CPU smoke completed; global_step 1; optimizer_steps 1; effective batch 2
+22. python -m medfm.tools.validate_phase --phase 13
+    PASS: final gate remains passed after report manifest updates

@@ -1,0 +1,17 @@
+python -m py_compile medfm/core/batch.py medfm/training/backend.py medfm/training/distributed.py medfm/training/checkpoint.py medfm/training/pipeline.py medfm/training/trainer.py
+python -m pytest tests/phase_12 -q
+python -m pytest tests/phase_01/test_packaging.py tests/phase_01/test_run_metadata.py tests/phase_01/test_tracking.py -q
+python -m pytest tests/phase_01/test_packaging.py tests/phase_02/test_device_transfer.py tests/phase_02/test_backend_neutrality.py -q
+python -m medfm.cli.train --config configs/smoke/tiny_multitask.yaml --dry-run --format json
+python -m medfm.cli.train --config configs/smoke/tiny_multitask.yaml --format json
+python -m medfm.cli.train --config configs/smoke/tiny_multitask.yaml --backend cuda --format json
+python -m medfm.cli.main accelerator profile --config configs/smoke/tiny_multitask.yaml --backend cpu --format json
+python -m medfm.cli.main accelerator parity --config configs/smoke/tiny_multitask.yaml --left cpu --right cpu --format json
+python -m medfm.cli.main accelerator parity --config configs/smoke/tiny_multitask.yaml --left cpu --right cuda --format json
+CUDA tiny binary_segmentation and binary_segmentation_3d one-step pipeline smoke (temporary RunConfig)
+CPU and CUDA tiny VLMTrainingStep/ThreeDVLMTrainingStep one-step smokes (temporary RunConfig)
+Fresh-interpreter single-rank torch.distributed.checkpoint save/restore smoke with model and AdamW state
+python -m medfm.tools.validate_phase --phase 12
+python -m pytest tests/phase_12 -q && python -m medfm.tools.validate_phase --phase 12
+python -m pytest tests -q (collection blocked by missing safetensors and duplicate test module basenames)
+python -m pytest --import-mode=importlib tests --ignore=tests/phase_03/test_caching.py -q (collection blocked by phase-local fixture imports)

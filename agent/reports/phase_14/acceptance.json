@@ -1,0 +1,96 @@
+{
+  "phase": "14",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T14:46:38-04:00",
+  "smoke_command": "python -m pytest tests/phase_14 -q && python -m medfm.cli.train --config configs/recipes/3d/classification_smoke.yaml && python -m medfm.tools.validate_phase --phase 14",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "P14-01",
+      "description": "Native 3D classification and segmentation, native 3D VLM, slice-sequence VLM, and language-conditioned 3D segmentation are distinct typed recipe families.",
+      "status": "passed",
+      "evidence": "All twelve configs under configs/recipes/3d parse and build through build_phase14_recipe; focused tests pass for every family and the validator checks all five family declarations."
+    },
+    {
+      "id": "P14-02",
+      "description": "CT-FM/FlexiCT, MRI/Triad, and a generic MONAI-compatible 3D baseline are published with pinned revisions and explicit modality/channel semantics.",
+      "status": "passed",
+      "evidence": "classification_ct_fm_cuda.yaml, classification_flexict3d.yaml, classification_triad_mri.yaml, and classification_ct_fm_tpu_bf16.yaml are present; MRI batches are MRI_3D with two sequence channels and CT batches remain CT_3D."
+    },
+    {
+      "id": "P14-03",
+      "description": "Dataset-fingerprint input policy resolves to a bounded static 3D bucket table.",
+      "status": "passed",
+      "evidence": "select_volume_input_policy preserves global/local shapes, filters non-volume fingerprint entries, and the focused policy test plus validator pass."
+    },
+    {
+      "id": "P14-04",
+      "description": "Native 3D segmentation uses a decoder-first baseline, positive-lesion sampling, padding masks, optional deep supervision, and configurable sliding-window blending.",
+      "status": "passed",
+      "evidence": "Both baseline and Triad LoRA segmentation configs build and complete one CPU optimizer step; tests assert positive_patch_rate, voxel masks, Gaussian blending, and fixed shapes."
+    },
+    {
+      "id": "P14-05",
+      "description": "Native 3D segmentation reports clinical-unit-aware Dice, surface/HD95, lesion recall, false positives per scan, and volume error.",
+      "status": "passed",
+      "evidence": "native_3d_segmentation_metrics returns all six metric families and the exact-target evaluation test verifies units and perfect-lesion behavior."
+    },
+    {
+      "id": "P14-06",
+      "description": "Crop origin, spacing, and original-space restoration remain explicit in native 3D segmentation outputs.",
+      "status": "passed",
+      "evidence": "Segmentation batches carry SpatialMetadata and crop_origin; restore_volume_mask_to_original is tested on a 3D crop with original bounds."
+    },
+    {
+      "id": "P14-07",
+      "description": "Native 3D VLM bridges spatial tokens through physical coordinate embeddings with fixed visual/text buckets and cached-token support.",
+      "status": "passed",
+      "evidence": "The cached TPU and CUDA LoRA VLM profiles build; tests verify [B,N,3] source coordinates, 32/64 visual buckets, cache provenance, Perceiver output, and image/no-image/shuffle modes."
+    },
+    {
+      "id": "P14-08",
+      "description": "Slice-sequence VLM remains a separate multi-image experiment with host-side fixed-count selection and preserved geometry metadata.",
+      "status": "passed",
+      "evidence": "slice_sequence_vlm_uniform.yaml builds MULTI_IMAGE_2D [B,I,C,H,W] batches; selector tests and recipe tests preserve index, normalized/physical z, series order, window, sequence, and revision."
+    },
+    {
+      "id": "P14-09",
+      "description": "Language-conditioned 3D segmentation uses fixed query buckets, cross-attention, masks, and separate grounding metrics.",
+      "status": "passed",
+      "evidence": "The language-conditioned recipe builds spatial masks for explicit query tensors and the focused tests cover absent, multiple, laterality, and ambiguous behavior plus separate mask/grounding metric outputs."
+    },
+    {
+      "id": "P14-10",
+      "description": "Global-batch semantics, memory cap, and backend observability are recorded rather than inferred from runtime failures.",
+      "status": "passed",
+      "evidence": "Phase14RecipeMetadata serializes the batch formula, shape/token buckets, memory cap, compiler/input-wait/throughput/HBM/VRAM/fallback fields; pipeline smokes complete with the configured effective batch."
+    },
+    {
+      "id": "P14-11",
+      "description": "One-batch training and checkpoint resume are covered by the Phase 14 contract suite.",
+      "status": "passed",
+      "evidence": "test_phase14_pipeline_one_batch_smoke_and_checkpoint_resume completes one optimizer step, finds checkpoints/last, and restores global step 1."
+    },
+    {
+      "id": "P14-12",
+      "description": "Phase 14 focused tests and the acceptance validator pass.",
+      "status": "passed",
+      "evidence": "python -m pytest tests/phase_14 -q reports 19 passed; python -m pytest tests/phase_13 -q reports 19 passed; the Phase 14 validator has no recipe or required-file errors."
+    },
+    {
+      "id": "P14-13",
+      "description": "At least one 3D task executes on accepted TPU hardware and every remaining model has an explicit TPU status.",
+      "status": "not_applicable",
+      "justification": "This workstation has no torch_xla/PJRT TPU runtime. TPU BF16 profiles are published with static buckets, generic-baseline status, and explicit non-accepted replicated hardware flags; no hardware result is claimed."
+    },
+    {
+      "id": "P14-14",
+      "description": "Production evidence gates and blocked checkpoint/dependency constraints are explicit.",
+      "status": "passed",
+      "evidence": "docs/recipes/phase14_3d_model_cards.md and agent/reports/phase_14/unresolved_issues.md state that offline tiny/synthetic results are contract evidence only and preserve fail-closed production handoffs."
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_14/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_14/next_phase_handoff.md"
+}

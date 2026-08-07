@@ -1,0 +1,65 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase14_slice_sequence_vlm
+  checkpoint_source: offline_random_contract
+  revision: phase14-1
+dataset:
+  id: phase14-synthetic-ct-slices-v1
+  revision: synthetic-v1
+  split_policy: patient_first_site_then_time
+task:
+  type: VISUAL_QUESTION_ANSWERING
+recipe:
+  phase: 14
+  id: slice-sequence-vlm-uniform
+  family: slice_sequence_vlm
+  backbone: medsiglip-2d
+  modality: MULTI_IMAGE_2D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: B
+  selector: uniform
+  slice_count: 4
+  slice_source_count: 8
+  slice_image_size: 32
+  bridge: perceiver
+  visual_tokens: 32
+  text_tokens: 8
+  use_lora: true
+  tpu_status: 2d_tower_fixed_sequence_contract
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [bridge, language_lora]
+  - train: [bridge, language_lora]
+peft:
+  enabled: true
+  rank: 4
+  alpha: 8
+  dropout: 0.0
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1430
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase14/slice_sequence_vlm_uniform
+base_model_revision: medsiglip-2d-offline-random-contract
+preprocessing_hash: phase14-slice-sequence-preprocess-v1

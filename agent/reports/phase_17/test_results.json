@@ -1,0 +1,23 @@
+{
+  "suite": "tests/phase_17",
+  "command": "python -m pytest tests/phase_17 -q",
+  "status": "passed",
+  "summary": "15 passed",
+  "tests": [
+    {"name": "test_adapter_only_bundle_is_independent_and_checksum_verified", "status": "passed"},
+    {"name": "test_bundle_rejects_resume_artifacts_and_unsafe_metadata", "status": "passed"},
+    {"name": "test_merged_artifact_is_secondary_and_requires_documented_conversion", "status": "passed"},
+    {"name": "test_derived_geometry_requires_shape_and_affine_match", "status": "passed"},
+    {"name": "test_dicom_export_requires_explicit_reviewed_workflow", "status": "passed"},
+    {"name": "test_nifti_export_roundtrip_when_medical_extra_is_available", "status": "passed"},
+    {"name": "test_sliding_window_gaussian_blending_reconstructs_volume", "status": "passed"},
+    {"name": "test_classification_validates_limits_before_model_call", "status": "passed"},
+    {"name": "test_segmentation_pipeline_returns_mask_and_restores_windowed_output", "status": "passed"},
+    {"name": "test_bucket_policy_pads_and_rejects_out_of_bucket", "status": "passed"},
+    {"name": "test_vlm_generation_is_deterministic_and_schema_checked", "status": "passed"},
+    {"name": "test_vlm_pipeline_rejects_visual_token_limit_before_generation", "status": "passed"},
+    {"name": "test_service_validates_before_adapter_loading_and_redacts_audit", "status": "passed"},
+    {"name": "test_adapter_manager_switches_and_evicts_without_stale_state", "status": "passed"},
+    {"name": "test_clinical_audit_store_requires_role_and_supports_deletion", "status": "passed"}
+  ]
+}

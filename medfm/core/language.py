@@ -113,6 +113,7 @@ class GenerationConfig:
     top_k: int = 0  # 0 = disabled
     do_sample: bool = False
     stop_strings: tuple[str, ...] = ()
+    stop_token_ids: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if self.max_new_tokens <= 0:
@@ -123,6 +124,8 @@ class GenerationConfig:
             raise ShapeContractError("top_p must be in (0, 1]")
         if self.top_k < 0:
             raise ShapeContractError("top_k must be >= 0 (0 disables it)")
+        if any(token_id < 0 for token_id in self.stop_token_ids):
+            raise ShapeContractError("stop_token_ids must be non-negative")
 
 
 @dataclass(frozen=True, eq=False)  # tensor fields break default structural equality

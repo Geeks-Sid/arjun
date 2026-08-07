@@ -1,0 +1,14 @@
+medfm/models/visual/native_3d.py
+medfm/models/visual/ct_fm.py
+medfm/models/visual/triad.py
+medfm/models/visual/native_tasks.py
+medfm/models/visual/research_3d.py
+medfm/models/visual/specs.py
+medfm/models/visual/__init__.py
+medfm/tools/smoke.py
+medfm/tools/validate_phase.py
+tests/phase_07/conftest.py
+tests/phase_07/test_native_3d.py
+tests/phase_07/test_registry.py
+agent/reports/phase_07/*
+implementation_plan/phase_07_native_3d_adapters.md

@@ -55,7 +55,9 @@ def test_governance_doc_has_owner_and_review_date(doc):
 
 def test_every_adr_has_required_sections():
     adrs = sorted((gov.REPO_ROOT / "docs/architecture").glob("adr_*.md"))
-    assert len(adrs) == 9, f"expected 9 ADRs, found {len(adrs)}"
+    # Floor, not exact count: later phases record new ADRs (Phase 04 added
+    # ADR 0010); the section requirements below are the real invariant.
+    assert len(adrs) >= 9, f"expected at least 9 ADRs, found {len(adrs)}"
     for adr in adrs:
         text = adr.read_text(encoding="utf-8")
         for section in (

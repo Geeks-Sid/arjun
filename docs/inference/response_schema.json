@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.example/schemas/inference-response-v1.json",
+  "title": "medfm inference response",
+  "type": "object",
+  "required": ["schema_version", "ok", "request_id", "result", "error", "audit"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "ok": {"type": "boolean"},
+    "request_id": {"type": ["string", "null"]},
+    "result": {
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["schema_version", "task", "request_id", "data", "warnings", "uncertainty"],
+          "properties": {
+            "schema_version": {"const": 1},
+            "task": {"type": "string"},
+            "request_id": {"type": ["string", "null"]},
+            "data": {"type": "object"},
+            "warnings": {"type": "array", "items": {"type": "string"}},
+            "uncertainty": {"type": ["object", "null"]}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "error": {"type": ["object", "null"]},
+    "audit": {"type": ["object", "null"]}
+  },
+  "additionalProperties": false
+}

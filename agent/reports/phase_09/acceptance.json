@@ -1,0 +1,25 @@
+{
+  "phase": "09",
+  "status": "passed",
+  "generated_by": "OpenAI Codex",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "smoke_command": "python -m medfm.tools.smoke --phase 09 --json",
+  "smoke_passed": true,
+  "criteria": [
+    {"id": "P09-01", "description": "Native and external language modes have separate capability/configuration surfaces and do not require dataset placeholder syntax.", "status": "passed", "evidence": "LanguageAdapterMode descriptors, phase_09_language_bridges.yaml, and native/external adapter tests."},
+    {"id": "P09-02", "description": "Generic, Gemma, MedGemma, and gated M3D-LaMed adapters enforce causal/connector architecture contracts.", "status": "passed", "evidence": "tests/phase_09/test_language.py architecture, native capability, tied-weight, and research-gate coverage."},
+    {"id": "P09-03", "description": "External 2D, native 3D, and WSI visual tokens produce finite causal-language loss.", "status": "passed", "evidence": "Phase 09 smoke forwards XRAY_2D, CT_3D, and PATHOLOGY_WSI tokens; validator repeats all three modalities."},
+    {"id": "P09-04", "description": "At least one native VLM path produces finite loss and bounded generation.", "status": "passed", "evidence": "MedGemmaAdapter tiny native connector smoke and deterministic stop/limit tests."},
+    {"id": "P09-05", "description": "Linear, MLP, and fixed-query Perceiver bridges validate dimensions, masks, and fixed token budgets.", "status": "passed", "evidence": "tests/phase_09/test_bridges.py and bridge contracts in medfm/models/bridges/."},
+    {"id": "P09-06", "description": "Coordinate features cover 2D, 3D, and WSI metadata and alter the intended representation.", "status": "passed", "evidence": "Coordinate encoder tests cover normalized/physical positions, spacing, series, MPP, pyramid, slide, view, and timepoint metadata."},
+    {"id": "P09-07", "description": "Only assistant output positions contribute to loss; prompt, visual, and padded positions are masked.", "status": "passed", "evidence": "Prompt-mask and visual-attention assertions in test_language.py plus framework masking implementation."},
+    {"id": "P09-08", "description": "Visual representations and bridge/boundary modules receive gradients while Stage 1 vision/LM modules remain frozen.", "status": "passed", "evidence": "Phase 09 smoke and test_language.py retain visual-token gradients and check frozen model parameters."},
+    {"id": "P09-09", "description": "Static Stage 1-4 trainable-module declarations are available without implementing trainer/optimizer internals.", "status": "passed", "evidence": "StageConfig, apply_stage_freeze, and phase_09_language_bridges.yaml declarations."},
+    {"id": "P09-10", "description": "CUDA reference memory is measured for 32, 64, and 128 visual-token buckets.", "status": "passed", "evidence": "NVIDIA GeForce RTX 4060 Laptop GPU training reference: 33.204, 50.343, 68.016 MiB allocated; 40, 58, 76 MiB reserved."},
+    {"id": "P09-11", "description": "CUDA FlashAttention remains optional and SDPA/eager/XLA-compatible attention plus generation operation records are exposed.", "status": "passed", "evidence": "LanguageAdapterConfig attention validation, optional flash flag, static bucket config, and xla_generation_report()."},
+    {"id": "P09-12", "description": "Tied input/output embeddings can be re-established after placement through the adapter contract.", "status": "passed", "evidence": "Tiny native and external tests call verify_tied_weights(); retie_shared_embeddings() calls the model's official tie_weights hook."},
+    {"id": "P09-13", "description": "TPU HBM/compile, CUDA/TPU parity, and XLA adapter-reload execution are measured where feasible or explicitly blocked.", "status": "not_applicable", "justification": "torch_xla is not installed on the workstation. Static XLA-safe contracts and a zero steady-state recompilation threshold are recorded; no TPU result is fabricated."}
+  ],
+  "unresolved_issues_file": "agent/reports/phase_09/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_09/next_phase_handoff.md"
+}

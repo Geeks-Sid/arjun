@@ -1,0 +1,60 @@
+{
+  "phase": "05",
+  "status": "passed",
+  "generated_by": "Kimi Code",
+  "generated_at": "2026-08-05T21:14:00Z",
+  "smoke_command": "python -m medfm.cli.models list --format json",
+  "smoke_passed": true,
+  "criteria": [
+    {
+      "id": "registry-schema-lifecycle",
+      "description": "ModelSpec/LicenseSpec/MemoryProfile/PEFT capability schemas; modality/task/input/output/feature capability requirements; pinned revisions; native text vs pooled embeddings vs spatial tokens vs feature maps vs hidden states; loading modes and LoRA target policies; registry versioning with deprecation/replacement; duplicate ID and unsafe alias rejection; per-backend support status for CPU/CUDA single+multi/TPU replicated+sharded; tested precision, attention backend, custom operators, and last smoke revision recorded",
+      "status": "passed",
+      "evidence": "medfm/registry/schema.py (REGISTRY_SCHEMA_VERSION=1, BackendSupport evidence validation, TASK_REQUIRED_OUTPUTS agreement, deprecation fields); tests/phase_05/test_model_registry.py (unpinned revision, contradictory capabilities, duplicate/unsafe aliases, evidence-required SUPPORTED_*, backend key completeness, schema freeze)"
+    },
+    {
+      "id": "license-governance-gates",
+      "description": "Production-loadable models require complete license records; unknown/expired/unapproved statuses blocked; research and deployment catalogs separated; gated acceptance stored outside source control; no automatic acceptance nor acceptance implied by download; approved and prohibited use cases in inspection output",
+      "status": "passed",
+      "evidence": "medfm/registry/schema.py LicenseSpec + ModelSpec fail-closed validation; medfm/registry/acceptance.py (external store, exact-repository keying, explicit record_acceptance); medfm/cli/models.py show output; tests/phase_05/test_model_registry.py (incomplete license, use-case requirements, catalog separation), test_weights.py (gated download blocks until explicit acceptance; typosquat repository not covered)"
+    },
+    {
+      "id": "weight-acquisition-integrity",
+      "description": "Explicit download/inspect/local-path resolution; pinned revisions; safetensors preferred with unsafe formats rejected by policy; file hashes and expected file sets verified; atomic resumable downloads; tokens out of commands/logs/manifests; trust_remote_code defaults false with allowlist exception",
+      "status": "passed",
+      "evidence": "medfm/registry/weights.py (download_weights with allow/ignore patterns, verify_file_hashes, find_partial_downloads, resolve_local_path local_files_only); tests/phase_05/test_weights.py (hash mismatch, missing/extra files, partial detection, *.py exclusion, unsafe-format opt-in, no-network resolution, token never in resolve call)"
+    },
+    {
+      "id": "capability-discovery",
+      "description": "Queries by modality/task/loading mode/license class; preprocessing completeness validation; output/task agreement; spatial tokens native/hooked/unavailable; known LoRA targets and unknown-family confirmation; blocked status with structured reason; CUDA-only extension detection with tested pure-PyTorch path required for TPU; UNTESTED distinguished from SUPPORTED (no promotion by inspection)",
+      "status": "passed",
+      "evidence": "medfm/registry/core.py list_models filters + accelerator_report; schema output/task validation and BackendSupport evidence rule; tests/phase_05/test_model_registry.py (filters, output mismatch, normalization, evidence rules, CUDA-only TPU rejection), test_smoke.py (blocked never smokes)"
+    },
+    {
+      "id": "cli",
+      "description": "medfm models list with filters; show/validate/download/smoke/inspect-modules/estimate-memory; JSON output; metadata vs local-weight vs smoke statuses distinguished; network opt-in and explicit; --backend filters and accelerator compatibility report; medfm accelerator validate-model with exact revision and tiny backend input",
+      "status": "passed",
+      "evidence": "medfm/cli/models.py + medfm/cli/accelerator.py (wired in medfm/cli/main.py); tests/phase_05/test_cli.py (list/show/validate/local-weights/estimate/inspect/report, --backend filter, network hard-disabled metadata commands, accelerator validate-model CPU pass and NF4-on-TPU pre-allocation rejection); smoke command python -m medfm.cli.models list --format json returns the 17-model roster"
+    },
+    {
+      "id": "loading-modes-memory",
+      "description": "Full/BF16/FP16/INT8/NF4/offload/frozen-cache representation; conservative estimates with uncertainty notes; unsupported model/mode combinations rejected before construction; measured peak hook for refinement; TPU BF16 replicated and SPMD/FSDP topologies; bitsandbytes NF4 rejected on xla_tpu; compile risk recorded separately from memory",
+      "status": "passed",
+      "evidence": "medfm/registry/schema.py WeightFormat/Topology/MemoryEstimate (cpu_offload, frozen_cache, measured_peak_bytes, compile_risk_note); medfm/registry/core.py validate_backend; tests/phase_05/test_model_registry.py (NF4/INT8 TPU rejection, unknown mode/backend rejection), test_cli.py (estimate-memory output incl. weight format)"
+    },
+    {
+      "id": "tests-and-verification",
+      "description": "Reject incomplete licenses; reject missing normalization, unpinned revisions, contradictory capabilities; reject duplicate IDs/unsafe aliases; research-only never in deployment catalog; hash mismatch and partial download handling; no network for list/show/validate; dummy plugin local smoke; run artifacts carry exact model ID and revision; CUDA success does not mutate TPU UNTESTED; unsupported quantization/backend combos fail before weight allocation",
+      "status": "passed",
+      "evidence": "tests/phase_05/ 50 tests passing: test_model_registry.py (24), test_weights.py (8), test_smoke.py (6), test_cli.py (12); CUDA-does-not-mutate-TPU in test_cuda_success_does_not_mutate_tpu_status; run-artifact identity in test_dummy_plugin_completes_local_smoke and test_cli_smoke_dummy"
+    },
+    {
+      "id": "v1-roster-registered",
+      "description": "Real v1 models registered as ready or blocked with reasons; adapter phases 06-08 need no registry internals changes",
+      "status": "passed",
+      "evidence": "medfm/registry/catalog.py loads all 17 roster models from model_registry/{licenses.yaml,v1_scope.yaml}; all BLOCKED with structured license reasons (no approved licenses exist yet); plugin protocol + DummyPlugin documented in medfm/registry/plugins.py and next_phase_handoff.md; gate _check_v1_catalog in medfm/tools/validate_phase.py"
+    }
+  ],
+  "unresolved_issues_file": "agent/reports/phase_05/unresolved_issues.md",
+  "handoff_file": "agent/reports/phase_05/next_phase_handoff.md"
+}

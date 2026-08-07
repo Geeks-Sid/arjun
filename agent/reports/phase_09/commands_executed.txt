@@ -1,0 +1,7 @@
+python -m medfm.tools.smoke --phase 09
+pytest tests/phase_09 -q
+ruff check medfm/models/language medfm/models/bridges tests/phase_09 medfm/tools/smoke.py medfm/tools/validate_phase.py
+python -m compileall -q medfm/models/bridges medfm/models/language medfm/tools/smoke.py medfm/tools/validate_phase.py
+python -m medfm.tools.validate_phase --phase 09
+CUDA one-step bucket benchmark at 32, 64, and 128 visual tokens (tiny local LM + MLP bridge)
+PYTHONPATH=. pytest -q  # attempted repository-wide; blocked by missing safetensors and pre-existing duplicate test module names

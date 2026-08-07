@@ -54,6 +54,9 @@ hf = [
     "datasets>=3.4",
     "huggingface_hub>=0.30",
     "trl>=0.15",
+    # timm backbones loaded from the HF hub (H-Optimus-0, optional CONCH in
+    # later phases); pure PyTorch, no custom CUDA kernels.
+    "timm>=1.0.16,<2",
 ]
 # CUDA-only extras. Never imported eagerly by CPU code paths.
 cuda = [
@@ -148,6 +151,8 @@ module = [
     "h5py.*",
     "zarr.*",
     "cucim.*",
+    "scipy.*",
+    "skimage.*",
 ]
 ignore_missing_imports = true
 
@@ -160,6 +165,7 @@ module = [
     "medfm.tools.smoke",
     "medfm.training.run_metadata",
     "medfm.training.tracking",
+    "medfm.models.visual.*",
 ]
 disallow_untyped_calls = false
 

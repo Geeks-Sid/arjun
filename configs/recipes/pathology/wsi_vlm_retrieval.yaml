@@ -1,0 +1,54 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase15_pathology_wsi_vlm
+  checkpoint_source: offline_random_contract
+  revision: phase15-1
+dataset:
+  id: phase15-synthetic-retrieval-v1
+  revision: synthetic-v1
+  split_policy: patient_disjoint
+task:
+  type: IMAGE_TEXT_RETRIEVAL
+recipe:
+  phase: 15
+  id: wsi-vlm-retrieval
+  family: wsi_vlm
+  backbone: h-optimus-0
+  modality: PATHOLOGY_WSI
+  mode: offline_tiny
+  offline_tiny: true
+  stage: 1
+  bridge: perceiver
+  cache_embeddings: true
+  cache_tokens: true
+  precompression_tiles: 128
+  visual_tokens: 32
+  text_tokens: 8
+  selector: grid
+  train_selector: random
+  eval_selector: grid
+  selector_revision: phase15-selector-v1
+  max_tiles_per_slide: 8
+  tile_count_buckets: [8]
+  tile_mpp: 0.5
+  magnification: 20x
+  evidence_top_k: 4
+  tpu_status: cached_tokens_fixed_selector
+  baseline: cached_tile_embeddings_perceiver
+accelerator: {backend: cpu, precision: fp32, distribution: single, static_shapes: true}
+batch: {microbatch_per_device: 1, gradient_accumulation_steps: 1, global_batch_size: 1}
+optimizer: {name: adamw, lr: 0.001, weight_decay: 0.0}
+freeze_schedule:
+  - {until_step: 1, train: [bridge]}
+  - {train: [bridge]}
+peft: {enabled: false}
+memory: {use_cache_during_training: false}
+tracking: {kind: local_json}
+checkpoint: {format: torch}
+seed: 1538
+max_steps: 1
+output_dir: artifacts/runs/phase15/wsi_vlm_retrieval
+base_model_revision: pathology-language-tiny-offline-random-contract
+preprocessing_hash: phase15-wsi-vlm-preprocess-v1

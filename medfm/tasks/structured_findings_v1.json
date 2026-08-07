@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "medfm://schemas/structured-findings/v1",
+  "title": "MedFM structured findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings", "impression"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "status", "anatomy", "laterality", "severity", "location"],
+        "properties": {
+          "label": {"type": "string", "minLength": 1},
+          "status": {"enum": ["present", "absent", "uncertain"]},
+          "anatomy": {"type": "string", "minLength": 1},
+          "laterality": {"enum": ["left", "right", "bilateral", "midline", "none"]},
+          "severity": {"type": ["string", "null"]},
+          "location": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "impression": {"type": "string"}
+  }
+}

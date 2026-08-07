@@ -52,3 +52,27 @@ class CacheError(DataError):
 
 class CorruptCacheEntryError(CacheError):
     """A cache entry failed integrity verification (partial/corrupt payload)."""
+
+
+class PreprocessSpecError(DataError):
+    """A tensor does not conform to the selected PreprocessSpec contract."""
+
+
+class TransformError(DataError):
+    """A preprocessing transform failed or was applied in an invalid context."""
+
+
+class InversionError(TransformError):
+    """A recorded transform cannot be inverted back to original coordinates."""
+
+
+class PatchSamplingError(DataError):
+    """A 3D patch sampler was configured or invoked invalidly."""
+
+
+class TextPreprocessError(DataError):
+    """Text/VLM preparation failed (never carries report text in messages)."""
+
+
+class CollatorError(DataError):
+    """Batch collation failed: incompatible modalities, shapes, or buckets."""

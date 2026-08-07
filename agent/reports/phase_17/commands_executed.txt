@@ -1,0 +1,14 @@
+python -m compileall -q medfm/inference medfm/tools/validate_phase.py
+python -m pytest tests/phase_17 -q
+python -c "from medfm.tools.validate_phase import _check_phase_17_inference; print(_check_phase_17_inference())"
+python -m medfm.cli.infer classification --config configs/smoke/inference.yaml
+ruff check medfm/inference medfm/cli/infer.py medfm/cli/export.py medfm/tools/validate_phase.py tests/phase_17
+ruff format --check medfm/inference medfm/cli/infer.py medfm/cli/export.py medfm/tools/validate_phase.py tests/phase_17
+python -m pytest -q  # collection remains blocked by unrelated environment/deprecated test-layout issues
+python -m medfm.tools.validate_phase --phase 17
+python -c "import json; from pathlib import Path; import jsonschema; root=Path('.'); schemas=[root/'docs/inference/bundle_schema.json',root/'docs/inference/request_schema.json',root/'docs/inference/response_schema.json']; [jsonschema.Draft202012Validator.check_schema(json.loads(p.read_text())) for p in schemas]; jsonschema.validate(json.loads((root/'agent/reports/phase_17/acceptance.json').read_text()), json.loads((root/'agent/acceptance_schema.json').read_text())); print('json schemas valid')"
+python -m pytest tests/phase_17 -q && python -m medfm.tools.validate_phase --phase 17
+ruff check medfm/inference medfm/cli/infer.py medfm/cli/export.py medfm/tools/validate_phase.py tests/phase_17 && ruff format --check medfm/inference medfm/cli/infer.py medfm/tools/validate_phase.py tests/phase_17
+python -m pytest tests/phase_17 -q && python -m medfm.tools.validate_phase --phase 17 && python -m medfm.cli.infer classification --config configs/smoke/inference.yaml
+mypy medfm/inference medfm/cli/infer.py medfm/cli/export.py medfm/tools/validate_phase.py  # repository-wide typing gate remains blocked by baseline diagnostics and missing optional stubs
+python -c "import json; import medfm.inference as inference; required=['BundleBuilder','BundleLoader','InferenceService','ClassificationPipeline','SegmentationPipeline','RetrievalPipeline','VLMPipeline','WSIPipeline','export_nifti','export_dicom_seg','generate','AuditLogger']; missing=[name for name in required if not hasattr(inference,name)]; assert not missing, missing; [json.loads(path.read_text()) for path in __import__('pathlib').Path('docs/inference').glob('*.json')]; print('public API and docs reviewed')"

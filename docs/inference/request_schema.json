@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.example/schemas/inference-request-v1.json",
+  "title": "medfm inference request",
+  "type": "object",
+  "required": ["schema_version", "task", "modality", "payload"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "task": {"enum": ["classification", "segmentation", "retrieval", "vlm", "wsi"]},
+    "modality": {"type": "string", "minLength": 1},
+    "payload": {"type": "object"},
+    "request_id": {"type": ["string", "null"], "maxLength": 128},
+    "adapter": {"type": ["string", "null"], "maxLength": 128},
+    "prompt_version": {"type": ["string", "null"], "maxLength": 128},
+    "options": {"type": "object"}
+  },
+  "additionalProperties": false
+}

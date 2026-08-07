@@ -1,0 +1,67 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: phase15_pathology_wsi
+  checkpoint_source: offline_random_contract
+  revision: phase15-1
+dataset:
+  id: phase15-synthetic-wsi-classification-v1
+  revision: synthetic-v1
+  split_policy: patient_disjoint
+task:
+  type: BINARY_CLASSIFICATION
+recipe:
+  phase: 15
+  id: wsi-classification-attention-mil
+  family: wsi_classification
+  backbone: h-optimus-0
+  modality: PATHOLOGY_WSI
+  mode: offline_tiny
+  offline_tiny: true
+  stage: 2
+  aggregator: attention_mil
+  cache_embeddings: true
+  embedding_store_revision: phase08-hdf5-v1
+  tile_shape: [16, 16]
+  max_tiles_per_slide: 8
+  tile_count_buckets: [8]
+  tile_mpp: 0.5
+  magnification: 20x
+  selector: quality_weighted
+  train_selector: quality_weighted
+  eval_selector: grid
+  baseline: attention_mil
+  tpu_status: cached_embeddings_static_aggregator
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+  static_shapes: true
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 1
+    train: [task_head, aggregator]
+  - train: [task_head, aggregator]
+peft:
+  enabled: false
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 1520
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase15/wsi_classification_attention_mil
+base_model_revision: h-optimus-0-offline-random-contract
+preprocessing_hash: phase15-wsi-preprocess-v1

@@ -1,0 +1,69 @@
+schema_version: 1
+model_id: local
+model:
+  id: local
+  family: rad-dino
+  revision: offline-random-contract
+dataset:
+  id: phase13-synthetic-segmentation-v1
+  revision: synthetic-v1
+  split_policy: patient_first_site_then_time
+task:
+  type: SEMANTIC_SEGMENTATION
+recipe:
+  id: segmentation-development-lora
+  family: segmentation
+  backbone: rad-dino
+  modality: XRAY_2D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: B
+  use_lora: true
+  lora_rank: 2
+  image_size: 32
+  channels: 1
+  patch_size: 8
+  decoder_hidden: 16
+  crop_size: [32, 32]
+  validation: original_resolution
+  sampling: lesion_balanced_patch_crop
+  metrics: [dice, surface_dice, sensitivity, false_positives_per_image]
+accelerator:
+  backend: cpu
+  precision: fp32
+  distribution: single
+batch:
+  microbatch_per_device: 2
+  gradient_accumulation_steps: 1
+  global_batch_size: 2
+optimizer:
+  name: adamw
+  lr: 0.01
+  weight_decay: 0.0
+freeze_schedule:
+  - until_step: 2
+    train: [decoder]
+  - until_step: 4
+    train: [decoder, vision_lora]
+  - train: [decoder, vision_lora, vision.backbone.norm]
+peft:
+  enabled: true
+  rank: 2
+  alpha: 4
+  dropout: 0.0
+  target_policy: explicit
+  target_modules: ["attention\\.(q_proj|k_proj|v_proj|out_proj)", "mlp\\.(fc1|fc2)"]
+memory:
+  use_cache_during_training: false
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+seed: 17
+max_steps: 6
+epochs: 6
+save_every_steps: 2
+output_dir: artifacts/runs/phase13/segmentation_development_lora
+dataset_hash: phase13-synthetic-segmentation-v1
+preprocessing_hash: phase13-segmentation-preprocess-v1
+base_model_revision: offline-random-contract

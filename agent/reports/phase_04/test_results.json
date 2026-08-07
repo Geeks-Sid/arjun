@@ -1,0 +1,808 @@
+{
+  "phase": "04",
+  "exit_code": 0,
+  "tests": [
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_assigns_smallest_covering_bucket",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_out_of_bucket_error_names_unplanned_compilation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_pad_to_max_falls_back_to_largest",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_bounds_bucket_count",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_first_exercise_warns",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_bucket_plan_config_roundtrip_and_independent_train_val_hashes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_classification_happy_path_dynamic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_classification_static_repeated_batches_identical_shapes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_classification_out_of_bucket_sample_rejected_in_static_mode",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_classification_3d_volume_bucket",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_classification_rejects_mixed_modalities",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_segmentation_2d_stacks_masks_with_matching_spatial_dims",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_segmentation_3d_volume",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_segmentation_rejects_mask_shape_mismatch",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_contrastive_pairs_images_with_padded_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_contrastive_rejects_mixed_modalities",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_multi_image_vl_pads_image_count_with_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_multi_image_vl_visual_token_limit_validated",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_text_token_limit_validated",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_volume_vl_single_volume_static",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_volume_vl_multi_series_pads_series_count",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_wsi_vl_pads_tiles_coordinates_and_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_wsi_vl_precomputed_embeddings_use_visual_token_bucket",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_wsi_vl_rejects_coordinate_tile_mismatch",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_multitask_dispatches_declared_modalities_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_multitask_rejects_undeclared_modality",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_multitask_eval_never_drops",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_final_batch_drop_policy_training_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_final_batch_pad_policy_masks_replicas",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_final_batch_oversized_batch_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_text_loss_is_padding_invariant",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_collators.py::test_visual_token_loss_is_padding_invariant",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_hu_conversion_applies_slope_intercept",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_hu_already_calibrated_is_recorded_noop",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_hu_unknown_units_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_clip_hu_bounds",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_clip_hu_rejects_inverted_range",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_window_math_center_width_convention",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_multi_window_channel_count_and_order",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_window_channels_requires_single_channel",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_orientation_canonicalization_and_exact_inversion",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_orientation_updates_affine_and_rejects_bad_codes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_resample_to_spacing_updates_geometry_and_restores_shape",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_image_and_label_interpolation_differ",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_foreground_crop_records_invertible_coordinates",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_crop_orientation_chain_mask_reconstruction_in_original_coordinates",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_spatial_transforms_require_spatial_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_ct_pipeline_conforms_to_dummy_preprocess_spec",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_ct.py::test_ct_pipeline_rejects_nonconforming_shape",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_end_to_end_xray_pipeline_spec_conformance_and_seeding",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_stochastic_stage_never_contaminates_cache_keys",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_end_to_end_ct_chain_with_inversion_and_spec",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_end_to_end_mri_multisequence_with_missing_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_end_to_end_collate_and_time_host_vs_device_cpu",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_device_wait_measured_on_cuda",
+      "status": "skipped",
+      "reason": "('/home/siddhesh/Work/Personal/arjun/tests/phase_04/test_end_to_end_transforms.py', 214, 'Skipped: protected gpu test; set MEDFM_RUN_GPU_TESTS=1 to enable')"
+    },
+    {
+      "name": "tests/phase_04/test_end_to_end_transforms.py::test_device_wait_measured_on_tpu",
+      "status": "skipped",
+      "reason": "('/home/siddhesh/Work/Personal/arjun/tests/phase_04/test_end_to_end_transforms.py', 226, 'Skipped: protected tpu test; set MEDFM_RUN_TPU_TESTS=1 to enable')"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_sequence_resolver_aliases_case_insensitive",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_sequence_resolver_rejects_unknown_with_legal_values",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_sequence_resolver_rejects_ambiguous_alias_config",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_select_sequences_rejects_missing_without_substitution",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_select_sequences_rejects_duplicate_canonical",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_foreground_zscore_normalizes_foreground_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_foreground_zscore_constant_channel_is_noop",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_robust_percentile_normalize_range_and_background",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_stack_sequences_channel_layout_and_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_stack_sequences_missing_required_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_stack_sequences_allowed_missing_zero_channel_and_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_stack_sequences_requires_sequence_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_stack_sequences_rejects_mismatched_shapes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_mri_orientation_and_spacing_canonicalization",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_bias_field_correction_is_explicit_and_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_bias_field_correction_rejects_nonpositive_sigma",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_mri.py::test_mri_pipeline_conforms_to_dummy_preprocess_spec",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_random_sampler_deterministic_same_seed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_random_sampler_different_seeds_differ",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_random_sampler_accepts_caller_generator",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_foreground_positive_ratio_is_measurable",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_foreground_centered_draws_hit_the_block",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_foreground_without_foreground_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_foreground_without_mask_degrades_to_uniform",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_invalid_configs_raise",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_smaller_than_patch_volume_has_explicit_padding",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_origins_clamped_so_patch_stays_full_shape",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_grid_sampler_covers_volume_exactly",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_grid_sampler_exact_tiling_without_overlap",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_grid_sampler_deterministic_without_rng",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_lesion_sampler_centers_on_components",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_lesion_sampler_jitter_is_bounded_and_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_lesion_sampler_requires_lesions",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_box_sampler_stays_inside_box",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_box_sampler_outside_volume_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_class_balanced_sampler_visits_each_class",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_class_balanced_missing_class_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_physical_bounding_box_from_spacing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_physical_bounding_box_none_without_spacing",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_extract_patch_pads_via_info_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_patch_samplers.py::test_phase03_names_still_reexported",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_thumbnail_downscales_deterministically",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_thumbnail_identity_when_within_bounds",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_thumbnail_rejects_invalid_input",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tissue_mask_detects_blob_not_background",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tissue_mask_all_white_slide_is_all_false",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tissue_mask_works_on_thumbnail",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tissue_fraction_scores",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tissue_fraction_validates_mask",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_blur_score_sharp_beats_blurry",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_blur_score_constant_tile_is_zero",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_artifact_score_pen_mark",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_scores_are_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_mpp_normalization_same_physical_tile_size",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_plan_tiles_deterministic_twice",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_plan_tiles_deterministic_across_processes",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_plan_tiles_coordinates_within_bounds_property",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_plan_tiles_edge_tiles_shifted_in_bounds",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_zero_tissue_slide_yields_empty_plan",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_background_only_tiles_fail_min_tissue_fraction",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_max_tiles_caps_in_scan_order",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_plan_tiles_rejects_invalid_config",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_tile_id_deterministic_and_input_sensitive",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_normalize_config_hash_tracks_reference",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_normalize_rejects_bad_reference",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_normalize_moves_lab_stats_toward_reference",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_augment_requires_seeded_context",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_augment_reproducible_under_fixed_seed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_augment_config_hash_tracks_params",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_pathology.py::test_stain_ops_are_opt_in_pipeline_steps",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_decode_monochrome1_applies_inversion_correction",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_decode_monochrome2_passthrough",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_decode_rejects_multi_channel",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_decode_rejects_unknown_photometric_interpretation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_letterbox_preserves_aspect_and_pads_symmetrically",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_letterbox_inversion_roundtrips_to_original_shape_image_and_label",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_letterbox_inversion_recovers_smooth_image_approximately",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_body_crop_box_and_margin",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_body_crop_inversion_reembeds_exactly",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_body_crop_empty_foreground_is_recorded_noop",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_to_channels_repeats_single_channel",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_to_channels_passthrough_and_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_normalize_image_math",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_rescale_intensity_min_max",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_rescale_intensity_percentiles_clamps",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>0]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>1]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>2]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>3]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>4]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_augmentation_same_seed_identical_different_seed_differs[<lambda>5]",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_stochastic_transform_requires_context",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_flip_disabled_everywhere_is_noop_but_records",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_flip_horizontal_only_never_flips_vertical",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_metadata_passes_through_untouched",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_full_pipeline_output_passes_spec_validation",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_pipeline_reproducible_under_fixed_seed",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_radiology2d.py::test_for_sample_streams_reproducible_but_distinct_across_workers_and_epochs",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_nfc_composes_accents",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_nfkc_folds_compatibility_characters",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_disallowed_unicode_form_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_control_characters_stripped_but_layout_kept",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_zero_width_and_bidi_format_chars_stripped",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_line_endings_folded_to_lf",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_whitespace_policy_is_deterministic",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_scan_finds_mrn_date_phone_email_ssn",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_match_never_carries_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_scan_extra_patterns_extend_and_override",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_scan_invalid_extra_regex_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_off_skips_scanning",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_warn_logs_counts_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_error_raises_counts_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_enabled_categories_filters",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_clean_text_logs_no_warning",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_phi_policy_invalid_mode_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_full_report_all_sections_present",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_headings_are_case_insensitive",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_missing_sections_are_none",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_empty_section_is_none",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_preamble_bucket_collects_text_before_first_heading",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_repeated_heading_merges_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_parse_text_looking_like_heading_mid_line_is_data",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_registry_register_and_get",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_registry_duplicate_id_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_registry_unknown_id_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_format_conversation_builds_system_user_assistant_turns",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_format_conversation_without_system_or_assistant",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_format_conversation_extra_fields_ignored",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_format_conversation_unknown_placeholder_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_textprep.py::test_template_validation_rejects_empty_fields",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_labels_supervise_exactly_assistant_span",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_system_user_and_placeholder_tokens_are_masked",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_zero_supervision_conversation_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_truncation_drops_from_left_and_logs_counts_only",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_not_truncated_when_within_limit",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_mask_boilerplate_toggle",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_unknown_token_raises_without_echoing_text",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_tokenizer_rejects_invalid_vocab",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_invalid_max_length_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_validate_supervised_batch_all_zero_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_validate_supervised_batch_empty_raises",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_validate_supervised_batch_passes_with_supervision",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_supervised_example_validates_count_consistency",
+      "status": "passed"
+    },
+    {
+      "name": "tests/phase_04/test_vlm_masking.py::test_supervised_example_round_trip",
+      "status": "passed"
+    }
+  ]
+}

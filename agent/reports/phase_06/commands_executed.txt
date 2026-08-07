@@ -1,0 +1,4 @@
+pytest tests/phase_06 -q  # 84 passed
+python -m medfm.tools.validate_phase --phase 06  # pending report files
+python -m medfm.cli.models smoke rad-dino --backend cpu  # OK
+python -m medfm.cli.models list --ready-only  # rad-dino READY

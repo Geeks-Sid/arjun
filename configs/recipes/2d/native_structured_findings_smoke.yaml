@@ -1,0 +1,39 @@
+schema_version: 1
+model_id: local
+model: {id: local, family: medgemma-native, revision: offline-random-contract}
+dataset: {id: phase13-synthetic-structured-findings-v1, revision: synthetic-v1, split_policy: patient_first_site_then_time}
+task: {type: STRUCTURED_FINDING_GENERATION}
+recipe:
+  id: native-structured-findings-smoke
+  family: native_vlm
+  backbone: medgemma-1.5-4b
+  modality: XRAY_2D
+  mode: offline_tiny
+  offline_tiny: true
+  stage: A
+  use_lora: false
+  image_size: 32
+  channels: 1
+  patch_size: 8
+  visual_tokens: 32
+  text_tokens: 8
+  prompt_revision: phase13-structured-findings-v1
+  schema_validation: structured_findings_v1
+  mixed_task_weights: {vqa: 1.0, findings: 1.0, impression: 0.75, report: 0.25}
+accelerator: {backend: cpu, precision: fp32, distribution: single}
+batch: {microbatch_per_device: 1, gradient_accumulation_steps: 1, global_batch_size: 1}
+optimizer: {name: adamw, lr: 0.001, weight_decay: 0.0}
+freeze_schedule: [{train: [language_lora]}]
+peft: {enabled: false}
+quantization: {enabled: false}
+memory: {use_cache_during_training: false}
+tracking: {kind: local_json}
+checkpoint: {format: torch, save_optimizer: true}
+seed: 13
+max_steps: 1
+epochs: 1
+save_every_steps: 1
+output_dir: artifacts/runs/phase13/native_structured_findings_smoke
+dataset_hash: phase13-synthetic-structured-findings-v1
+preprocessing_hash: phase13-native-vlm-preprocess-v1
+base_model_revision: offline-random-contract

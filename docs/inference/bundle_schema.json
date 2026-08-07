@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medfm.example/schemas/deployment-bundle-v1.json",
+  "title": "medfm deployment bundle manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "model_id",
+    "model_revision",
+    "task",
+    "base_models",
+    "adapter_only",
+    "canonical_device",
+    "canonical_format",
+    "runtime",
+    "tensor_groups",
+    "merged_artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "model_revision": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 1},
+    "modalities": {"type": "array", "items": {"type": "string"}},
+    "base_models": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["model_id", "revision"],
+        "properties": {
+          "model_id": {"type": "string", "minLength": 1},
+          "revision": {"type": "string", "minLength": 1},
+          "architecture": {"type": ["string", "null"]},
+          "config_hash": {"type": ["string", "null"]},
+          "license_id": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "adapter_only": {"const": true},
+    "canonical_device": {"const": "cpu"},
+    "canonical_format": {"const": "safetensors"},
+    "runtime": {"type": "object"},
+    "preprocess_hash": {"type": "string"},
+    "postprocess_hash": {"type": "string"},
+    "task_schema_hash": {"type": "string"},
+    "tensor_groups": {"type": "array", "items": {"type": "string"}},
+    "merged_artifacts": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": false
+}

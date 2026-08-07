@@ -1,0 +1,60 @@
+{
+  "phase": "13",
+  "tests": [
+    {
+      "name": "python -m pytest tests/phase_13 -q",
+      "status": "passed",
+      "details": "19 passed"
+    },
+    {
+      "name": "classification smoke",
+      "status": "passed",
+      "details": "CPU, one optimizer step, effective batch 2, trainable parameters 33"
+    },
+    {
+      "name": "segmentation smoke",
+      "status": "passed",
+      "details": "CPU, two optimizer steps, effective batch 2, trainable parameters 1498"
+    },
+    {
+      "name": "native VLM smoke",
+      "status": "passed",
+      "details": "CPU, one optimizer step, effective batch 2, trainable parameters 81472"
+    },
+    {
+      "name": "external VLM smoke",
+      "status": "passed",
+      "details": "CPU, one optimizer step, effective batch 2, trainable parameters 8448"
+    },
+    {
+      "name": "multilabel and promptable smokes",
+      "status": "passed",
+      "details": "Multilabel task-head and promptable decoder contracts complete one-step runs"
+    },
+    {
+      "name": "structured findings smoke",
+      "status": "passed",
+      "details": "StructuredGenerationTask schema-validation path completes one step"
+    },
+    {
+      "name": "Phase 12 metadata regression",
+      "status": "passed",
+      "details": "19 focused tests passed"
+    },
+    {
+      "name": "compatible checkpoint resume",
+      "status": "passed",
+      "details": "Unchanged config resumes at global_step 1"
+    },
+    {
+      "name": "repository-wide test collection",
+      "status": "skipped",
+      "reason": "Environment lacks optional safetensors and contains duplicate test module basenames causing collection mismatches"
+    },
+    {
+      "name": "TPU/NF4 hardware acceptance",
+      "status": "skipped",
+      "reason": "torch_xla, bitsandbytes, and approved production checkpoints are unavailable"
+    }
+  ]
+}
