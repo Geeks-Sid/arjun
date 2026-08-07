@@ -77,14 +77,13 @@ def _rank_auc(y: torch.Tensor, p: torch.Tensor) -> float | None:
 
 
 def _average_precision(y: torch.Tensor, p: torch.Tensor) -> float | None:
+    # ADR-0013: delegated to torchmetrics; tie ordering follows torchmetrics.
     positives = int(y.sum())
     if positives == 0:
         return None
-    order = torch.argsort(p, descending=True, stable=True)
-    ordered = y[order].to(torch.float64)
-    cumulative = torch.cumsum(ordered, dim=0)
-    positions = torch.arange(1, len(ordered) + 1, dtype=torch.float64)
-    return float((cumulative / positions * ordered).sum() / positives)
+    from torchmetrics.classification import BinaryAveragePrecision
+
+    return float(BinaryAveragePrecision()(p, y))
 
 
 def _operating(y: torch.Tensor, p: torch.Tensor, threshold: float) -> dict[str, Any]:
@@ -960,13 +959,26 @@ def _ngram_precision(predicted: str, target: str, n: int) -> float:
     return 0.0 if denominator == 0 else sum((left & right).values()) / denominator
 
 
+class _RepositoryTokenizeRouge:
+    """Tokenize for rouge-score exactly like the repository's ``_tokens``.
+
+    rouge-score's default NLTK WordPunct tokenizer is not guaranteed to match
+    the repository's ``\\w+``-normalized tokenization; a custom tokenizer keeps
+    ROUGE-L number-for-number identical after the ADR-0013 delegation.
+    """
+
+    def tokenize(self, text: str) -> list[str]:
+        return _tokens(text)
+
+
 def _rouge_l(predicted: str, target: str) -> float:
-    left, right = _tokens(predicted), _tokens(target)
-    table = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
-    for i, token in enumerate(left, start=1):
-        for j, other in enumerate(right, start=1):
-            table[i][j] = table[i - 1][j - 1] + 1 if token == other else max(table[i - 1][j], table[i][j - 1])
-    return 0.0 if not right else table[-1][-1] / len(right)
+    if not _tokens(target):
+        return 0.0
+    from rouge_score import rouge_scorer
+
+    scorer = rouge_scorer.RougeScorer(["rougeL"], tokenizer=_RepositoryTokenizeRouge())
+    rougel = scorer.score(target, predicted)["rougeL"]
+    return float(rougel.recall)
 
 
 def generation_metrics(

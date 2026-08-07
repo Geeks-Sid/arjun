@@ -159,6 +159,7 @@ module = [
     "cucim.*",
     "scipy.*",
     "skimage.*",
+    "rouge_score.*",
 ]
 ignore_missing_imports = true
 

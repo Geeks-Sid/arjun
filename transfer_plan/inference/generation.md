@@ -49,3 +49,12 @@ Wave: 1.
 - Verification: `uv run --frozen pytest tests/phase_17/test_inference.py
   tests/phase_16/test_evaluation.py tests/phase_16/test_specialized.py` (20 passed);
   `uv run --frozen pytest tests/phase_17/test_parity_generation_rouge.py` (2 passed).
+
+## ADR-0013 update (contract bump) — adopted
+
+`advanced._rouge_l` now delegates the LCS to `rouge_score.RougeScorer(["rougeL"])`
+with the repository `_tokens` tokenizer (a custom `tokenize()`), keeping ROUGE-L
+recall number-for-number identical to the previous DP on all string fixtures
+(`tests/phase_17/test_parity_generation_rouge.py` now asserts parity). The
+default NLTK WordPunct tokenizer is not used. The kernel lives in
+`medfm/evaluation/advanced.py`; `generation.py` remains unchanged.

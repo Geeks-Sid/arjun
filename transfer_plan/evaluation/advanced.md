@@ -93,3 +93,12 @@ internals; parallel-safe.
   `transfer_plan/evaluation/advanced.md`.
 - Verification: focused parity and existing evaluation tests, Ruff, and mypy commands
   are recorded in the worker report.
+
+## ADR-0013 update (contract bump) — adopted
+
+`_average_precision` now delegates to torchmetrics `BinaryAveragePrecision`
+(tie ordering follows torchmetrics); the single-class case still returns `None`.
+ROUGE-L (`_rouge_l`) is now delegated to rouge-score with the repository
+`_tokens` tokenizer — recall is number-for-number identical to the previous DP
+(see generation.md). See ADR-0013 and
+`tests/phase_16/test_parity_advanced_torchmetrics.py` (now asserting parity).

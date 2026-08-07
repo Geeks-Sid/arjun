@@ -32,19 +32,16 @@ def test_rank_auc_torchmetrics_parity_and_empty_contract(name: str, labels: list
 
 
 @pytest.mark.parametrize(("name", "labels", "scores"), CLASSIFICATION_FIXTURES)
-def test_average_precision_parity_gate_records_tie_drift(name: str, labels: list[int], scores: list[float]) -> None:
+def test_average_precision_matches_torchmetrics(name: str, labels: list[int], scores: list[float]) -> None:
+    del name
+    # ADR-0013: _average_precision delegates to torchmetrics (tie ordering
+    # follows torchmetrics); only the undefined single-class case stays None.
     target = torch.tensor(labels)
     prediction = torch.tensor(scores)
     actual = _average_precision(target, prediction)
     expected = BinaryAveragePrecision()(prediction, target)
-    if name == "ties":
-        assert actual is not None
-        assert abs(actual - float(expected)) > 1e-6
-    elif not any(labels):
+    if not any(labels):
         assert actual is None
-    elif all(labels):
-        assert actual is not None
-        assert float(expected) == pytest.approx(1.0, abs=1e-6)
     else:
         assert actual == pytest.approx(float(expected), abs=1e-6)
 

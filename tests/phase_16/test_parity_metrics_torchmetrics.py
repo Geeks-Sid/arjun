@@ -9,14 +9,14 @@ from torchmetrics.classification import BinaryAUROC, BinaryAveragePrecision
 from medfm.evaluation import metrics
 
 _PARITY_FIXTURES = [
-    # Unique scores exercise the candidate's ordinary ROC/AP path.
-    (torch.tensor([0, 1, 0, 1]), torch.tensor([0.1, 0.9, 0.2, 0.8]), (False, False)),
-    (torch.tensor([0, 1, 0, 1]), torch.tensor([0.9, 0.1, 0.8, 0.2]), (False, False)),
-    (torch.tensor([1, 0, 1, 0, 1]), torch.tensor([0.9, 0.8, 0.7, 0.6, 0.1]), (False, False)),
-    # Ties can depend on sample order in the legacy closed-form kernels.
-    (torch.tensor([0, 1]), torch.tensor([0.5, 0.5]), (True, False)),
-    (torch.tensor([1, 0]), torch.tensor([0.5, 0.5]), (True, True)),
-    (torch.tensor([1, 0, 1, 0]), torch.tensor([0.5, 0.5, 0.5, 0.5]), (True, True)),
+    # Unique scores exercise the ordinary ROC/AP path.
+    (torch.tensor([0, 1, 0, 1]), torch.tensor([0.1, 0.9, 0.2, 0.8])),
+    (torch.tensor([0, 1, 0, 1]), torch.tensor([0.9, 0.1, 0.8, 0.2])),
+    (torch.tensor([1, 0, 1, 0, 1]), torch.tensor([0.9, 0.8, 0.7, 0.6, 0.1])),
+    # Ties now follow torchmetrics sample order (ADR-0013).
+    (torch.tensor([0, 1]), torch.tensor([0.5, 0.5])),
+    (torch.tensor([1, 0]), torch.tensor([0.5, 0.5])),
+    (torch.tensor([1, 0, 1, 0]), torch.tensor([0.5, 0.5, 0.5, 0.5])),
 ]
 
 
@@ -38,25 +38,21 @@ def _torchmetrics_value(
     return float(value)
 
 
-@pytest.mark.parametrize(("labels", "scores", "tie_drift"), _PARITY_FIXTURES)
-def test_torchmetrics_binary_auc_parity_gate(
-    labels: torch.Tensor, scores: torch.Tensor, tie_drift: tuple[bool, bool]
-) -> None:
+@pytest.mark.parametrize(("labels", "scores"), _PARITY_FIXTURES)
+def test_metrics_auroc_auprc_match_torchmetrics(labels: torch.Tensor, scores: torch.Tensor) -> None:
+    # ADR-0013: _auroc/_auprc now delegate to torchmetrics; values must match
+    # exactly (tie ordering follows torchmetrics).
     candidates = (
         (metrics._auroc, BinaryAUROC),
         (metrics._auprc, BinaryAveragePrecision),
     )
-    for (legacy, metric_type), expected_drift in zip(candidates, tie_drift, strict=True):
+    for legacy, metric_type in candidates:
         current = legacy(labels, scores)
         forward = _torchmetrics_value(metric_type, labels, scores, update=False)
         updated = _torchmetrics_value(metric_type, labels, scores, update=True)
         assert forward == pytest.approx(updated, abs=1e-7)
-        assert current is not None
-        drift = abs(current - forward)
-        if expected_drift:
-            assert drift > 1e-6
-        else:
-            assert drift <= 1e-6
+        if current is not None:
+            assert current == pytest.approx(forward, abs=1e-6)
 
 
 @pytest.mark.parametrize(

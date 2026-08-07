@@ -67,37 +67,25 @@ def _binary_labels_and_scores(
     return y, score
 
 
-def _sorted_binary(labels: torch.Tensor, scores: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-    order = torch.argsort(scores, descending=True, stable=True)
-    return labels[order], scores[order]
-
-
 def _auroc(labels: torch.Tensor, scores: torch.Tensor) -> float | None:
+    # ADR-0013: delegated to torchmetrics. Tie ordering on equal scores now
+    # follows torchmetrics (sample order); single-class sets stay None.
     positives = int(labels.sum())
     negatives = int(labels.numel() - positives)
     if positives == 0 or negatives == 0:
         return None
-    ordered, _ = _sorted_binary(labels, scores)
-    true_positive = torch.cumsum(ordered, dim=0).to(torch.float64)
-    false_positive = torch.cumsum(1 - ordered, dim=0).to(torch.float64)
-    tpr = torch.cat(
-        (torch.zeros(1, dtype=torch.float64), true_positive / positives, torch.ones(1, dtype=torch.float64))
-    )
-    fpr = torch.cat(
-        (torch.zeros(1, dtype=torch.float64), false_positive / negatives, torch.ones(1, dtype=torch.float64))
-    )
-    return float(torch.trapezoid(tpr, fpr))
+    from torchmetrics.classification import BinaryAUROC
+
+    return float(BinaryAUROC()(scores, labels))
 
 
 def _auprc(labels: torch.Tensor, scores: torch.Tensor) -> float | None:
     positives = int(labels.sum())
     if positives == 0:
         return None
-    ordered, _ = _sorted_binary(labels, scores)
-    cumulative = torch.cumsum(ordered, dim=0).to(torch.float64)
-    positions = torch.arange(1, ordered.numel() + 1, dtype=torch.float64)
-    precision = cumulative / positions
-    return float((precision * ordered.to(torch.float64)).sum() / positives)
+    from torchmetrics.classification import BinaryAveragePrecision
+
+    return float(BinaryAveragePrecision()(scores, labels))
 
 
 def _operating_point(labels: torch.Tensor, scores: torch.Tensor, threshold: float) -> dict[str, float | None]:

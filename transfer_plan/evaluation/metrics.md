@@ -60,3 +60,11 @@ Run strictly after `evaluation/advanced.md`. No other parallel work blocks on `m
   `MetricValue` remain kept and unchanged.
 - Files changed: `tests/phase_16/test_parity_metrics_torchmetrics.py` and this
   checklist. `medfm/evaluation/metrics.py` intentionally unchanged.
+
+## ADR-0013 update (contract bump) — adopted
+
+`_auroc`/`_auprc` now delegate to torchmetrics (`BinaryAUROC`,
+`BinaryAveragePrecision`); tie ordering on equal scores follows torchmetrics
+(sample order), and single-class sets still return `None`. `_sorted_binary` was
+removed as dead code. The parity test now asserts exact equality with
+torchmetrics on tie fixtures.
