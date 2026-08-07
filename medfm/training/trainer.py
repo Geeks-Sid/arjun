@@ -6,7 +6,7 @@ import sys
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -176,6 +176,7 @@ class Trainer:
         self.require_all_gradients = require_all_gradients
         self.state = TrainingState()
         self.freeze_schedule = FreezeSchedule.from_config(self.config.freeze_schedule)
+        self.optimizer_bundle: OptimizerBundle | None
         self.scaler = scaler
         if isinstance(optimizer, OptimizerBundle):
             self.optimizer_bundle = optimizer
@@ -358,11 +359,8 @@ class Trainer:
         self.state.stage = tuple(active)
 
     def _loss_for_backward(self, loss_output: Any) -> torch.Tensor:
-        total = (
-            loss_output.total.float()
-            if loss_output.total.dtype in (torch.float16, torch.bfloat16)
-            else loss_output.total
-        )
+        loss_total = cast(torch.Tensor, loss_output.total)
+        total = loss_total.float() if loss_total.dtype in (torch.float16, torch.bfloat16) else loss_total
         count_value = (
             loss_output.diagnostics.get("valid_count") if isinstance(loss_output.diagnostics, Mapping) else None
         )

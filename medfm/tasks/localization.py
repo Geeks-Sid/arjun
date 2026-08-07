@@ -59,12 +59,12 @@ class LocalizationTask(TaskModuleBase):
             self.l1_loss(predicted, target, valid_mask=box_mask)
             if box_mask is not None
             else self.l1_loss(predicted, target)
-        )  # type: ignore[call-arg]
+        )
         iou = (
             self.iou_loss(predicted, target, valid_mask=box_mask)
             if box_mask is not None
             else self.iou_loss(predicted, target)
-        )  # type: ignore[call-arg]
+        )
         total = self.l1_weight * l1 + self.iou_weight * iou
         count = valid_sample_count(batch)
         return LossOutput(

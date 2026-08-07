@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence, Sized
 from dataclasses import dataclass, replace
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch.utils.data import Dataset, Sampler
@@ -40,7 +40,7 @@ class DeterministicDistributedSampler(Sampler[int]):
         self.seed = seed
         self.drop_last = drop_last
         self.epoch = 0
-        size = len(dataset)
+        size = len(cast(Sized, dataset))
         if drop_last:
             self.num_samples = size // num_replicas
         else:
@@ -48,7 +48,7 @@ class DeterministicDistributedSampler(Sampler[int]):
         self.total_size = self.num_samples * num_replicas
 
     def __iter__(self) -> Iterator[int]:
-        indices = list(range(len(self.dataset)))
+        indices = list(range(len(cast(Sized, self.dataset))))
         if self.shuffle:
             generator = torch.Generator()
             generator.manual_seed(self.seed + self.epoch)
@@ -216,7 +216,7 @@ class BackendDataLoader:
         return iter(self.loader)
 
     def __len__(self) -> int:
-        return len(self.loader)  # type: ignore[arg-type]
+        return len(self.loader)
 
     def state_dict(self) -> dict[str, Any]:
         state = getattr(self.loader, "state_dict", None)

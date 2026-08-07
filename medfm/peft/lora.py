@@ -13,7 +13,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -35,6 +35,10 @@ def _validate_adapter_name(name: str) -> str:
             f"adapter_name {name!r} is unsafe; use letters, digits, '_' or '-' and start with a letter"
         )
     return name
+
+
+def _set_module_attribute(module: nn.Module, name: str, value: Any) -> None:
+    setattr(module, name, value)
 
 
 class LoRALinear(nn.Module):
@@ -106,15 +110,18 @@ class LoRALinear(nn.Module):
 
     def _delta_weight(self, name: str) -> torch.Tensor:
         config = self._adapter_configs[name]
-        a = self.lora_A[name].weight
-        b = self.lora_B[name].weight
+        a = cast(nn.Linear, self.lora_A[name]).weight
+        b = cast(nn.Linear, self.lora_B[name]).weight
         scaling = float(config["alpha"]) / (
             float(config["rank"]) ** 0.5 if bool(config.get("use_rslora", False)) else float(config["rank"])
         )
         return (b @ a) * scaling
 
     def _forward_adapter(self, x: torch.Tensor, name: str) -> torch.Tensor:
-        update = self.lora_B[name](self.lora_A[name](self.lora_dropout[name](x)))
+        update = cast(
+            torch.Tensor,
+            cast(nn.Linear, self.lora_B[name])(cast(nn.Linear, self.lora_A[name])(self.lora_dropout[name](x))),
+        )
         config = self._adapter_configs[name]
         scaling = float(config["alpha"]) / (
             float(config["rank"]) ** 0.5 if bool(config.get("use_rslora", False)) else float(config["rank"])
@@ -125,14 +132,14 @@ class LoRALinear(nn.Module):
             # DoRA's direction is the base-plus-update direction.  The
             # magnitude remains a small trainable vector and is initialized to
             # the base row norms, preserving the initial function.
-            direction = self.base_layer(x) + update
+            direction = cast(torch.Tensor, self.base_layer(x)) + update
             norm = direction.norm(dim=-1, keepdim=True).clamp_min(torch.finfo(direction.dtype).eps)
-            magnitude = getattr(self, magnitude_name)
-            return direction / norm * magnitude.mean()
+            magnitude = cast(torch.Tensor, getattr(self, magnitude_name))
+            return cast(torch.Tensor, direction / norm * magnitude.mean())
         return update
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        output = self.base_layer(x)
+        output = cast(torch.Tensor, self.base_layer(x))
         for name in self._active_adapters:
             if name not in self._merged_adapters:
                 output = output + self._forward_adapter(x, name)
@@ -498,10 +505,10 @@ def inject_lora(
     metadata = getattr(model, "_medfm_peft_adapters", None)
     if not isinstance(metadata, dict):
         metadata = {}
-        model._medfm_peft_adapters = metadata  # type: ignore[attr-defined]
+        _set_module_attribute(model, "_medfm_peft_adapters", metadata)
     metadata[config.adapter_name] = config.to_dict()
-    model._medfm_peft_resolution = resolution  # type: ignore[attr-defined]
-    model._medfm_active_adapter = config.adapter_name  # type: ignore[attr-defined]
+    _set_module_attribute(model, "_medfm_peft_resolution", resolution)
+    _set_module_attribute(model, "_medfm_active_adapter", config.adapter_name)
     return InjectionResult(model, resolution, config.adapter_name, tuple(matched), saved)
 
 
@@ -532,8 +539,8 @@ def inject_visual_lora(
         architecture=config.architecture or _visual_architecture(adapter),
         confirm_unknown=confirm_unknown,
     )
-    adapter._medfm_peft_result = result  # type: ignore[attr-defined]
-    adapter._lora_state = config.to_dict()  # type: ignore[attr-defined]
+    _set_module_attribute(adapter, "_medfm_peft_result", result)
+    _set_module_attribute(adapter, "_lora_state", config.to_dict())
     return result
 
 
@@ -553,7 +560,7 @@ def inject_language_lora(
         architecture=config.architecture or "llm",
         confirm_unknown=confirm_unknown,
     )
-    adapter._medfm_peft_result = result  # type: ignore[attr-defined]
+    _set_module_attribute(adapter, "_medfm_peft_result", result)
     return result
 
 
@@ -572,7 +579,7 @@ def set_active_adapter(model: nn.Module, adapter_name: str) -> None:
             found = True
     if not found:
         raise TrainabilityError("model contains no LoRA modules")
-    model._medfm_active_adapter = adapter_name  # type: ignore[attr-defined]
+    _set_module_attribute(model, "_medfm_active_adapter", adapter_name)
     for parameter_name, parameter in model.named_parameters():
         if "lora_A." in parameter_name or "lora_B." in parameter_name or "dora_magnitude_" in parameter_name:
             parameter.requires_grad_(adapter_name in parameter_name)
@@ -674,7 +681,7 @@ def attach_trainable_module(
     roles = getattr(parent, "_medfm_component_roles", None)
     if not isinstance(roles, dict):
         roles = {}
-        parent._medfm_component_roles = roles
+        _set_module_attribute(parent, "_medfm_component_roles", roles)
     roles[name] = role
     return module
 

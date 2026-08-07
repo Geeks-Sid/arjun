@@ -7,7 +7,7 @@ import math
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -259,7 +259,10 @@ def _make_optimizer(
         try:
             import bitsandbytes as bnb  # noqa: PLC0415
 
-            return bnb.optim.AdamW8bit(parameter_groups, betas=config.betas, eps=config.eps)
+            optimizer_cls = getattr(getattr(bnb, "optim", None), "AdamW8bit", None)
+            if not callable(optimizer_cls):
+                raise OptimizerConfigurationError("installed bitsandbytes lacks AdamW8bit")
+            return cast(torch.optim.Optimizer, optimizer_cls(parameter_groups, betas=config.betas, eps=config.eps))
         except (ImportError, AttributeError) as exc:
             raise OptimizerConfigurationError("installed bitsandbytes lacks AdamW8bit") from exc
     if config.sync_free and backend != "xla_tpu":

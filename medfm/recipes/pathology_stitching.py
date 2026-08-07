@@ -14,7 +14,7 @@ import json
 import math
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch.nn import functional as F
@@ -281,10 +281,10 @@ def normalized_to_level0_geometry(
         raise ValueError("normalized geometry must contain x, y, width, height")
     slide_h, slide_w = int(slide_shape[0]), int(slide_shape[1])
     x, y, width, height = (
-        float(values[0]),
-        float(values[1]),
-        float(values[2]),
-        float(values[3]),
+        float(cast(Any, values[0])),
+        float(cast(Any, values[1])),
+        float(cast(Any, values[2])),
+        float(cast(Any, values[3])),
     )
     return (
         int(round(x * slide_w)),
@@ -296,10 +296,17 @@ def normalized_to_level0_geometry(
 
 def map_normalized_coordinates_to_wsi(
     normalized: Mapping[str, Any] | Sequence[float], slide_shape: tuple[int, int]
-) -> dict[str, int]:
+) -> dict[str, int | str]:
     """Return a JSON-safe level-0 geometry from normalized evidence coords."""
     x, y, width, height = normalized_to_level0_geometry(normalized, slide_shape)
-    return {"x": x, "y": y, "width": width, "height": height, "coordinate_system": COORDINATE_SYSTEM}
+    result: dict[str, int | str] = {
+        "x": x,
+        "y": y,
+        "width": width,
+        "height": height,
+        "coordinate_system": COORDINATE_SYSTEM,
+    }
+    return result
 
 
 map_evidence_coordinates = map_normalized_coordinates_to_wsi
@@ -466,7 +473,7 @@ def serialize_evidence_json(payload: Mapping[str, Any]) -> str:
 
 def write_evidence_json(payload: Mapping[str, Any], path: str | Any) -> Any:
     serialized = serialize_evidence_json(payload) + "\n"
-    destination = path if hasattr(path, "write_text") else __import__("pathlib").Path(path)
+    destination: Any = path if hasattr(path, "write_text") else __import__("pathlib").Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(serialized, encoding="utf-8")
     return destination

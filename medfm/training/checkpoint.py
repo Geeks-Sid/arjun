@@ -12,7 +12,7 @@ import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -513,7 +513,7 @@ def _flatten_distributed_model_state(
     components: Mapping[str, nn.Module] | None,
 ) -> Mapping[str, Any]:
     if not components:
-        return state["model"]
+        return cast(Mapping[str, Any], state["model"])
     combined: dict[str, Any] = {f"model.{key}": value for key, value in dict(state["model"]).items()}
     for name in components:
         values = dict(state.get(f"component:{name}", {}))
@@ -549,7 +549,7 @@ def _dcp_call(function: Any, payload: dict[str, Any], *, root: Path, xla: bool, 
 
     import_kwargs: dict[str, Any] = {
         "storage_writer" if saving else "storage_reader": (
-            dcp.FileSystemWriter(str(root)) if saving else dcp.FileSystemReader(str(root))
+            getattr(dcp, "FileSystemWriter" if saving else "FileSystemReader")(str(root))
         ),
     }
     planner = _dcp_planner(xla=xla, saving=saving)

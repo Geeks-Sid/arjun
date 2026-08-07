@@ -107,7 +107,7 @@ class SegmentationTask(TaskModuleBase):
             total = self.loss(values, target, valid_mask=valid_mask)
             components = {"segmentation": total}
         else:
-            total = self.loss(output.logits, target, valid_mask=valid_mask)  # type: ignore[call-arg]
+            total = self.loss(output.logits, target, valid_mask=valid_mask)
             components = {"segmentation": total}
         count = valid_sample_count(batch)
         return LossOutput(

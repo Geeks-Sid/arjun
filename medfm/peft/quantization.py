@@ -8,8 +8,9 @@ BF16 LoRA as QLoRA.
 from __future__ import annotations
 
 import importlib.util
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -29,6 +30,10 @@ from medfm.peft.errors import (
     UnsupportedQuantizationError,
 )
 from medfm.peft.lora import audit_trainable_parameters, is_quantized_parameter
+
+
+def _set_module_attribute(module: nn.Module, name: str, value: Any) -> None:
+    setattr(module, name, value)
 
 
 @dataclass(frozen=True)
@@ -96,7 +101,8 @@ def build_bitsandbytes_config(config: QuantizationConfig) -> Any:
         "bfloat16": torch.bfloat16,
         "float16": torch.float16,
     }[str(config.compute_dtype)]
-    return BitsAndBytesConfig(
+    bitsandbytes_config = cast(Callable[..., Any], BitsAndBytesConfig)
+    return bitsandbytes_config(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_use_double_quant=bool(config.double_quant),
@@ -157,7 +163,8 @@ def prepare_model_for_kbit_training(
         raise BitsAndBytesCapabilityError(
             "PEFT is required for supported k-bit training preparation; install medfm[hf]"
         ) from exc
-    prepared = prepare(model)
+    prepare_fn = cast(Callable[[nn.Module], nn.Module], prepare)
+    prepared = prepare_fn(model)
     mark_quantized_parameters(prepared)
     disable_training_kv_cache(prepared)
     for parameter in prepared.parameters():
@@ -166,8 +173,8 @@ def prepare_model_for_kbit_training(
             # modules_to_save, but the base model remains frozen until explicit
             # modules-to-save handling.
             parameter.requires_grad_(False)
-    prepared._medfm_quantization_config = config.to_dict()  # type: ignore[attr-defined]
-    prepared._medfm_quantization_mode = plan.mode  # type: ignore[attr-defined]
+    _set_module_attribute(prepared, "_medfm_quantization_config", config.to_dict())
+    _set_module_attribute(prepared, "_medfm_quantization_mode", plan.mode)
     return prepared
 
 
@@ -186,19 +193,20 @@ def prepare_bf16_lora_model(
     model.to(dtype=torch.bfloat16)
     model.requires_grad_(False)
     disable_training_kv_cache(model)
-    model._medfm_quantization_mode = "bf16_lora"  # type: ignore[attr-defined]
-    model._medfm_compute_dtype = "bfloat16"  # type: ignore[attr-defined]
+    _set_module_attribute(model, "_medfm_quantization_mode", "bf16_lora")
+    _set_module_attribute(model, "_medfm_compute_dtype", "bfloat16")
     return model
 
 
 def verify_compute_dtype(model: nn.Module, expected: str | torch.dtype) -> None:
-    expected_dtype = expected
     if isinstance(expected, str):
-        expected_dtype = {
+        expected_dtype: torch.dtype | None = {
             "bfloat16": torch.bfloat16,
             "float16": torch.float16,
             "float32": torch.float32,
         }.get(expected.lower().replace("torch.", ""))
+    else:
+        expected_dtype = expected
     if not isinstance(expected_dtype, torch.dtype):
         raise QuantizationCapabilityError(f"unsupported expected compute dtype {expected!r}")
     observed = next(model.parameters(), None)

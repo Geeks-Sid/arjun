@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -109,7 +109,7 @@ class ConvBlock(nn.Module):
         )
 
     def forward(self, value: torch.Tensor) -> torch.Tensor:
-        return self.block(value)
+        return cast(torch.Tensor, self.block(value))
 
 
 def _interpolate(value: torch.Tensor, size: Sequence[int], dimension: int) -> torch.Tensor:

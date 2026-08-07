@@ -15,7 +15,7 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -189,7 +189,7 @@ class AcceleratorBackend(ABC):
         ``cpu tensor vs cuda weight`` mismatches).
         """
         try:
-            from accelerate import Accelerator  # noqa: PLC0415
+            from accelerate import Accelerator  # type: ignore[import-untyped]  # noqa: PLC0415
 
             mixed_precision = {"fp32": "no", "bf16": "bf16", "fp16": "fp16"}[self.precision]
             self._accelerator = Accelerator(
@@ -236,7 +236,7 @@ class AcceleratorBackend(ABC):
 
     def prepare_model(self, model: nn.Module) -> nn.Module:
         if self._accelerator is not None:
-            return self._accelerator.prepare(model)
+            return cast(nn.Module, self._accelerator.prepare(model))
         return model.to(self.device)
 
     def prepare(self, *objects: Any) -> tuple[Any, ...]:
@@ -323,7 +323,7 @@ class AcceleratorBackend(ABC):
         if self._accelerator is not None:
             self._accelerator.backward(loss)
         else:
-            loss.backward()
+            loss.backward()  # type: ignore[no-untyped-call]  # torch.Tensor.backward lacks typed stubs
 
     def unscale_optimizer(self, optimizer: torch.optim.Optimizer) -> None:  # noqa: B027 (default no-op hook)
         """Unscale FP16 gradients before clipping; BF16/XLA are no-op.
@@ -396,10 +396,14 @@ class AcceleratorBackend(ABC):
         return resolve_attention(self.config.attention, backend=self.name)
 
     def enable_activation_checkpointing(self, model: nn.Module) -> None:
-        if hasattr(model, "gradient_checkpointing_enable"):
-            model.gradient_checkpointing_enable()  # type: ignore[attr-defined]
-        elif hasattr(model, "enable_gradient_checkpointing"):
-            model.enable_gradient_checkpointing()  # type: ignore[attr-defined]
+        missing = object()
+        checkpoint_enable = getattr(model, "gradient_checkpointing_enable", missing)
+        if checkpoint_enable is not missing:
+            cast(Any, checkpoint_enable)()
+        else:
+            checkpoint_enable = getattr(model, "enable_gradient_checkpointing", missing)
+            if checkpoint_enable is not missing:
+                cast(Any, checkpoint_enable)()
 
     def retie_weights(self, model: nn.Module) -> None:
         tie_weights = getattr(model, "tie_weights", None)
@@ -495,9 +499,9 @@ class CudaBackend(AcceleratorBackend):
         index = selected.local_rank if selected.local_rank < torch.cuda.device_count() else 0
         self.device = torch.device("cuda", index)
         torch.cuda.set_device(self.device)
-        self._scaler: torch.amp.GradScaler | None = None
+        self._scaler: torch.cuda.amp.GradScaler | None = None
         if self.precision == "fp16":
-            self._scaler = torch.amp.GradScaler("cuda", enabled=True)
+            self._scaler = torch.cuda.amp.GradScaler(enabled=True)
         self.validate()
 
     @property
@@ -557,7 +561,7 @@ class CudaBackend(AcceleratorBackend):
         elif self._scaler is not None:
             self._scaler.scale(loss).backward()
         else:
-            loss.backward()
+            loss.backward()  # type: ignore[no-untyped-call]  # torch.Tensor.backward lacks typed stubs
 
     def optimizer_step(self, optimizer: torch.optim.Optimizer) -> None:
         if self._accelerator is not None:
@@ -690,7 +694,7 @@ class XlaTpuBackend(AcceleratorBackend):
 
     def _xla_reduce_sum(self, value: torch.Tensor) -> torch.Tensor:
         try:
-            return self._xm.all_reduce(self._xm.REDUCE_SUM, value)
+            return cast(torch.Tensor, self._xm.all_reduce(self._xm.REDUCE_SUM, value))
         except Exception:
             return value
 
@@ -699,7 +703,7 @@ class XlaTpuBackend(AcceleratorBackend):
             reduce_max = getattr(self._xm, "REDUCE_MAX", None)
             if reduce_max is None:
                 return value
-            return self._xm.all_reduce(reduce_max, value)
+            return cast(torch.Tensor, self._xm.all_reduce(reduce_max, value))
         except Exception:
             return value
 

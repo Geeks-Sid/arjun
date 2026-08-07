@@ -169,7 +169,7 @@ def wrap_model(
                     module=module,
                     recurse=recurse,
                     nonwrapped_numel=nonwrapped_numel,
-                    transformer_layer_cls=transformer_block_classes,
+                    transformer_layer_cls=set(transformer_block_classes),
                 )
 
             auto_wrap_policy = policy

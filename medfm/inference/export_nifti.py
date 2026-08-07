@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import torch
@@ -41,13 +41,13 @@ def restore_mask_to_original(
         result = torch.zeros(
             (*restored.shape[: -len(target_shape)], *target_shape), dtype=restored.dtype, device=restored.device
         )
-        slices_src: list[slice] = []
-        slices_dst: list[slice] = []
-        for source, target in zip(spatial, target_shape, strict=True):
-            size = min(source, target)
-            slices_src.append(slice(0, size))
-            slices_dst.append(slice(0, size))
-        result[(..., *slices_dst)] = restored[(..., *slices_src)]
+        slices_src: tuple[slice, ...] = tuple(
+            slice(0, min(source, target)) for source, target in zip(spatial, target_shape, strict=True)
+        )
+        slices_dst = slices_src
+        index_src: tuple[slice, ...] = (slice(None),) * (restored.ndim - len(target_shape)) + slices_src
+        index_dst: tuple[slice, ...] = (slice(None),) * (restored.ndim - len(target_shape)) + slices_dst
+        result[index_dst] = restored[index_src]
         restored = result
     return restored
 
@@ -74,6 +74,7 @@ def export_nifti(
 
     try:
         import nibabel as nib
+        from nibabel.nifti1 import Nifti1Image
     except ImportError as exc:
         raise OptionalDependencyError(details={"extra": "medical", "format": "NIfTI"}) from exc
     restored = restore_mask_to_original(mask, metadata, history=history)
@@ -92,9 +93,9 @@ def export_nifti(
     array_np = array.numpy().astype(dtype, copy=False)
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
-    image = nib.Nifti1Image(array_np, _affine_for(metadata))
+    image = nib.Nifti1Image(array_np, _affine_for(metadata))  # type: ignore[no-untyped-call]
     nib.save(image, str(output))
-    reopened = nib.load(str(output))
+    reopened = cast(Nifti1Image, nib.load(str(output)))
     if tuple(int(value) for value in reopened.shape) != tuple(metadata.original_shape):
         raise RequestValidationError(details={"field": "output", "reason": "reopened NIfTI shape differs from source"})
     if not np.allclose(np.asarray(reopened.affine), _affine_for(metadata), atol=1e-5):
@@ -105,9 +106,10 @@ def export_nifti(
 def reopen_and_validate_nifti(path: str | Path, metadata: SpatialMetadata) -> None:
     try:
         import nibabel as nib
+        from nibabel.nifti1 import Nifti1Image
     except ImportError as exc:
         raise OptionalDependencyError(details={"extra": "medical", "format": "NIfTI"}) from exc
-    image = nib.load(str(path))
+    image = cast(Nifti1Image, nib.load(str(path)))
     expected_shape = tuple(metadata.original_shape)
     if tuple(int(value) for value in image.shape[-len(expected_shape) :]) != expected_shape:
         raise RequestValidationError(details={"field": "path", "reason": "NIfTI shape does not match source geometry"})

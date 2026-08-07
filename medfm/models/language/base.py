@@ -340,9 +340,8 @@ class GenericHFCausalLMAdapter(nn.Module):
     def _get_input_embeddings(model: nn.Module) -> nn.Embedding:
         getter = getattr(model, "get_input_embeddings", None)
         embeddings = getter() if callable(getter) else getattr(model, "embed_tokens", None)
-        if not isinstance(embeddings, nn.Embedding) and not (
-            hasattr(embeddings, "weight") and embeddings.weight.ndim == 2
-        ):
+        weight = getattr(embeddings, "weight", None)
+        if not isinstance(embeddings, nn.Embedding) and not (isinstance(weight, torch.Tensor) and weight.ndim == 2):
             raise ArchitectureMismatchError("causal model must expose get_input_embeddings() with a rank-2 weight")
         return cast(nn.Embedding, embeddings)
 

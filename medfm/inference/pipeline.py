@@ -74,9 +74,10 @@ class BucketPolicy:
             raise RequestValidationError(details={"field": self.name, "reason": "input is outside exact bucket"})
         pad_shape = (*tensor.shape[:dim_offset], *bucket)
         padded = torch.zeros(pad_shape, dtype=tensor.dtype, device=tensor.device)
-        slices = tuple(slice(0, value) for value in shape)
-        padded[(..., *slices)] = tensor
         mask = torch.zeros(bucket, device=tensor.device, dtype=torch.bool)
+        slices: tuple[slice, ...] = tuple(slice(0, value) for value in shape)
+        index: tuple[slice, ...] = (slice(None),) * (tensor.ndim - len(shape)) + slices
+        padded[index] = tensor
         mask[slices] = True
         return padded, mask, bucket
 
@@ -318,7 +319,7 @@ class SegmentationPipeline(InferencePipeline):
             raise RequestValidationError(details={"field": "spatial_metadata"})
         metas = list(metadata) if metadata is not None else None
         if tensor.ndim == 5 and self.window_shape is not None:
-            logits = sliding_window_inference(
+            logits: torch.Tensor | None = sliding_window_inference(
                 tensor,
                 lambda crop, _metadata=None: self._mapping_output(self._call(crop, modality.value)).get("logits"),
                 window_shape=self.window_shape,
@@ -382,7 +383,13 @@ class RetrievalPipeline(InferencePipeline):
         if request.payload.get("image_embeddings") is not None or request.payload.get("text_embeddings") is not None:
             raw = {"image_embeddings": image, "text_embeddings": text}
         else:
-            raw = self._call(image if isinstance(image, torch.Tensor) else text, request.modality)
+            if isinstance(image, torch.Tensor):
+                model_input = image
+            elif isinstance(text, torch.Tensor):
+                model_input = text
+            else:
+                raise RequestValidationError(details={"field": "embeddings", "reason": "image or text input required"})
+            raw = self._call(model_input, request.modality)
         outputs = self._mapping_output(raw, primary="image_embeddings")
         image_embedding = outputs.get("image_embeddings", image)
         text_embedding = outputs.get("text_embeddings", text)

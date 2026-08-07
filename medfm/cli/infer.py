@@ -6,7 +6,7 @@ import argparse
 import json
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict, cast
 
 import torch
 import yaml
@@ -111,13 +111,21 @@ def _model_for(task: InferenceTask, config: Mapping[str, Any]) -> nn.Module:
     raise InferenceError(details={"field": "model.type", "reason": "unapproved built-in model for task"})
 
 
+class _PipelineKwargs(TypedDict):
+    runtime: InferenceRuntime
+    limits: InferenceLimits
+    model_id: str
+    model_revision: str
+    preprocess_hash: str
+
+
 def build_pipeline(config: Mapping[str, Any], *, task_override: str | None = None) -> tuple[Any, InferenceTask, str]:
     task = InferenceTask.parse(task_override or str(config.get("task", "classification")))
     modality = str(config.get("modality", "XRAY_2D"))
     limits = InferenceLimits.from_dict(config.get("limits"))
     runtime = InferenceRuntime(str(config.get("backend", "cpu")), max_memory_bytes=limits.max_memory_bytes)
     model = _model_for(task, config)
-    common = {
+    common: _PipelineKwargs = {
         "runtime": runtime,
         "limits": limits,
         "model_id": str(config.get("model_id", f"smoke-{task.value}")),
@@ -128,13 +136,8 @@ def build_pipeline(config: Mapping[str, Any], *, task_override: str | None = Non
         return ClassificationPipeline(model, **common), task, modality
     if task is InferenceTask.SEGMENTATION:
         window = config.get("window_shape")
-        return (
-            SegmentationPipeline(
-                model, window_shape=tuple(int(value) for value in window) if window else None, **common
-            ),
-            task,
-            modality,
-        )
+        window_shape = cast(tuple[int, int, int], tuple(int(value) for value in window)) if window else None
+        return SegmentationPipeline(model, window_shape=window_shape, **common), task, modality
     if task is InferenceTask.RETRIEVAL:
         return RetrievalPipeline(model, **common), task, modality
     if task is InferenceTask.WSI:

@@ -973,7 +973,7 @@ def generation_metrics(
         valid_values.append(float(valid))
         if schema is not None and valid:
             try:
-                from jsonschema import Draft202012Validator  # type: ignore[import]
+                from jsonschema import Draft202012Validator
 
                 valid_values[-1] = float(Draft202012Validator(schema).is_valid(parsed_predicted))
             except ImportError:

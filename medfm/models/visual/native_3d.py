@@ -18,7 +18,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -82,7 +82,9 @@ class Native3DPreprocess:
 
     @property
     def patch_grid(self) -> tuple[int, int, int]:
-        return tuple(s // p for s, p in zip(self.spatial_shape, self.patch_size, strict=True))
+        depth, height, width = self.spatial_shape
+        patch_depth, patch_height, patch_width = self.patch_size
+        return (depth // patch_depth, height // patch_height, width // patch_width)
 
     @property
     def num_patches(self) -> int:
@@ -118,12 +120,14 @@ class Native3DPreprocess:
     def from_dict(cls, data: dict[str, Any]) -> Native3DPreprocess:
         raw_range = data.get("value_range")
         return cls(
-            spatial_shape=tuple(int(v) for v in data["spatial_shape"]),
+            spatial_shape=cast(tuple[int, int, int], tuple(int(v) for v in data["spatial_shape"])),
             channels=int(data["channels"]),
-            patch_size=tuple(int(v) for v in data["patch_size"]),
+            patch_size=cast(tuple[int, int, int], tuple(int(v) for v in data["patch_size"])),
             mean=tuple(float(v) for v in data["mean"]),
             std=tuple(float(v) for v in data["std"]),
-            value_range=tuple(float(v) for v in raw_range) if raw_range is not None else None,
+            value_range=(
+                cast(tuple[float, float], tuple(float(v) for v in raw_range)) if raw_range is not None else None
+            ),
             resize_policy=str(data.get("resize_policy", "crop_or_pad")),
             orientation=str(data.get("orientation", "RAS")),
             sequence_order=tuple(str(v) for v in data.get("sequence_order", ())),
@@ -336,7 +340,7 @@ class GenericMONAI3DAdapter(nn.Module):
         return volume
 
     def _forward_backbone(self, volume: torch.Tensor) -> _BackboneResult3D:
-        return self.backbone(volume)
+        return cast(_BackboneResult3D, self.backbone(volume))
 
     def _coordinates(self, batch: MedicalBatch, tokens: torch.Tensor) -> torch.Tensor:
         if not batch.spatial_metadata or any(m is None for m in batch.spatial_metadata):
@@ -394,7 +398,8 @@ class GenericMONAI3DAdapter(nn.Module):
         request.check_supported(self._capabilities)
         self._capabilities.require_modality(batch.modality)
         volume = self._extract_volume(batch)
-        self._validate_spatial_metadata(batch, tuple(volume.shape[-3:]))
+        volume_spatial = (int(volume.shape[-3]), int(volume.shape[-2]), int(volume.shape[-1]))
+        self._validate_spatial_metadata(batch, volume_spatial)
         result = self._forward_backbone(volume)
         spatial = result.tokens[:, 1:, :]
         b, n, _ = spatial.shape
@@ -439,7 +444,7 @@ class GenericMONAI3DAdapter(nn.Module):
             raise ShapeContractError("forward() smoke path requires eval mode")
         if pixel_values.ndim != 5:
             raise ShapeContractError("native 3D forward expects [B,C,D,H,W]")
-        metadata = [
+        metadata: list[SpatialMetadata | None] = [
             SpatialMetadata(
                 original_shape=tuple(int(v) for v in pixel_values.shape[-3:]),
                 current_shape=tuple(int(v) for v in pixel_values.shape[-3:]),
@@ -490,7 +495,7 @@ class GenericMONAI3DAdapter(nn.Module):
     def head_logits(self, pooled_embedding: torch.Tensor) -> torch.Tensor:
         if self._head is None:
             raise UnsupportedCapabilityError(f"{self._model_id} has no attached head")
-        return self._head(pooled_embedding)
+        return cast(torch.Tensor, self._head(pooled_embedding))
 
     def lora_target_patterns(self) -> tuple[str, ...]:
         return self._lora_targets
@@ -592,7 +597,7 @@ class GenericMONAI3DAdapter(nn.Module):
             tensors.update({f"head.{k}": v.detach().cpu().contiguous() for k, v in self._head.state_dict().items()})
         head_architecture: dict[str, int | str] | None = None
         if self._head is not None and hasattr(self._head, "linear"):
-            linear = self._head.linear
+            linear = cast(nn.Linear, self._head.linear)
             head_architecture = {
                 "type": "linear",
                 "in_features": int(linear.in_features),
@@ -699,7 +704,7 @@ class GenericMONAI3DAdapter(nn.Module):
             modality=self._capabilities.modalities[0],
             sample_ids=["crop"],
             pixel_values=pixels,
-            spatial_metadata=[metadata],
+            spatial_metadata=cast(list[SpatialMetadata | None], [metadata]),
         )
         return self.encode(batch, output_spec=output_spec)
 
@@ -723,12 +728,13 @@ class GenericMONAI3DAdapter(nn.Module):
                 f"full-volume shape {tuple(volume.shape[-3:])} does not match fixed adapter shape "
                 f"{self._preprocess.spatial_shape}; use sliding_window_inference"
             )
+        metas: list[SpatialMetadata | None]
         if isinstance(metadata, SpatialMetadata):
             metas = [metadata] * int(volume.shape[0])
         elif metadata is None:
             raise ShapeContractError("full-volume forward requires one SpatialMetadata per sample")
         else:
-            metas = list(metadata)
+            metas = cast(list[SpatialMetadata | None], list(metadata))
         if len(metas) != int(volume.shape[0]):
             raise ShapeContractError("full-volume metadata length must match batch size")
         batch = MedicalBatch(

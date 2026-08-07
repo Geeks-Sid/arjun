@@ -82,7 +82,7 @@ class TransformerMaskDecoder(nn.Module):
 class PromptableMaskDecoder(TransformerMaskDecoder):
     """Transformer mask decoder with prompt embeddings as mask queries."""
 
-    def forward(
+    def forward(  # type: ignore[override]  # keep prompt-facing parameter names
         self,
         visual_features: torch.Tensor | Sequence[torch.Tensor],
         prompts: torch.Tensor,

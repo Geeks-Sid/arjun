@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -36,7 +36,7 @@ class RetrievalTask(TaskModuleBase):
         self.filter_same_patient = bool(filter_same_patient)
 
     def forward(self, image: Any, text: torch.Tensor, **kwargs: Any) -> RetrievalOutput:
-        return self.head(image, text, **kwargs)
+        return cast(RetrievalOutput, self.head(image, text, **kwargs))
 
     def compute_loss(self, model_output: Any, batch: MedicalBatch) -> LossOutput:
         self.check_supported(batch.modality)
@@ -65,7 +65,7 @@ class RetrievalTask(TaskModuleBase):
             patient_ids = (
                 batch_ids if isinstance(batch_ids, Sequence) and not isinstance(batch_ids, str | bytes) else None
             )
-        total = self.loss(result, patient_ids=patient_ids if self.filter_same_patient else None)  # type: ignore[call-arg]
+        total = cast(torch.Tensor, self.loss(result, patient_ids=patient_ids if self.filter_same_patient else None))
         count = valid_sample_count(batch, default=int(result.logits_per_image.shape[0]))
         return LossOutput(
             total=total,

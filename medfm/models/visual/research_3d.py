@@ -72,7 +72,14 @@ class MerlinAdapter(GenericMONAI3DAdapter):
         self.integration_limitations = ("image-text/report pathway not checkpoint-compatible in local adapter",)
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "merlin-tiny", construction_seed: int = 0) -> MerlinAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "merlin-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> MerlinAdapter:
         return cls(**_tiny_kwargs(model_id, construction_seed))
 
 
@@ -87,7 +94,14 @@ class M3DCLIPAdapter(GenericMONAI3DAdapter):
         self.supported_research_tasks = ("retrieval", "contrastive_alignment")
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "m3d-clip-tiny", construction_seed: int = 0) -> M3DCLIPAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "m3d-clip-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> M3DCLIPAdapter:
         return cls(**_tiny_kwargs(model_id, construction_seed))
 
 
@@ -103,7 +117,14 @@ class M3DLaMedAdapter(M3DCLIPAdapter):
         }
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "m3d-lamed-tiny", construction_seed: int = 0) -> M3DLaMedAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "m3d-lamed-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> M3DLaMedAdapter:
         return cls(**_tiny_kwargs(model_id, construction_seed))
 
     def generate(self, *_: Any, **__: Any) -> Any:

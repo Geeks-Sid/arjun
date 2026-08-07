@@ -10,7 +10,7 @@ mixed into the generic token contract.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -97,7 +97,14 @@ class NVSegmentCTMRAdapter(GenericMONAI3DAdapter):
         self._segmentation_decoder: nn.Module | None = None
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "nv-segment-ctmr-tiny", construction_seed: int = 0) -> NVSegmentCTMRAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "nv-segment-ctmr-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> NVSegmentCTMRAdapter:
         base = GenericMONAI3DAdapter.build_tiny(
             model_id=model_id, modality=Modality.CT_3D, construction_seed=construction_seed
         )
@@ -126,7 +133,7 @@ class NVSegmentCTMRAdapter(GenericMONAI3DAdapter):
             raise UnsupportedCapabilityError("NV-Segment-CTMR decoder is not attached")
         output = self.encode(batch, output_spec=OutputSpec(feature_maps=True, spatial_tokens=True))
         assert output.feature_maps is not None
-        return self._segmentation_decoder(output.feature_maps[-1])
+        return cast(torch.Tensor, self._segmentation_decoder(output.feature_maps[-1]))
 
 
 @dataclass
@@ -169,7 +176,14 @@ class MedSAM2Adapter(GenericMONAI3DAdapter):
         self._prompt_records: list[dict[str, Any]] = []
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "medsam2-tiny", construction_seed: int = 0) -> MedSAM2Adapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "medsam2-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> MedSAM2Adapter:
         base = GenericMONAI3DAdapter.build_tiny(
             model_id=model_id, modality=Modality.CT_3D, construction_seed=construction_seed
         )

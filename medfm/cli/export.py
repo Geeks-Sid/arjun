@@ -71,9 +71,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         for group, tensors in _tensor_groups(config, args.config.parent).items():
             builder.add_tensor_group(group, tensors)
-        bundle = builder.build()
+        built_bundle = builder.build()
         print(
-            json.dumps({"bundle": str(bundle.root), "bundle_id": bundle.bundle_id, "checksums": len(bundle.checksums)})
+            json.dumps(
+                {
+                    "bundle": str(built_bundle.root),
+                    "bundle_id": built_bundle.bundle_id,
+                    "checksums": len(built_bundle.checksums),
+                }
+            )
         )
         return 0
     except Exception as exc:

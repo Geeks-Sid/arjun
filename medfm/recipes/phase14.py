@@ -19,7 +19,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import torch
 from scipy import ndimage
@@ -46,6 +46,7 @@ from medfm.models.bridges import (
     LinearVisionLanguageBridge,
     PerceiverResamplerBridge,
     ThreeDCoordinateEncoder,
+    VisionLanguageBridge,
 )
 from medfm.models.decoders import LanguageConditionedMaskDecoder, UNetDecoder3D
 from medfm.models.heads.classification import AttentionPoolingClassificationHead, LinearClassificationHead
@@ -127,7 +128,7 @@ class VolumeInputPolicy:
 def _shape_tuple(value: Any, name: str) -> tuple[int, int, int]:
     if not isinstance(value, list | tuple) or len(value) != 3:
         raise RecipeConfigurationError(f"{name} must be a three-element shape")
-    result = tuple(int(item) for item in value)
+    result = (int(value[0]), int(value[1]), int(value[2]))
     if any(item <= 0 for item in result):
         raise RecipeConfigurationError(f"{name} must contain positive dimensions")
     return result
@@ -408,7 +409,9 @@ def _options(config: RunConfig) -> _Phase14Options:
     stage = {"1": "A", "2": "B", "3": "C", "4": "D"}.get(stage, stage)
     mode = str(raw.get("mode", "offline_tiny" if raw.get("offline_tiny", True) else "production")).lower()
     offline = bool(raw.get("offline_tiny", mode in {"offline_tiny", "smoke", "tiny", "contract"}))
-    default_shape = (16, 16, 16) if offline else tuple(int(v) for v in raw.get("crop_shape", (96, 96, 96)))
+    default_shape: tuple[int, int, int] = (
+        (16, 16, 16) if offline else _shape_tuple(raw.get("crop_shape", (96, 96, 96)), "crop_shape")
+    )
     fingerprint = raw.get("dataset_fingerprint")
     if fingerprint is not None and not isinstance(fingerprint, Mapping):
         raise RecipeConfigurationError("recipe.dataset_fingerprint must be a mapping")
@@ -589,7 +592,7 @@ def _text_payload(values: torch.Tensor, length: int) -> tuple[torch.Tensor, torc
 
 def _classification_data(config: RunConfig, options: _Phase14Options) -> list[MedicalBatch]:
     adapter = _build_native_adapter(options)
-    shape = adapter.preprocess.spatial_shape
+    shape = _shape_tuple(adapter.preprocess.spatial_shape, "adapter spatial_shape")
     channels = adapter.preprocess.channels
     batch_size = int(config.batch.microbatch_per_device)
     generator = torch.Generator().manual_seed(config.seed)
@@ -600,7 +603,7 @@ def _classification_data(config: RunConfig, options: _Phase14Options) -> list[Me
         values = values + (labels.float() * 2 - 1).reshape(-1, 1, 1, 1, 1)
     task_name = str(config.task.get("type", config.task.get("name", "BINARY_CLASSIFICATION"))).upper()
     target: torch.Tensor = labels.float().unsqueeze(1) if "BINARY" in task_name else labels
-    metadata = [_spatial_metadata(shape) for _ in range(batch_size)]
+    metadata: list[SpatialMetadata | None] = [_spatial_metadata(shape) for _ in range(batch_size)]
     return [
         MedicalBatch(
             modality=options.modality,
@@ -622,14 +625,18 @@ def _classification_data(config: RunConfig, options: _Phase14Options) -> list[Me
 
 def _segmentation_data(config: RunConfig, options: _Phase14Options) -> list[MedicalBatch]:
     adapter = _build_native_adapter(options)
-    patch_shape = adapter.preprocess.spatial_shape
+    patch_shape = _shape_tuple(adapter.preprocess.spatial_shape, "adapter spatial_shape")
     channels = adapter.preprocess.channels
     batch_size = int(config.batch.microbatch_per_device)
-    source_shape = tuple(int(value + max(4, value // 2)) for value in patch_shape)
+    source_shape: tuple[int, int, int] = (
+        patch_shape[0] + max(4, patch_shape[0] // 2),
+        patch_shape[1] + max(4, patch_shape[1] // 2),
+        patch_shape[2] + max(4, patch_shape[2] // 2),
+    )
     generator = torch.Generator().manual_seed(config.seed)
     images: list[torch.Tensor] = []
     masks: list[torch.Tensor] = []
-    metas: list[SpatialMetadata] = []
+    metas: list[SpatialMetadata | None] = []
     origins: list[tuple[int, int, int]] = []
     positive_flags: list[bool] = []
     for index in range(batch_size):
@@ -678,7 +685,7 @@ def _native_cache(
     adapter: GenericMONAI3DAdapter,
     values: torch.Tensor,
     modality: Modality,
-    metas: list[SpatialMetadata],
+    metas: list[SpatialMetadata | None],
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     adapter.eval()
     with torch.no_grad():
@@ -695,12 +702,12 @@ def _native_cache(
 
 def _native_vlm_data(config: RunConfig, options: _Phase14Options) -> list[MedicalBatch]:
     adapter = _build_native_adapter(options)
-    shape = adapter.preprocess.spatial_shape
+    shape = _shape_tuple(adapter.preprocess.spatial_shape, "adapter spatial_shape")
     channels = adapter.preprocess.channels
     batch_size = int(config.batch.microbatch_per_device)
     generator = torch.Generator().manual_seed(config.seed)
     values = torch.randn((batch_size, channels, *shape), generator=generator)
-    metas = [_spatial_metadata(shape) for _ in range(batch_size)]
+    metas: list[SpatialMetadata | None] = [_spatial_metadata(shape) for _ in range(batch_size)]
     input_ids, attention, labels = _text_payload(values, options.text_token_count)
     visual_metadata = tuple(
         {
@@ -821,7 +828,7 @@ def _query_tokens(text: str, length: int, *, vocab_size: int = 64) -> torch.Tens
 
 def _language_segmentation_data(config: RunConfig, options: _Phase14Options) -> list[MedicalBatch]:
     adapter = _build_native_adapter(options)
-    shape = adapter.preprocess.spatial_shape
+    shape = _shape_tuple(adapter.preprocess.spatial_shape, "adapter spatial_shape")
     channels = adapter.preprocess.channels
     batch_size = int(config.batch.microbatch_per_device)
     generator = torch.Generator().manual_seed(config.seed)
@@ -852,7 +859,7 @@ def _language_segmentation_data(config: RunConfig, options: _Phase14Options) -> 
         segmentation[row, 0, z0:z1, y0:y1, x0:x1] = 1.0
     input_ids = torch.stack([_query_tokens(text, options.text_token_count) for text in query_text])
     attention = input_ids.ne(2) | (torch.arange(options.text_token_count).unsqueeze(0) == 0)
-    metas = [_spatial_metadata(shape) for _ in range(batch_size)]
+    metas: list[SpatialMetadata | None] = [_spatial_metadata(shape) for _ in range(batch_size)]
     return [
         MedicalBatch(
             modality=options.modality,
@@ -874,7 +881,7 @@ def _language_segmentation_data(config: RunConfig, options: _Phase14Options) -> 
     ]
 
 
-def _language_adapter(options: _Phase14Options, *, native: bool) -> nn.Module:
+def _language_adapter(options: _Phase14Options, *, native: bool) -> GenericHFCausalLMAdapter:
     max_text = max(128, options.text_token_count)
     if native:
         return MedGemmaAdapter.build_tiny(
@@ -901,20 +908,27 @@ def _make_bridge(
     output_tokens: int,
     modality: Modality,
     bridge_type: str,
-) -> nn.Module:
-    kwargs = {
-        "source_dim": source_dim,
-        "target_dim": target_dim,
-        "output_tokens": output_tokens,
-        "max_input_tokens": input_tokens,
-        "source_modality": modality,
-        "coordinate_system": CoordinateSystem.MILLIMETERS
-        if modality.is_volumetric
-        else CoordinateSystem.NORMALIZED_IMAGE,
-    }
+) -> VisionLanguageBridge:
+    coordinate_system = CoordinateSystem.MILLIMETERS if modality.is_volumetric else CoordinateSystem.NORMALIZED_IMAGE
     if bridge_type == "linear":
-        return LinearVisionLanguageBridge(**kwargs)
-    return PerceiverResamplerBridge(query_count=output_tokens, heads=4, **kwargs)
+        return LinearVisionLanguageBridge(
+            source_dim=source_dim,
+            target_dim=target_dim,
+            output_tokens=output_tokens,
+            max_input_tokens=input_tokens,
+            source_modality=modality,
+            coordinate_system=coordinate_system,
+        )
+    return PerceiverResamplerBridge(
+        query_count=output_tokens,
+        heads=4,
+        source_dim=source_dim,
+        target_dim=target_dim,
+        output_tokens=output_tokens,
+        max_input_tokens=input_tokens,
+        source_modality=modality,
+        coordinate_system=coordinate_system,
+    )
 
 
 class _Native3DClassificationModel(nn.Module):
@@ -968,7 +982,13 @@ class Phase14LanguageOutput:
 
 
 class _Phase14LanguageModelBase(nn.Module):
-    def __init__(self, language: nn.Module, *, text_tokens: int, family: str) -> None:
+    def __init__(
+        self,
+        language: GenericHFCausalLMAdapter,
+        *,
+        text_tokens: int,
+        family: str,
+    ) -> None:
         super().__init__()
         self.language = language
         self.text_tokens = int(text_tokens)
@@ -1037,7 +1057,7 @@ class _Native3DVisualLanguageModel(_Phase14LanguageModelBase):
     def __init__(
         self,
         vision: GenericMONAI3DAdapter,
-        language: nn.Module,
+        language: GenericHFCausalLMAdapter,
         bridge: CoordinateAwareBridge,
         *,
         visual_token_count: int,
@@ -1049,7 +1069,7 @@ class _Native3DVisualLanguageModel(_Phase14LanguageModelBase):
         self.bridge = bridge
         self.visual_token_count = int(visual_token_count)
         self.stage4_features = bool(stage4_features)
-        self.region_projection = nn.Linear(vision._hidden_size, vision._hidden_size) if stage4_features else None  # type: ignore[attr-defined]
+        self.region_projection = nn.Linear(vision._hidden_size, vision._hidden_size) if stage4_features else None
 
     def _source(self, batch: MedicalBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         cached = batch.task_targets.get("cached_visual_tokens")
@@ -1145,8 +1165,8 @@ class _SliceSequenceVisualLanguageModel(_Phase14LanguageModelBase):
     def __init__(
         self,
         vision: TinyVisualAdapter,
-        language: nn.Module,
-        bridge: nn.Module,
+        language: GenericHFCausalLMAdapter,
+        bridge: VisionLanguageBridge,
         *,
         visual_token_count: int,
         slice_count: int,
@@ -1250,7 +1270,7 @@ class _LanguageConditioned3DModel(nn.Module):
     def _text(self, batch: MedicalBatch) -> torch.Tensor:
         if batch.input_ids is None:
             raise ShapeContractError("language-conditioned 3D segmentation requires query input_ids")
-        return self.query_projection(self.text_encoder(batch.input_ids))
+        return cast(torch.Tensor, self.query_projection(self.text_encoder(batch.input_ids)))
 
     def forward(self, batch: MedicalBatch) -> dict[str, Any]:
         return {
@@ -1278,6 +1298,9 @@ class _LanguageConditioned3DModel(nn.Module):
             raise ShapeContractError("query_input_ids and query_attention_mask must be [B,Q,L]")
         if int(query_input_ids.shape[1]) != self.query_count:
             raise ShapeContractError(f"query bucket is Q={self.query_count}")
+        if batch.pixel_values is None:
+            raise ShapeContractError("language-conditioned 3D segmentation requires pixel_values")
+        pixel_values = batch.pixel_values
         visual = self._visual_features(batch)
         outputs: list[torch.Tensor] = []
         for query in range(self.query_count):
@@ -1289,7 +1312,7 @@ class _LanguageConditioned3DModel(nn.Module):
                     text,
                     text_mask=query_attention_mask[:, query],
                     query_mask=valid,
-                    output_size=tuple(int(value) for value in batch.pixel_values.shape[-3:]),
+                    output_size=tuple(int(value) for value in pixel_values.shape[-3:]),
                 ).logits
             )
         return torch.stack(outputs, dim=1)
@@ -1365,7 +1388,7 @@ def _inject_phase14_lora(model: nn.Module, config: RunConfig, options: _Phase14O
 
 def _phase14_model(config: RunConfig, options: _Phase14Options) -> nn.Module:
     if options.family == "slice_sequence_vlm":
-        vision = _build_slice_adapter(options)
+        slice_vision = _build_slice_adapter(options)
         language = _language_adapter(options, native=False)
         bridge = _make_bridge(
             source_dim=options.hidden_size,
@@ -1376,24 +1399,27 @@ def _phase14_model(config: RunConfig, options: _Phase14Options) -> nn.Module:
             bridge_type=options.bridge_type,
         )
         return _SliceSequenceVisualLanguageModel(
-            vision,
+            slice_vision,
             language,
             bridge,
             visual_token_count=options.visual_token_count,
             slice_count=options.slice_count,
             text_tokens=options.text_token_count,
         )
-    vision = _build_native_adapter(options)
+    native_vision = _build_native_adapter(options)
     if options.family == "classification":
-        return _Native3DClassificationModel(vision)
+        return _Native3DClassificationModel(native_vision)
     if options.family == "segmentation":
-        return _Native3DSegmentationModel(vision)
+        return _Native3DSegmentationModel(native_vision)
     if options.family == "language_conditioned_segmentation":
         return _LanguageConditioned3DModel(
-            vision, hidden_size=options.hidden_size, text_dim=options.hidden_size, query_count=options.query_count
+            native_vision,
+            hidden_size=options.hidden_size,
+            text_dim=options.hidden_size,
+            query_count=options.query_count,
         )
     language = _language_adapter(options, native=True)
-    source_tokens = vision.preprocess.num_patches
+    source_tokens = native_vision.preprocess.num_patches
     base_bridge = _make_bridge(
         source_dim=options.hidden_size,
         target_dim=options.hidden_size,
@@ -1402,18 +1428,20 @@ def _phase14_model(config: RunConfig, options: _Phase14Options) -> nn.Module:
         modality=options.modality,
         bridge_type=options.bridge_type,
     )
-    bridge = CoordinateAwareBridge(base_bridge, ThreeDCoordinateEncoder(output_dim=options.hidden_size // 2 or 1))
+    coordinate_bridge = CoordinateAwareBridge(
+        base_bridge, ThreeDCoordinateEncoder(output_dim=options.hidden_size // 2 or 1)
+    )
     return _Native3DVisualLanguageModel(
-        vision,
+        native_vision,
         language,
-        bridge,
+        coordinate_bridge,
         visual_token_count=options.visual_token_count,
         text_tokens=options.text_token_count,
         stage4_features=options.stage4_features,
     )
 
 
-def _phase14_task(config: RunConfig, options: _Phase14Options, model: nn.Module) -> nn.Module:
+def _phase14_task(config: RunConfig, options: _Phase14Options, model: nn.Module) -> TaskModuleBase:
     if options.family == "classification":
         task_name = str(config.task.get("type", config.task.get("name", "BINARY_CLASSIFICATION"))).upper()
         binary = "BINARY" in task_name
@@ -1443,14 +1471,14 @@ def _phase14_task(config: RunConfig, options: _Phase14Options, model: nn.Module)
         )
         return BinarySegmentationTask(decoder, supported_modalities=NATIVE_3D_MODALITIES)
     if options.family == "language_conditioned_segmentation":
-        decoder = LanguageConditionedMaskDecoder(
+        language_decoder = LanguageConditionedMaskDecoder(
             visual_dim=options.hidden_size,
             text_dim=options.hidden_size,
             hidden_dim=int(config.recipe.get("decoder_hidden", options.hidden_size)),
             out_channels=1,
         )
         return _Phase14LanguageSegmentationTask(
-            decoder,
+            language_decoder,
             supported_modalities=NATIVE_3D_MODALITIES,
         )
     task_name = str(config.task.get("type", config.task.get("name", "VISUAL_QUESTION_ANSWERING"))).upper()
@@ -1584,7 +1612,7 @@ def phase14_builders() -> ComponentBuilders:
     def peft(model_value: nn.Module, *_: Any) -> nn.Module:
         return model_value
 
-    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> nn.Module:
+    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> TaskModuleBase:
         return _phase14_task(config, _options(config), model_value)
 
     def optimizer(
@@ -1606,7 +1634,7 @@ def phase14_builders() -> ComponentBuilders:
         backend: AcceleratorBackend,
         model_value: nn.Module,
         optimizer_value: OptimizerBundle,
-        task_value: nn.Module,
+        task_value: TaskModuleBase,
         dataset_value: list[MedicalBatch],
     ) -> Trainer:
         return Trainer(
@@ -1705,7 +1733,10 @@ def sliding_window_predict(
         indexing="ij",
     )
     sigma = 0.5
-    weights_window = torch.exp(-sum(axis.square() for axis in grid) / (2.0 * sigma * sigma)).clamp_min(1e-3)
+    squared_coordinates = tuple(axis.square() for axis in grid)
+    weights_window = torch.exp(
+        -sum(squared_coordinates, torch.zeros_like(squared_coordinates[0])) / (2.0 * sigma * sigma)
+    ).clamp_min(1e-3)
     output: torch.Tensor | None = None
     weights = torch.zeros((b, 1, depth, height, width), device=volume.device, dtype=torch.float32)
     metas = list(metadata) if metadata is not None else [None] * b
@@ -1894,6 +1925,7 @@ def language_conditioned_segmentation_metrics(
 
     if logits.shape != target.shape or logits.ndim not in (5, 6):
         raise ShapeContractError("language-conditioned masks must be [B,1,D,H,W] or [B,Q,1,D,H,W]")
+    query_shape: tuple[int, ...]
     if logits.ndim == 5:
         query_shape = (logits.shape[0],)
         spatial_correct = (torch.sigmoid(logits) >= 0.5) == (target > 0.5)

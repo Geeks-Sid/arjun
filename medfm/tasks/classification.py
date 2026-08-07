@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -38,7 +38,7 @@ class ClassificationTask(TaskModuleBase):
         self.loss = loss or CrossEntropyClassificationLoss()
 
     def forward(self, encoder_output: EncoderOutput | torch.Tensor) -> torch.Tensor:
-        return self.head(encoder_output)
+        return cast(torch.Tensor, self.head(encoder_output))
 
     def compute_loss(self, model_output: Any, batch: MedicalBatch) -> LossOutput:
         self.check_supported(batch.modality)
@@ -51,11 +51,11 @@ class ClassificationTask(TaskModuleBase):
         if isinstance(self.loss, BinaryCrossEntropyWithLogitsLoss | AsymmetricMultilabelLoss):
             if targets.shape != logits.shape:
                 raise ShapeContractError("multi-label classification targets must match logits shape")
-            value = self.loss(logits, targets, valid_mask=valid_sample_mask(batch))
+            value = cast(torch.Tensor, self.loss(logits, targets, valid_mask=valid_sample_mask(batch)))
         elif isinstance(self.loss, OrdinalCumulativeLinkLoss):
-            value = self.loss(logits, targets, valid_mask=valid_sample_mask(batch))
+            value = cast(torch.Tensor, self.loss(logits, targets, valid_mask=valid_sample_mask(batch)))
         else:
-            value = self.loss(logits, targets, valid_mask=valid_sample_mask(batch))  # type: ignore[call-arg]
+            value = cast(torch.Tensor, self.loss(logits, targets, valid_mask=valid_sample_mask(batch)))
         value = value.float() if value.dtype in (torch.float16, torch.bfloat16) else value
         count = valid_sample_count(batch)
         count_tensor = detached_count_tensor(count, logits)
@@ -70,7 +70,7 @@ class ClassificationTask(TaskModuleBase):
     @staticmethod
     def _extract_logits(value: Any) -> torch.Tensor:
         if isinstance(value, dict) and isinstance(value.get("logits"), torch.Tensor):
-            return value["logits"]
+            return cast(torch.Tensor, value["logits"])
         if hasattr(value, "logits") and isinstance(value.logits, torch.Tensor):
             return value.logits
         raise ShapeContractError("classification model output must be EncoderOutput, logits tensor, or .logits")

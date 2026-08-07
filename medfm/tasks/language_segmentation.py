@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -104,12 +104,15 @@ class LanguageConditionedSegmentationTask(TaskModuleBase):
             text = model_output.get("text_embeddings")
             if visual is None or not isinstance(text, torch.Tensor):
                 raise ShapeContractError("language segmentation mapping needs visual_features and text_embeddings")
-            return self.decoder(
-                visual,
-                text,
-                text_mask=model_output.get("text_mask"),
-                query_mask=model_output.get("query_mask"),
-                output_size=model_output.get("output_size"),
+            return cast(
+                SegmentationOutput,
+                self.decoder(
+                    visual,
+                    text,
+                    text_mask=model_output.get("text_mask"),
+                    query_mask=model_output.get("query_mask"),
+                    output_size=model_output.get("output_size"),
+                ),
             )
         raise ShapeContractError("language segmentation forward expects a mapping or SegmentationOutput")
 
@@ -130,7 +133,7 @@ class LanguageConditionedSegmentationTask(TaskModuleBase):
         voxel_mask = batch.task_targets.get("voxel_mask")
         if voxel_mask is not None and not isinstance(voxel_mask, torch.Tensor):
             raise ShapeContractError("voxel_mask must be a tensor")
-        total = self.loss(output.logits, target, valid_mask=voxel_mask)  # type: ignore[call-arg]
+        total = self.loss(output.logits, target, valid_mask=voxel_mask)
         count = valid_sample_count(batch)
         return LossOutput(
             total=total,

@@ -63,8 +63,8 @@ class ImageTextProjectionHead(nn.Module):
         self.projection_dim = int(projection_dim)
         self.max_logit_scale = float(max_logit_scale)
         if hidden_dim is None:
-            self.image_projection = nn.Linear(image_dim, projection_dim)
-            self.text_projection = nn.Linear(text_dim, projection_dim)
+            self.image_projection: nn.Module = nn.Linear(image_dim, projection_dim)
+            self.text_projection: nn.Module = nn.Linear(text_dim, projection_dim)
         else:
             if hidden_dim <= 0:
                 raise ShapeContractError("projection hidden_dim must be positive")

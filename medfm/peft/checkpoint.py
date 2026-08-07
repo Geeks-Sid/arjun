@@ -8,7 +8,7 @@ import struct
 from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -287,7 +287,7 @@ def load_checkpoint_manifest(directory: str | Path) -> dict[str, Any]:
         raise AdapterCheckpointError("adapter manifest configuration must be an object")
     if config_hash(dict(configuration)) != manifest["config_hash"]:
         raise AdapterCheckpointError("adapter manifest config_hash does not match configuration")
-    return manifest
+    return cast(dict[str, Any], manifest)
 
 
 def _validate_base(

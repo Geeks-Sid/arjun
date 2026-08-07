@@ -13,7 +13,7 @@ import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Self, cast
 
 import yaml
 
@@ -420,7 +420,7 @@ class OptimizerConfig:
             groups=_mapping(groups, "optimizer.groups"),
             lr=float(raw.get("lr", 1.0e-4)),
             weight_decay=float(raw.get("weight_decay", 0.0)),
-            betas=tuple(float(v) for v in raw.get("betas", (0.9, 0.999))),
+            betas=cast(tuple[float, float], tuple(float(v) for v in raw.get("betas", (0.9, 0.999)))),
             eps=float(raw.get("eps", 1.0e-8)),
             warmup_steps=int(raw.get("warmup_steps", 0)),
             total_steps=(int(raw["total_steps"]) if raw.get("total_steps") is not None else None),

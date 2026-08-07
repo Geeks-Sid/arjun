@@ -69,7 +69,9 @@ class TriadAdapter(GenericMONAI3DAdapter):
         )
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "triad-tiny", construction_seed: int = 0) -> TriadAdapter:
+    def build_tiny(  # type: ignore[override]  # specialized convenience builder fixes MRI settings
+        cls, *, model_id: str = "triad-tiny", construction_seed: int = 0
+    ) -> TriadAdapter:
         base = GenericMONAI3DAdapter.build_tiny(
             model_id=model_id, modality=Modality.MRI_3D, channels=2, construction_seed=construction_seed
         )

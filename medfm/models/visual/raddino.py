@@ -112,7 +112,7 @@ class RADDINOAdapter(GenericHFVisionAdapter):
         )
 
     @classmethod
-    def from_pretrained_dir(
+    def from_pretrained_dir(  # type: ignore[override]  # specialized convenience loader fixes the DINOv2 family
         cls,
         directory: str | Path,
         *,

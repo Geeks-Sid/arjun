@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -128,7 +128,7 @@ class HOptimusTileEncoder(PathologyTileEncoder):
         result = self.adapter.extract(batch, output_spec=OutputSpec(pooled=True))
         if result.pooled_embedding is None:
             raise RuntimeError("H-Optimus adapter did not return pooled tile embeddings")
-        return result.pooled_embedding.detach()
+        return cast(torch.Tensor, result.pooled_embedding.detach())
 
 
 class GigaPathTileEncoder(TinyPathologyTileEncoder):

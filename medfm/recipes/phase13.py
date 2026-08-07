@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -114,7 +114,7 @@ class _TinyVisionAttention(nn.Module):
         query = self.q_proj(value)
         key = self.k_proj(value)
         val = self.v_proj(value)
-        return self.out_proj(torch.tanh((query + key + val) / 3.0))
+        return cast(torch.Tensor, self.out_proj(torch.tanh((query + key + val) / 3.0)))
 
 
 class _TinyVisionMLP(nn.Module):
@@ -124,7 +124,7 @@ class _TinyVisionMLP(nn.Module):
         self.fc2 = nn.Linear(hidden_size * 2, hidden_size)
 
     def forward(self, value: torch.Tensor) -> torch.Tensor:
-        return self.fc2(F.gelu(self.fc1(value)))
+        return cast(torch.Tensor, self.fc2(F.gelu(self.fc1(value))))
 
 
 class _TinyVisionBackbone(nn.Module):
@@ -327,7 +327,13 @@ class _RecipeLanguageOutput:
 
 
 class _VisualLanguageModelBase(nn.Module):
-    def __init__(self, vision: TinyVisualAdapter, language: nn.Module, *, visual_token_count: int) -> None:
+    def __init__(
+        self,
+        vision: TinyVisualAdapter,
+        language: GenericHFCausalLMAdapter,
+        *,
+        visual_token_count: int,
+    ) -> None:
         super().__init__()
         self.vision = vision
         self.language = language
@@ -445,7 +451,7 @@ class _ExternalVLMModel(_VisualLanguageModelBase):
     def __init__(
         self,
         vision: TinyVisualAdapter,
-        language: nn.Module,
+        language: GenericHFCausalLMAdapter,
         bridge: nn.Module,
         *,
         visual_token_count: int,
@@ -730,35 +736,43 @@ def _phase13_model(config: RunConfig, options: _RecipeOptions) -> nn.Module:
             return _PromptableSegmentationModel(vision)
         return _SegmentationModel(vision)
     if options.family == "native_vlm":
-        language = MedGemmaAdapter.build_tiny(
+        native_language = MedGemmaAdapter.build_tiny(
             model_id="medgemma-1.5-4b-offline-tiny",
             hidden_size=options.hidden_size,
             vocab_size=64,
             construction_seed=options.construction_seed,
             visual_token_buckets=(32, 64, 128),
         )
-        return _NativeVLMModel(vision, language, visual_token_count=options.visual_token_count)
+        return _NativeVLMModel(vision, native_language, visual_token_count=options.visual_token_count)
     if options.bridge_type not in {"linear", "perceiver", "perceiver_resampler"}:
         raise RecipeConfigurationError("external bridge must be linear or perceiver")
-    language = GenericHFCausalLMAdapter.build_tiny(
+    language: GenericHFCausalLMAdapter = GenericHFCausalLMAdapter.build_tiny(
         model_id="generic-causal-offline-tiny",
         hidden_size=options.hidden_size,
         vocab_size=64,
         construction_seed=options.construction_seed,
         visual_token_buckets=(32, 64, 128),
     )
-    bridge_kwargs = {
-        "source_dim": options.hidden_size,
-        "target_dim": options.hidden_size,
-        "output_tokens": options.visual_token_count,
-        "max_input_tokens": options.visual_token_count,
-        "source_modality": Modality.XRAY_2D,
-        "coordinate_system": CoordinateSystem.NORMALIZED_IMAGE,
-    }
     if options.bridge_type == "linear":
-        bridge: nn.Module = LinearVisionLanguageBridge(**bridge_kwargs)
+        bridge: nn.Module = LinearVisionLanguageBridge(
+            source_dim=options.hidden_size,
+            target_dim=options.hidden_size,
+            output_tokens=options.visual_token_count,
+            max_input_tokens=options.visual_token_count,
+            source_modality=Modality.XRAY_2D,
+            coordinate_system=CoordinateSystem.NORMALIZED_IMAGE,
+        )
     else:
-        bridge = PerceiverResamplerBridge(query_count=options.visual_token_count, heads=4, **bridge_kwargs)
+        bridge = PerceiverResamplerBridge(
+            query_count=options.visual_token_count,
+            heads=4,
+            source_dim=options.hidden_size,
+            target_dim=options.hidden_size,
+            output_tokens=options.visual_token_count,
+            max_input_tokens=options.visual_token_count,
+            source_modality=Modality.XRAY_2D,
+            coordinate_system=CoordinateSystem.NORMALIZED_IMAGE,
+        )
     return _ExternalVLMModel(
         vision,
         language,
@@ -768,7 +782,7 @@ def _phase13_model(config: RunConfig, options: _RecipeOptions) -> nn.Module:
     )
 
 
-def _phase13_task(config: RunConfig, options: _RecipeOptions, model: nn.Module) -> nn.Module:
+def _phase13_task(config: RunConfig, options: _RecipeOptions, model: nn.Module) -> TaskModuleBase:
     if options.family == "classification":
         vision = model.vision
         hidden = int(getattr(vision, "hidden_size", options.hidden_size))
@@ -848,7 +862,7 @@ def phase13_builders() -> ComponentBuilders:
     def peft(model_value: nn.Module, config: RunConfig, *_: Any) -> nn.Module:
         return model_value
 
-    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> nn.Module:
+    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> TaskModuleBase:
         return _phase13_task(config, _options(config), model_value)
 
     def optimizer(
@@ -866,7 +880,7 @@ def phase13_builders() -> ComponentBuilders:
         backend: AcceleratorBackend,
         model_value: nn.Module,
         optimizer_value: OptimizerBundle,
-        task_value: nn.Module,
+        task_value: TaskModuleBase,
         dataset_value: list[MedicalBatch],
     ) -> Trainer:
         return Trainer(

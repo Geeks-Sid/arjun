@@ -16,8 +16,15 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any, Protocol, cast
 
 from medfm.tools import governance as gov
+
+
+class _PathologyVLMModel(Protocol):
+    def forward_mode(self, batch: Any, *, mode: str = "image") -> Any: ...
+
+    def evidence_json(self, *, slide_id: str, evidence_index: int = 0) -> dict[str, Any]: ...
 
 
 def _check_doctor_json() -> None:
@@ -229,7 +236,7 @@ def _check_phase_07_native_3d() -> None:
 
     adapter = GenericMONAI3DAdapter.build_tiny()
     adapter.eval()
-    metadata = [
+    metadata: list[SpatialMetadata | None] = [
         SpatialMetadata(
             original_shape=(16, 16, 16),
             current_shape=(16, 16, 16),
@@ -284,7 +291,14 @@ def _check_phase_08_pathology() -> None:
             self.quality = {"blur": float(index + 1)}
 
     class Reader:
-        def read_tiles(self, locations, *, level, size, on_corrupt="skip"):
+        def read_tiles(
+            self,
+            locations: list[tuple[int, int]],
+            *,
+            level: int,
+            size: tuple[int, int],
+            on_corrupt: str = "skip",
+        ) -> Any:
             tiles = torch.stack([torch.full((3, size[1], size[0]), float(x + y)) for x, y in locations])
             return SimpleNamespace(tiles=tiles, coords=torch.tensor(locations), errors=())
 
@@ -508,6 +522,7 @@ def _check_phase_15_pathology() -> None:
     from medfm.recipes.phase15 import build_phase15_recipe, phase15_builders
     from medfm.training.config import RunConfig
     from medfm.training.pipeline import TrainingPipeline
+    from medfm.training.trainer import Trainer
 
     recipe_root = gov.REPO_ROOT / "configs" / "recipes" / "pathology"
     names = (
@@ -529,12 +544,14 @@ def _check_phase_15_pathology() -> None:
             if not built.train_data or built.metadata.shard_unit != "slide":
                 raise RuntimeError(f"{name} did not expose bounded pathology metadata")
             run = TrainingPipeline(config, builders=phase15_builders()).build()
-            result = run.trainer.train()
+            trainer = cast(Trainer, run.trainer)
+            result = trainer.train()
             if not result.success or result.optimizer_steps != 1:
                 raise RuntimeError(f"{name} did not complete one optimizer step")
             if name.startswith("wsi_vlm"):
-                output = built.model.forward_mode(built.train_data[0], mode="image")
-                payload = built.model.evidence_json(slide_id="smoke-slide")
+                vlm_model = cast(_PathologyVLMModel, built.model)
+                output = vlm_model.forward_mode(built.train_data[0], mode="image")
+                payload = vlm_model.evidence_json(slide_id="smoke-slide")
                 if not output.evidence_tiles or validate_evidence_json(payload, slide_shape=(64, 64)):
                     raise RuntimeError("WSI VLM evidence JSON failed validation")
 

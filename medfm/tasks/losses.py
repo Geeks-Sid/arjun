@@ -8,12 +8,54 @@ inputs; numerically sensitive accumulations are promoted to FP32.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TypedDict, Unpack, cast
 
 import torch
 import torch.nn.functional as F
 from torch import nn
 
 from medfm.core.errors import ShapeContractError
+
+
+class BinaryCrossEntropyKwargs(TypedDict, total=False):
+    class_weight: torch.Tensor | None
+    reduction: str
+
+
+class CrossEntropyKwargs(TypedDict, total=False):
+    class_weight: torch.Tensor | None
+    label_smoothing: float
+    reduction: str
+    ignore_index: int
+
+
+class FocalKwargs(TypedDict, total=False):
+    gamma: float
+    alpha: float | torch.Tensor | None
+    multiclass: bool
+    class_weight: torch.Tensor | None
+    reduction: str
+
+
+class AsymmetricMultilabelKwargs(TypedDict, total=False):
+    gamma_neg: float
+    gamma_pos: float
+    clip: float
+    eps: float
+    reduction: str
+
+
+class OrdinalKwargs(TypedDict, total=False):
+    reduction: str
+
+
+class DiceCEKwargs(TypedDict, total=False):
+    dice_weight: float
+    ce_weight: float
+    class_weight: torch.Tensor | None
+    label_smoothing: float
+    include_background: bool
+    class_volume_weight: torch.Tensor | None
 
 
 def _validate_reduction(reduction: str) -> None:
@@ -67,7 +109,7 @@ class BinaryCrossEntropyWithLogitsLoss(nn.Module):
         if class_weight is not None:
             self.register_buffer("class_weight", class_weight.detach().clone(), persistent=False)
         else:
-            self.class_weight = None  # type: ignore[assignment]
+            self.class_weight = None
 
     def forward(
         self,
@@ -112,7 +154,7 @@ class CrossEntropyClassificationLoss(nn.Module):
         if class_weight is not None:
             self.register_buffer("class_weight", class_weight.detach().clone(), persistent=False)
         else:
-            self.class_weight = None  # type: ignore[assignment]
+            self.class_weight = None
 
     def forward(
         self,
@@ -166,20 +208,20 @@ class FocalLoss(nn.Module):
         super().__init__()
         if gamma < 0:
             raise ShapeContractError("focal gamma must be non-negative")
-        _validate_reduction(reduction)
         self.gamma = float(gamma)
         self.multiclass = bool(multiclass)
         self.reduction = reduction
+        self.alpha: torch.Tensor | None
         if isinstance(alpha, torch.Tensor):
             self.register_buffer("alpha", alpha.detach().clone(), persistent=False)
             self.alpha_value: float | None = None
         else:
-            self.alpha = None  # type: ignore[assignment]
+            self.alpha = None
             self.alpha_value = float(alpha) if alpha is not None else None
         if class_weight is not None:
             self.register_buffer("class_weight", class_weight.detach().clone(), persistent=False)
         else:
-            self.class_weight = None  # type: ignore[assignment]
+            self.class_weight = None
 
     def forward(
         self,
@@ -220,8 +262,9 @@ class FocalLoss(nn.Module):
 class LabelSmoothingCrossEntropy(CrossEntropyClassificationLoss):
     """Named label-smoothing CE variant for configuration and logs."""
 
-    def __init__(self, smoothing: float = 0.1, **kwargs: object) -> None:
-        super().__init__(label_smoothing=smoothing, **kwargs)
+    def __init__(self, smoothing: float = 0.1, **kwargs: Unpack[CrossEntropyKwargs]) -> None:
+        kwargs["label_smoothing"] = smoothing
+        super().__init__(**kwargs)
 
 
 class AsymmetricMultilabelLoss(nn.Module):
@@ -456,11 +499,11 @@ class DiceCELoss(nn.Module):
         if class_weight is not None:
             self.register_buffer("class_weight", class_weight.detach().clone(), persistent=False)
         else:
-            self.class_weight = None  # type: ignore[assignment]
+            self.class_weight = None
         if class_volume_weight is not None:
             self.register_buffer("class_volume_weight", class_volume_weight.detach().clone(), persistent=False)
         else:
-            self.class_volume_weight = None  # type: ignore[assignment]
+            self.class_volume_weight = None
 
     def forward(
         self, logits: torch.Tensor, target: torch.Tensor, *, valid_mask: torch.Tensor | None = None
@@ -520,9 +563,9 @@ class FocalSegmentationLoss(nn.Module):
         focal = FocalLoss(gamma=self.gamma, alpha=self.alpha, multiclass=multiclass)
         if multiclass:
             labels = target.argmax(dim=1) if target.ndim == logits.ndim else target
-            return focal(logits, labels, valid_mask=valid_mask)
+            return cast(torch.Tensor, focal(logits, labels, valid_mask=valid_mask))
         target_for_bce = target if target.ndim == logits.ndim else target.unsqueeze(1)
-        return focal(logits, target_for_bce, valid_mask=valid_mask)
+        return cast(torch.Tensor, focal(logits, target_for_bce, valid_mask=valid_mask))
 
 
 class TverskyLoss(nn.Module):
@@ -641,50 +684,76 @@ class DeepSupervisionLoss(nn.Module):
 
 
 def binary_cross_entropy_with_logits(
-    logits: torch.Tensor, targets: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[BinaryCrossEntropyKwargs],
 ) -> torch.Tensor:
-    return BinaryCrossEntropyWithLogitsLoss(**kwargs)(logits, targets, valid_mask=valid_mask)
+    return cast(torch.Tensor, BinaryCrossEntropyWithLogitsLoss(**kwargs)(logits, targets, valid_mask=valid_mask))
 
 
 def cross_entropy(
-    logits: torch.Tensor, targets: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[CrossEntropyKwargs],
 ) -> torch.Tensor:
-    return CrossEntropyClassificationLoss(**kwargs)(logits, targets, valid_mask=valid_mask)
+    return cast(torch.Tensor, CrossEntropyClassificationLoss(**kwargs)(logits, targets, valid_mask=valid_mask))
 
 
 def focal_loss(
-    logits: torch.Tensor, targets: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[FocalKwargs],
 ) -> torch.Tensor:
-    return FocalLoss(**kwargs)(logits, targets, valid_mask=valid_mask)
+    return cast(torch.Tensor, FocalLoss(**kwargs)(logits, targets, valid_mask=valid_mask))
 
 
 def asymmetric_multilabel_loss(
-    logits: torch.Tensor, targets: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[AsymmetricMultilabelKwargs],
 ) -> torch.Tensor:
-    return AsymmetricMultilabelLoss(**kwargs)(logits, targets, valid_mask=valid_mask)
+    return cast(torch.Tensor, AsymmetricMultilabelLoss(**kwargs)(logits, targets, valid_mask=valid_mask))
 
 
 def ordinal_loss(
-    logits: torch.Tensor, targets: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[OrdinalKwargs],
 ) -> torch.Tensor:
-    return OrdinalCumulativeLinkLoss(**kwargs)(logits, targets, valid_mask=valid_mask)
+    return cast(torch.Tensor, OrdinalCumulativeLinkLoss(**kwargs)(logits, targets, valid_mask=valid_mask))
 
 
 def dice_ce_loss(
-    logits: torch.Tensor, target: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    target: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[DiceCEKwargs],
 ) -> torch.Tensor:
-    return DiceCELoss(**kwargs)(logits, target, valid_mask=valid_mask)
+    return cast(torch.Tensor, DiceCELoss(**kwargs)(logits, target, valid_mask=valid_mask))
 
 
 def dice_bce_loss(
-    logits: torch.Tensor, target: torch.Tensor, *, valid_mask: torch.Tensor | None = None, **kwargs: object
+    logits: torch.Tensor,
+    target: torch.Tensor,
+    *,
+    valid_mask: torch.Tensor | None = None,
+    **kwargs: Unpack[DiceCEKwargs],
 ) -> torch.Tensor:
-    return DiceBCELoss(**kwargs)(logits, target, valid_mask=valid_mask)
+    return cast(torch.Tensor, DiceBCELoss(**kwargs)(logits, target, valid_mask=valid_mask))
 
 
 __all__ = [
-    "BinaryCrossEntropyWithLogitsLoss",
-    "CrossEntropyClassificationLoss",
     "BCEWithLogitsLoss",
     "CrossEntropyLoss",
     "FocalLoss",

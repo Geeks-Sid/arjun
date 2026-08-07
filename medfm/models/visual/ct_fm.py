@@ -86,7 +86,14 @@ class CTFMAdapter(GenericMONAI3DAdapter):
         )
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "ct-fm-tiny", construction_seed: int = 0) -> CTFMAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "ct-fm-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> CTFMAdapter:
         base = GenericMONAI3DAdapter.build_tiny(
             model_id=model_id, modality=Modality.CT_3D, construction_seed=construction_seed
         )
@@ -122,7 +129,14 @@ class FlexiCT3DAdapter(CTFMAdapter):
         super().__init__(model_id=model_id, revision=revision, **kwargs)
 
     @classmethod
-    def build_tiny(cls, *, model_id: str = "flexict-3d-tiny", construction_seed: int = 0) -> FlexiCT3DAdapter:
+    def build_tiny(
+        cls,
+        *,
+        model_id: str = "flexict-3d-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
+        construction_seed: int = 0,
+    ) -> FlexiCT3DAdapter:
         base = GenericMONAI3DAdapter.build_tiny(
             model_id=model_id, modality=Modality.CT_3D, construction_seed=construction_seed
         )
@@ -151,6 +165,8 @@ class FlexiCTVLMAdapter(FlexiCT3DAdapter):
         cls,
         *,
         model_id: str = "flexict-3d-vlm-tiny",
+        modality: Modality = Modality.CT_3D,
+        channels: int = 1,
         construction_seed: int = 0,
     ) -> FlexiCTVLMAdapter:
         base = GenericMONAI3DAdapter.build_tiny(

@@ -5,10 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-import yaml  # type: ignore[import]
+import yaml
 
 from medfm.core.serialization import config_hash
 from medfm.evaluation.artifacts import recompute_metrics, save_prediction_artifact
@@ -48,7 +49,7 @@ def _records_from_config(config: dict[str, Any], *, config_path: Path) -> Predic
     rows = raw.get("predictions")
     if rows is None:
         labels = list(raw.get("labels", ()))
-        scores = list(raw.get("scores", raw.get("predicted", ())))
+        scores = list(cast(Iterable[Any], raw.get("scores", raw.get("predicted", ()))))
         if len(labels) != len(scores):
             raise ValueError("labels and scores must have the same length")
         patient_ids = list(raw.get("patient_ids", ()))

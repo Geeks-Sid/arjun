@@ -6,10 +6,10 @@ import hashlib
 import json
 import os
 import tempfile
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import torch
 
@@ -325,7 +325,7 @@ class EmbeddingStore:
     def metadata(self, slide_id: str) -> dict[str, Any]:
         if not self.is_complete(slide_id):
             raise RuntimeError(f"embedding store for slide {slide_id!r} is incomplete or corrupt")
-        return json.loads(self._metadata_path(slide_id).read_text(encoding="utf-8"))
+        return cast(dict[str, Any], json.loads(self._metadata_path(slide_id).read_text(encoding="utf-8")))
 
     def _read(self, slide_id: str, indices: Sequence[int] | None = None) -> StoredEmbeddings:
         if not self.is_complete(slide_id):
@@ -487,7 +487,11 @@ def extract_slide_embeddings(
         if not healthy:
             continue
         with torch.inference_mode():
-            output = encoder.encode_tiles(tiles) if hasattr(encoder, "encode_tiles") else encoder(tiles)  # type: ignore[operator]
+            output = (
+                encoder.encode_tiles(tiles)
+                if hasattr(encoder, "encode_tiles")
+                else cast(Callable[[torch.Tensor], torch.Tensor], encoder)(tiles)
+            )
         if output.ndim != 2 or output.shape[0] != len(healthy):
             raise ValueError(f"tile encoder must return [N,D] aligned with healthy tiles; got {tuple(output.shape)}")
         store.write_chunk(

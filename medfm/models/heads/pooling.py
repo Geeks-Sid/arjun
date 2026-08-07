@@ -7,7 +7,7 @@ silently substituted for missing spatial tokens.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, TypedDict, cast
 
 import torch
 from torch import nn
@@ -181,6 +181,25 @@ TopKPool = TopKPooling
 MILPool = MILAttentionPooling
 
 
+class _AttentionPoolingKwargs(TypedDict, total=False):
+    hidden_dim: int | None
+
+
+class _GeneralizedMeanPoolingKwargs(TypedDict, total=False):
+    p: float
+    eps: float
+    learnable: bool
+
+
+class _TopKPoolingKwargs(TypedDict, total=False):
+    k: int
+    score: Literal["norm", "mean"]
+
+
+class _MILAttentionPoolingKwargs(TypedDict, total=False):
+    hidden_dim: int | None
+
+
 def build_pooling(name: str, *, input_dim: int | None = None, **kwargs: object) -> nn.Module:
     """Build a pooling operator from a stable config name."""
 
@@ -192,13 +211,13 @@ def build_pooling(name: str, *, input_dim: int | None = None, **kwargs: object) 
     if normalized in {"attention", "attn"}:
         if input_dim is None:
             raise ShapeContractError("attention pooling requires input_dim")
-        return AttentionPooling(input_dim=input_dim, **kwargs)
+        return AttentionPooling(input_dim=input_dim, **cast(_AttentionPoolingKwargs, kwargs))
     if normalized in {"gem", "generalized_mean", "generalised_mean"}:
-        return GeneralizedMeanPooling(**kwargs)
+        return GeneralizedMeanPooling(**cast(_GeneralizedMeanPoolingKwargs, kwargs))
     if normalized in {"topk", "top_k"}:
-        return TopKPooling(**kwargs)
+        return TopKPooling(**cast(_TopKPoolingKwargs, kwargs))
     if normalized in {"mil", "mil_attention", "gated_mil"}:
         if input_dim is None:
             raise ShapeContractError("MIL pooling requires input_dim")
-        return MILAttentionPooling(input_dim=input_dim, **kwargs)
+        return MILAttentionPooling(input_dim=input_dim, **cast(_MILAttentionPoolingKwargs, kwargs))
     raise ShapeContractError(f"unknown pooling operator {name!r}")

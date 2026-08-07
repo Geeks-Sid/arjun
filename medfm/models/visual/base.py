@@ -35,7 +35,7 @@ import re
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import torch
 from torch import nn
@@ -177,8 +177,8 @@ class AdapterPreprocess:
             image_size=image_size,
             channels=int(data["channels"]),
             patch_size=int(data["patch_size"]),
-            mean=tuple(float(v) for v in data["mean"]),  # type: ignore[misc]
-            std=tuple(float(v) for v in data["std"]),  # type: ignore[misc]
+            mean=tuple(float(v) for v in data["mean"]),
+            std=tuple(float(v) for v in data["std"]),
             value_range=value_range,
             resize_policy=str(data["resize_policy"]),
             color_space=str(data["color_space"]),
@@ -221,7 +221,7 @@ class LinearHead(nn.Module):
         self.linear = nn.Linear(in_features, out_features)
 
     def forward(self, pooled: torch.Tensor) -> torch.Tensor:
-        return self.linear(pooled)
+        return cast(torch.Tensor, self.linear(pooled))
 
     def architecture_dict(self) -> dict[str, int | str]:
         return {
@@ -529,7 +529,7 @@ class BaseVisualAdapter2D(nn.Module):
     def head_logits(self, pooled_embedding: torch.Tensor) -> torch.Tensor:
         if self._head is None:
             raise UnsupportedCapabilityError(f"{self._model_id} has no attached head; call attach_head first")
-        return self._head(pooled_embedding)
+        return cast(torch.Tensor, self._head(pooled_embedding))
 
     # ------------------------------------------------------------------ #
     # LoRA
@@ -738,7 +738,7 @@ class BaseVisualAdapter2D(nn.Module):
         for required in ("model_id", "revision", "config", "config_hash"):
             if required not in manifest:
                 raise AdapterCheckpointError(f"manifest missing required provenance field {required!r}")
-        return manifest
+        return cast(dict[str, Any], manifest)
 
     @classmethod
     def load_checkpoint(

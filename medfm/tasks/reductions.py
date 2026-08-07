@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -11,6 +11,8 @@ from medfm.core.errors import ShapeContractError
 from medfm.core.task import LossOutput
 
 ReduceFn = Callable[[torch.Tensor], torch.Tensor]
+
+_torch_assert = cast(Callable[[Any, str], None], torch._assert)
 
 
 def reduce_mean_by_count(
@@ -33,7 +35,7 @@ def reduce_mean_by_count(
     count = count.to(device=local_mean.device, dtype=torch.float32)
     if count.ndim != 0:
         raise ShapeContractError("local_count must be a non-negative scalar")
-    torch._assert(count >= 0, "local_count must be non-negative")
+    _torch_assert(count >= 0, "local_count must be non-negative")
     stats = torch.stack([local_mean.float() * count, count])
     if reduce_fn is not None:
         stats = reduce_fn(stats)

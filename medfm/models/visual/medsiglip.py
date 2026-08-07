@@ -26,7 +26,6 @@ Training modes supported:
 - classification-head attachment via :meth:`attach_head`;
 - vision-only LoRA (``inject_lora`` with the vision-tower target).
 
-LoRA targets are declared per tower with reasons; PEFT string-mode regexes
 are scoped so vision LoRA never touches the text tower and vice versa.
 """
 
@@ -34,7 +33,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -146,7 +145,7 @@ class MedSigLIPAdapter(BaseVisualAdapter2D):
             torch.manual_seed(self._construction_seed)
         config = SiglipConfig(**hf_config)
         if hasattr(config, "_attn_implementation"):
-            config._attn_implementation = "sdpa"  # type: ignore[attr-defined]
+            config._attn_implementation = "sdpa"
         return SiglipModel(config)
 
     @classmethod
@@ -197,11 +196,18 @@ class MedSigLIPAdapter(BaseVisualAdapter2D):
         return 0  # SigLIP has no CLS token; attention pooling produces the embedding
 
     def _forward_backbone(self, pixel_values: torch.Tensor, output_hidden_states: bool) -> BackboneResult:
-        outputs = self.backbone.get_image_features(pixel_values=pixel_values, output_hidden_states=output_hidden_states)
+        from transformers import SiglipModel
+        from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+        backbone = cast(SiglipModel, self.backbone)
+        outputs = cast(
+            BaseModelOutputWithPooling,
+            backbone.get_image_features(pixel_values=pixel_values, output_hidden_states=output_hidden_states),
+        )
         hidden = tuple(outputs.hidden_states) if output_hidden_states and outputs.hidden_states is not None else None
         return BackboneResult(
-            last_hidden_state=outputs.last_hidden_state,
-            pooled=outputs.pooler_output,
+            last_hidden_state=cast(torch.Tensor, outputs.last_hidden_state),
+            pooled=cast(torch.Tensor, outputs.pooler_output),
             hidden_states=hidden,
             raw=outputs,
         )
@@ -212,13 +218,27 @@ class MedSigLIPAdapter(BaseVisualAdapter2D):
 
     def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.Tensor | None = None) -> torch.Tensor:
         """L2-normalized text embeddings [B, D] from the MedSigLIP text tower."""
-        outputs = self.backbone.get_text_features(input_ids=input_ids, attention_mask=attention_mask)
-        return torch.nn.functional.normalize(outputs.pooler_output, dim=-1)
+        from transformers import SiglipModel
+        from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+        backbone = cast(SiglipModel, self.backbone)
+        outputs = cast(
+            BaseModelOutputWithPooling,
+            backbone.get_text_features(input_ids=input_ids, attention_mask=attention_mask),
+        )
+        return torch.nn.functional.normalize(cast(torch.Tensor, outputs.pooler_output), dim=-1)
 
     def encode_image_normalized(self, pixel_values: torch.Tensor) -> torch.Tensor:
         """L2-normalized image embeddings [B, D] (retrieval/contrastive input)."""
-        outputs = self.backbone.get_image_features(pixel_values=pixel_values)
-        return torch.nn.functional.normalize(outputs.pooler_output, dim=-1)
+        from transformers import SiglipModel
+        from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+        backbone = cast(SiglipModel, self.backbone)
+        outputs = cast(
+            BaseModelOutputWithPooling,
+            backbone.get_image_features(pixel_values=pixel_values),
+        )
+        return torch.nn.functional.normalize(cast(torch.Tensor, outputs.pooler_output), dim=-1)
 
     def image_text_similarity(self, image_embeddings: torch.Tensor, text_embeddings: torch.Tensor) -> torch.Tensor:
         """Normalized image-text similarity [B_img, B_txt].
@@ -228,8 +248,9 @@ class MedSigLIPAdapter(BaseVisualAdapter2D):
         """
         image_embeddings = torch.nn.functional.normalize(image_embeddings, dim=-1)
         text_embeddings = torch.nn.functional.normalize(text_embeddings, dim=-1)
-        scale = self.backbone.logit_scale.exp()
-        bias = self.backbone.logit_bias
+        backbone = cast(Any, self.backbone)
+        scale = cast(torch.Tensor, backbone.logit_scale).exp()
+        bias = cast(torch.Tensor, backbone.logit_bias)
         return scale * (image_embeddings @ text_embeddings.transpose(0, 1)) + bias
 
     # ------------------------------------------------------------------ #

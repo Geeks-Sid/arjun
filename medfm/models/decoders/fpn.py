@@ -7,6 +7,7 @@ from collections.abc import Sequence
 import torch
 from torch import nn
 
+from medfm.core.encoder import EncoderOutput
 from medfm.core.errors import ShapeContractError
 
 from .base import SegmentationOutput, _group_count, _interpolate, as_feature_maps
@@ -46,7 +47,12 @@ class _FPNDecoder(nn.Module):
         self.head = conv(pyramid_channels, out_channels, kernel_size=1)
         self.auxiliary_heads = nn.ModuleList([conv(pyramid_channels, out_channels, kernel_size=1) for _ in channels])
 
-    def forward(self, features: object, *, output_size: Sequence[int] | None = None) -> SegmentationOutput:
+    def forward(
+        self,
+        features: EncoderOutput | torch.Tensor | Sequence[torch.Tensor],
+        *,
+        output_size: Sequence[int] | None = None,
+    ) -> SegmentationOutput:
         maps = as_feature_maps(features)
         if len(maps) != len(self.lateral):
             raise ShapeContractError(f"FPN configured for {len(self.lateral)} maps but received {len(maps)}")

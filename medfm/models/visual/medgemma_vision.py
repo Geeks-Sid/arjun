@@ -29,7 +29,7 @@ normalization (mean/std 0.5), per the MedGemma processor.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -149,7 +149,7 @@ class MedGemmaVisionAdapter(BaseVisualAdapter2D):
             torch.manual_seed(self._construction_seed)
         config = Gemma3Config(**hf_config)
         if hasattr(config, "_attn_implementation"):
-            config._attn_implementation = "sdpa"  # type: ignore[attr-defined]
+            config._attn_implementation = "sdpa"
         return Gemma3ForConditionalGeneration(config)
 
     @classmethod
@@ -191,18 +191,25 @@ class MedGemmaVisionAdapter(BaseVisualAdapter2D):
         return 0  # projected tokens carry no CLS prefix
 
     def _forward_backbone(self, pixel_values: torch.Tensor, output_hidden_states: bool) -> BackboneResult:
-        outputs = self.backbone.get_image_features(pixel_values=pixel_values)
-        projected = outputs.pooler_output  # [B, mm_tokens, lm_hidden]
+        from transformers import Gemma3ForConditionalGeneration
+        from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+        backbone = cast(Gemma3ForConditionalGeneration, self.backbone)
+        outputs = cast(BaseModelOutputWithPooling, backbone.get_image_features(pixel_values=pixel_values))
+        projected = cast(torch.Tensor, outputs.pooler_output)  # [B, mm_tokens, lm_hidden]
         pooled = projected.mean(dim=1)  # declared mean aggregation
         hidden: tuple[torch.Tensor, ...] | None = None
-        if output_hidden_states and getattr(outputs, "hidden_states", None) is not None:
+        if output_hidden_states and outputs.hidden_states is not None:
             hidden = tuple(outputs.hidden_states)
         return BackboneResult(last_hidden_state=projected, pooled=pooled, hidden_states=hidden, raw=outputs)
 
     @property
     def projector(self) -> torch.nn.Module:
         """The multi-modal projector (bridge surface for Phase 09)."""
-        return self.backbone.model.multi_modal_projector
+        from transformers import Gemma3ForConditionalGeneration
+
+        backbone = cast(Gemma3ForConditionalGeneration, self.backbone)
+        return cast(torch.nn.Module, backbone.model.multi_modal_projector)
 
     # ------------------------------------------------------------------ #
     # Checkpoint config record

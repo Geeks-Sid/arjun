@@ -16,7 +16,7 @@ import random
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -33,6 +33,7 @@ from medfm.models.bridges import (
     CoordinateAwareBridge,
     LinearVisionLanguageBridge,
     PerceiverResamplerBridge,
+    VisionLanguageBridge,
     WSICoordinateEncoder,
 )
 from medfm.models.decoders import UNetDecoder2D
@@ -44,6 +45,8 @@ from medfm.models.pathology import (
     GigaPathFlashAggregator,
     MeanPoolingAggregator,
     PathologyTileEncoder,
+    SlideAggregation,
+    SlideAggregator,
     TileEmbeddingMetadata,
     TITANAggregator,
     TokenBudget,
@@ -377,10 +380,11 @@ def _shape(value: Any, name: str, *, channels: int) -> tuple[int, int, int]:
         value = value.get("shape", value.get("tile", value.get("image")))
     if not isinstance(value, (list, tuple)):
         raise PathologyRecipeConfigurationError(f"{name} must be a two- or three-element shape")
+    result: tuple[int, int, int]
     if len(value) == 2:
         result = (channels, int(value[0]), int(value[1]))
     elif len(value) == 3:
-        result = tuple(int(item) for item in value)
+        result = cast(tuple[int, int, int], tuple(int(item) for item in value))
     else:
         raise PathologyRecipeConfigurationError(f"{name} must be a two- or three-element shape")
     if any(item <= 0 for item in result):
@@ -851,7 +855,7 @@ class GatedAttentionMILAggregator(nn.Module):
         *,
         evidence_indices: tuple[tuple[int, ...], ...] = (),
         evidence_tiles: tuple[tuple[Any, ...], ...] = (),
-    ) -> Any:
+    ) -> SlideAggregation:
         if embeddings.ndim != 3 or int(embeddings.shape[-1]) != self.embedding_dim:
             raise ValueError(f"embeddings must be [B,T,{self.embedding_dim}]")
         valid = (
@@ -906,7 +910,7 @@ class TransformerSlideAggregator(nn.Module):
         *,
         evidence_indices: tuple[tuple[int, ...], ...] = (),
         evidence_tiles: tuple[tuple[Any, ...], ...] = (),
-    ) -> Any:
+    ) -> SlideAggregation:
         if embeddings.ndim != 3 or int(embeddings.shape[-1]) != self.embedding_dim:
             raise ValueError(f"embeddings must be [B,T,{self.embedding_dim}]")
         valid = (
@@ -932,7 +936,10 @@ class TransformerSlideAggregator(nn.Module):
         return self.aggregate(embeddings, mask).embedding
 
 
-def build_slide_aggregator(name: str, embedding_dim: int) -> nn.Module:
+_SlideAggregator = SlideAggregator | GatedAttentionMILAggregator | TransformerSlideAggregator
+
+
+def build_slide_aggregator(name: str, embedding_dim: int) -> _SlideAggregator:
     normalized = str(name).lower().replace("-", "_")
     if normalized == "mean":
         return MeanPoolingAggregator(embedding_dim)
@@ -962,7 +969,7 @@ class _TinyTileVision(nn.Module, PathologyTileEncoder):
                 nn.Conv2d(hidden_size, hidden_size, kernel_size=3, padding=1),
                 nn.GELU(),
             )
-            self.late_block = nn.Linear(hidden_size, embedding_dim)
+            self.late_block: nn.Linear = nn.Linear(hidden_size, embedding_dim)
         self.model_id = model_id
         self.revision = "offline-random-contract"
         self.preprocess_hash = hashlib.sha256(f"{model_id}:rgb:{seed}".encode()).hexdigest()[:16]
@@ -973,7 +980,7 @@ class _TinyTileVision(nn.Module, PathologyTileEncoder):
         if tiles.ndim != 4 or int(tiles.shape[1]) != 3:
             raise ValueError("pathology tile encoder expects [T,3,H,W]")
         hidden = self.stem(tiles.float())
-        return self.late_block(hidden.mean(dim=(-2, -1)))
+        return cast(torch.Tensor, self.late_block(hidden.mean(dim=(-2, -1))))
 
     forward = encode_tiles
 
@@ -1049,10 +1056,10 @@ class _TileContrastiveClassificationTask(BinaryClassificationTask):
 
 
 class _WSIClassificationModel(nn.Module):
-    def __init__(self, aggregator: nn.Module) -> None:
+    def __init__(self, aggregator: _SlideAggregator) -> None:
         super().__init__()
         self.aggregator = aggregator
-        self.last_aggregation: Any | None = None
+        self.last_aggregation: SlideAggregation | None = None
 
     @staticmethod
     def _source(batch: MedicalBatch) -> tuple[torch.Tensor, torch.Tensor]:
@@ -1064,7 +1071,7 @@ class _WSIClassificationModel(nn.Module):
             raise ShapeContractError("cached WSI embeddings require tile_mask")
         return embeddings, mask.bool()
 
-    def aggregate_batch(self, batch: MedicalBatch, *, mode: str = "image") -> Any:
+    def aggregate_batch(self, batch: MedicalBatch, *, mode: str = "image") -> SlideAggregation:
         embeddings, mask = self._source(batch)
         if mode == "none":
             embeddings = torch.zeros_like(embeddings)
@@ -1096,7 +1103,7 @@ class PathologyVLMOutput:
 
     @property
     def logits(self) -> torch.Tensor:
-        return self.language.logits
+        return cast(torch.Tensor, self.language.logits)
 
 
 class _WSIVLMModel(nn.Module):
@@ -1104,7 +1111,7 @@ class _WSIVLMModel(nn.Module):
         self,
         *,
         language: GenericHFCausalLMAdapter,
-        bridge: nn.Module,
+        bridge: CoordinateAwareBridge,
         selector: WSITokenSelector,
         visual_token_count: int,
         slide_shape: tuple[int, int],
@@ -1116,8 +1123,7 @@ class _WSIVLMModel(nn.Module):
         self.language = language
         self.bridge = bridge
         self.selector = selector
-        self.visual_token_count = int(visual_token_count)
-        self.slide_shape = tuple(int(v) for v in slide_shape)
+        self.slide_shape = cast(tuple[int, int], tuple(int(v) for v in slide_shape))
         self.evidence_top_k = int(evidence_top_k)
         self.tile_mpp = float(tile_mpp)
         self.family = "wsi_vlm"
@@ -1495,7 +1501,7 @@ def _build_language(options: _Phase15Options) -> GenericHFCausalLMAdapter:
 def _build_wsi_vlm_model(config: RunConfig, options: _Phase15Options) -> _WSIVLMModel:
     language = _build_language(options)
     if options.bridge_type == "perceiver":
-        base_bridge: nn.Module = PerceiverResamplerBridge(
+        base_bridge: VisionLanguageBridge = PerceiverResamplerBridge(
             source_dim=options.embedding_dim,
             target_dim=options.hidden_size,
             output_tokens=options.visual_token_count,
@@ -1557,11 +1563,11 @@ def _phase15_model(config: RunConfig, options: _Phase15Options) -> nn.Module:
         return _build_wsi_vlm_model(config, options)
     if not options.offline_tiny:
         raise PathologyRecipeConfigurationError("production pathology segmentation requires an approved tile encoder")
-    vision = _TileSegmentationVision(hidden_size=options.hidden_size, seed=options.construction_seed)
-    return _PathologySegmentationModel(vision)
+    segmentation_vision = _TileSegmentationVision(hidden_size=options.hidden_size, seed=options.construction_seed)
+    return _PathologySegmentationModel(segmentation_vision)
 
 
-def _classification_task(config: RunConfig, options: _Phase15Options) -> nn.Module:
+def _classification_task(config: RunConfig, options: _Phase15Options) -> TaskModuleBase:
     task_name = options.task_name
     binary = "BINARY" in task_name or task_name in {"CLASSIFICATION", "BINARY"}
     if "MULTILABEL" in task_name:
@@ -1591,7 +1597,7 @@ def _classification_task(config: RunConfig, options: _Phase15Options) -> nn.Modu
     )
 
 
-def _phase15_task(config: RunConfig, options: _Phase15Options, model: nn.Module) -> nn.Module:
+def _phase15_task(config: RunConfig, options: _Phase15Options, model: nn.Module) -> TaskModuleBase:
     if options.family == "tile_classification":
         return _classification_task(config, options)
     if options.family == "wsi_classification":
@@ -1757,7 +1763,7 @@ def phase15_builders() -> ComponentBuilders:
     def peft(model_value: nn.Module, *_: Any) -> nn.Module:
         return model_value
 
-    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> nn.Module:
+    def task(config: RunConfig, model_value: nn.Module, *_: Any) -> TaskModuleBase:
         return _phase15_task(config, _options(config), model_value)
 
     def optimizer(
@@ -1779,7 +1785,7 @@ def phase15_builders() -> ComponentBuilders:
         backend: AcceleratorBackend,
         model_value: nn.Module,
         optimizer_value: OptimizerBundle,
-        task_value: nn.Module,
+        task_value: TaskModuleBase,
         dataset_value: list[MedicalBatch],
     ) -> Trainer:
         return Trainer(

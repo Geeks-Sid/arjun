@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, cast, runtime_checkable
 
 import torch
 from torch import nn
@@ -16,6 +16,13 @@ from medfm.core.errors import ShapeContractError
 from medfm.core.task import LossOutput
 
 from .base import TaskModuleBase, ensure_scalar
+
+
+class LossComputingTask(Protocol):
+    def compute_loss(self, model_output: Any, batch: MedicalBatch) -> LossOutput: ...
+
+
+_torch_assert = cast(Callable[[Any, str], None], torch._assert)
 
 
 @runtime_checkable
@@ -135,11 +142,11 @@ class MultiTaskLossComposer(nn.Module):
         for name in self.task_names:
             output = losses[name]
             scalar = ensure_scalar(output.total, f"loss {name}")
-            torch._assert(torch.isfinite(scalar).all(), f"loss {name!r} is non-finite")
+            _torch_assert(torch.isfinite(scalar).all(), f"loss {name!r} is non-finite")
             weight_tensor = extension_weights.get(name)
             coefficient = weight_tensor if weight_tensor is not None else scalar.new_tensor(weights[name])
-            torch._assert(coefficient.ndim == 0, f"multitask weight for {name!r} must be scalar")
-            torch._assert(
+            _torch_assert(coefficient.ndim == 0, f"multitask weight for {name!r} must be scalar")
+            _torch_assert(
                 torch.isfinite(coefficient).all() & (coefficient > 0).all(),
                 f"multitask extension weight for {name!r} must be finite and > 0",
             )
@@ -196,8 +203,9 @@ class MultiTaskTask(TaskModuleBase):
             task = self.tasks[name]
             if not hasattr(task, "compute_loss"):
                 raise ShapeContractError(f"child task {name!r} does not implement compute_loss")
-            losses[name] = task.compute_loss(model_output[name], batch)  # type: ignore[attr-defined]
-        return self.composer(losses)
+            child_task = cast(LossComputingTask, task)
+            losses[name] = child_task.compute_loss(model_output[name], batch)
+        return cast(LossOutput, self.composer(losses))
 
     def update_metrics(self, model_output: Any, batch: MedicalBatch) -> None:
         output = self.compute_loss(model_output, batch)

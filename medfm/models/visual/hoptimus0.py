@@ -36,7 +36,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, cast
 
 import torch
 from torch import nn
@@ -56,6 +56,13 @@ from medfm.models.visual.base import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class _TimmBackbone(Protocol):
+    def forward_features(self, pixel_values: torch.Tensor) -> torch.Tensor: ...
+
+    def get_intermediate_layers(self, pixel_values: torch.Tensor, n: tuple[int, ...]) -> tuple[torch.Tensor, ...]: ...
+
 
 #: Pinned upstream revision (bioptimus/H-optimus-0 on the HF hub).
 HOPTIMUS_MODEL_ID = "h-optimus-0"
@@ -171,7 +178,7 @@ class HOptimus0Adapter(BaseVisualAdapter2D):
             img_size=img_size,
             dynamic_img_size=True,
         )
-        return model
+        return cast(nn.Module, model)
 
     @classmethod
     def build_tiny(cls, *, model_id: str = "h-optimus-0-tiny", construction_seed: int = 0) -> HOptimus0Adapter:
@@ -196,12 +203,13 @@ class HOptimus0Adapter(BaseVisualAdapter2D):
 
     def _forward_backbone(self, pixel_values: torch.Tensor, output_hidden_states: bool) -> BackboneResult:
         pixel_values = pixel_values.to(dtype=self.compute_dtype())
-        features = self.backbone.forward_features(pixel_values)  # [B, 1+N, D]
+        backbone = cast(_TimmBackbone, self.backbone)
+        features = backbone.forward_features(pixel_values)  # [B, 1+N, D]
         pooled = features[:, 0, :]
         hidden: tuple[torch.Tensor, ...] | None = None
         if output_hidden_states and self._feature_map_layers:
             # timm intermediate layers return patch tokens only (no CLS).
-            hidden = tuple(self.backbone.get_intermediate_layers(pixel_values, n=self._feature_map_layers))
+            hidden = backbone.get_intermediate_layers(pixel_values, n=self._feature_map_layers)
         return BackboneResult(last_hidden_state=features, pooled=pooled, hidden_states=hidden, raw=None)
 
     def _build_feature_maps(self, result: BackboneResult, patch_tokens: torch.Tensor) -> tuple[torch.Tensor, ...]:

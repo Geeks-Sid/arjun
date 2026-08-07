@@ -341,7 +341,9 @@ class TrainingPipeline:
             )
         result.stages.append("task")
 
-        task_components = {"task": result.task} if hasattr(result.task, "named_parameters") else None
+        task_components: dict[str, nn.Module] | None = (
+            {"task": result.task} if isinstance(result.task, nn.Module) else None
+        )
         if self.builders.optimizer is not None:
             result.optimizer = _invoke(
                 self.builders.optimizer,

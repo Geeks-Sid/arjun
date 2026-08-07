@@ -7,6 +7,7 @@ from collections.abc import Sequence
 import torch
 from torch import nn
 
+from medfm.core.encoder import EncoderOutput
 from medfm.core.errors import ShapeContractError
 
 from .base import ConvBlock, SegmentationOutput, _group_count, _interpolate, as_feature_maps
@@ -37,7 +38,7 @@ class _UNetDecoder(nn.Module):
             channel_list = [int(in_channels)]
         else:
             channel_list = [int(c) for c in in_channels]
-            if not channel_list or any(c <= 0 for c in channel_list):
+            if not channel_list or any(c is None or c <= 0 for c in channel_list):
                 raise ShapeContractError("in_channels sequence must contain positive entries")
         self.declared_channels = tuple(channel_list)
         self.projections = nn.ModuleList()
@@ -74,7 +75,7 @@ class _UNetDecoder(nn.Module):
 
     def forward(
         self,
-        features: object,
+        features: EncoderOutput | torch.Tensor | Sequence[torch.Tensor],
         *,
         output_size: Sequence[int] | None = None,
     ) -> SegmentationOutput:

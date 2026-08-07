@@ -29,7 +29,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -173,8 +173,8 @@ class GenericHFVisionAdapter(BaseVisualAdapter2D):
         # SDPA is the preferred pure-PyTorch attention path; custom CUDA
         # attention kernels are never required by this contract.
         if hasattr(config, "_attn_implementation"):
-            config._attn_implementation = "sdpa"  # type: ignore[attr-defined]
-        return AutoModel.from_config(config)
+            config._attn_implementation = "sdpa"
+        return cast(nn.Module, AutoModel.from_config(config))
 
     @classmethod
     def from_pretrained_dir(
@@ -225,8 +225,14 @@ class GenericHFVisionAdapter(BaseVisualAdapter2D):
         return FAMILIES[self._family].prefix_token_fn(self._hf_config_dict)
 
     def _forward_backbone(self, pixel_values: torch.Tensor, output_hidden_states: bool) -> BackboneResult:
-        outputs = self.backbone(pixel_values=pixel_values, output_hidden_states=output_hidden_states)
-        last_hidden = outputs.last_hidden_state
+        from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+        backbone = cast(Any, self.backbone)
+        outputs = cast(
+            BaseModelOutputWithPooling,
+            backbone(pixel_values=pixel_values, output_hidden_states=output_hidden_states),
+        )
+        last_hidden = cast(torch.Tensor, outputs.last_hidden_state)
         source = FAMILIES[self._family].pooled_source
         pooled: torch.Tensor | None
         if source == "cls":
@@ -237,7 +243,7 @@ class GenericHFVisionAdapter(BaseVisualAdapter2D):
             pooled = last_hidden[:, self._prefix_token_count() :, :].mean(dim=1)
         else:  # pragma: no cover - registry is closed
             raise UnsupportedCapabilityError(f"unknown pooled_source {source!r}")
-        hidden = tuple(outputs.hidden_states) if output_hidden_states else None
+        hidden = cast(tuple[torch.Tensor, ...], outputs.hidden_states) if output_hidden_states else None
         return BackboneResult(last_hidden_state=last_hidden, pooled=pooled, hidden_states=hidden, raw=outputs)
 
     # ------------------------------------------------------------------ #

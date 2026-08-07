@@ -54,7 +54,7 @@ class TokenBudget:
             raise ValueError("visual_tokens must be in [32, 128]")
 
 
-class _SamplerMixin:
+class _SamplerMixin(TileSampler):
     def sample(self, records: Sequence[Any], max_tiles: int, **kwargs: Any) -> list[int]:
         return self.select(records, max_tiles, **kwargs)
 

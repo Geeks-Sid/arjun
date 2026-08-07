@@ -7,6 +7,8 @@ adapter only returns a pooled representation.
 
 from __future__ import annotations
 
+from typing import cast
+
 import torch
 from torch import nn
 
@@ -57,12 +59,12 @@ class _LinearClassifier(nn.Module):
         super().__init__()
         self.input_dim = int(input_dim)
         self.num_classes = int(num_classes)
-        self.classifier = nn.Linear(self.input_dim, self.num_classes)
+        self.classifier: nn.Module = nn.Linear(self.input_dim, self.num_classes)
 
     def _logits(self, pooled: torch.Tensor) -> torch.Tensor:
         if pooled.ndim != 2 or int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError(f"classification head expects [B, {self.input_dim}], got {tuple(pooled.shape)}")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
     def forward(self, value: EncoderOutput | torch.Tensor) -> torch.Tensor:
         return self._logits(_as_pooled(value))
@@ -114,7 +116,7 @@ class MLPClassificationHead(_LinearClassifier):
         self.input_dim = dim
         self.num_classes = classes
         self.hidden_dim = int(hidden_dim)
-        self.classifier = nn.Sequential(
+        self.classifier: nn.Module = nn.Sequential(
             nn.Linear(dim, self.hidden_dim),
             act,
             nn.Dropout(dropout),
@@ -124,7 +126,7 @@ class MLPClassificationHead(_LinearClassifier):
     def _logits(self, pooled: torch.Tensor) -> torch.Tensor:
         if pooled.ndim != 2 or int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError(f"MLP head expects [B, {self.input_dim}], got {tuple(pooled.shape)}")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 class AttentionPoolingClassificationHead(nn.Module):
@@ -155,7 +157,7 @@ class AttentionPoolingClassificationHead(nn.Module):
         pooled = self.pool(output)
         if int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError("attention pooling output dimension does not match classifier")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 class MultiLabelClassificationHead(LinearClassificationHead):
@@ -199,7 +201,7 @@ class OrdinalClassificationHead(nn.Module):
         if int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError(f"ordinal head expects [B, {self.input_dim}], got {tuple(pooled.shape)}")
         evidence = self.evidence(pooled)
-        return evidence - self.thresholds().to(device=evidence.device, dtype=evidence.dtype)
+        return cast(torch.Tensor, evidence - self.thresholds().to(device=evidence.device, dtype=evidence.dtype))
 
 
 class MILClassificationHead(nn.Module):
@@ -227,7 +229,7 @@ class MILClassificationHead(nn.Module):
         if not isinstance(output, EncoderOutput):
             raise ShapeContractError("MILClassificationHead requires EncoderOutput with spatial_tokens")
         pooled = self.pool(output)
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 class PooledClassificationHead(LinearClassificationHead):
@@ -248,7 +250,7 @@ class MeanPoolingClassificationHead(nn.Module):
         pooled = self.pool(output)
         if int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError("mean pooling output dimension does not match classifier")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 class GeMClassificationHead(nn.Module):
@@ -265,7 +267,7 @@ class GeMClassificationHead(nn.Module):
         pooled = self.pool(output)
         if int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError("GeM pooling output dimension does not match classifier")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 class TopKClassificationHead(nn.Module):
@@ -282,7 +284,7 @@ class TopKClassificationHead(nn.Module):
         pooled = self.pool(output)
         if int(pooled.shape[-1]) != self.input_dim:
             raise ShapeContractError("top-k pooling output dimension does not match classifier")
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))
 
 
 __all__ = [

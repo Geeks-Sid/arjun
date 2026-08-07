@@ -18,6 +18,7 @@ from torch import nn
 
 from medfm.core.batch import MedicalBatch
 from medfm.core.enums import Modality, TaskType
+from medfm.core.task import TaskModule
 from medfm.recipes.phase13 import phase13_builders
 from medfm.recipes.phase14 import phase14_builders
 from medfm.recipes.phase15 import phase15_builders
@@ -76,7 +77,7 @@ def _tiny_model(config: RunConfig) -> nn.Module:
     return TinySegmentationModel() if "segmentation" in name else TinyClassificationModel()
 
 
-def _tiny_task(config: RunConfig, model: nn.Module) -> nn.Module:
+def _tiny_task(config: RunConfig, model: nn.Module) -> TaskModule:
     name = _task_name(config)
     if "segmentation" in name:
         return BinarySegmentationTask(nn.Identity())
@@ -123,7 +124,7 @@ def tiny_builders() -> ComponentBuilders:
     def optimizer(model: nn.Module, config: RunConfig, backend: Any) -> Any:
         return build_optimizer(model, config.optimizer, backend=backend.name)
 
-    def task(config: RunConfig, model: nn.Module) -> nn.Module:
+    def task(config: RunConfig, model: nn.Module) -> TaskModule:
         return _tiny_task(config, model)
 
     def trainer(
@@ -131,7 +132,7 @@ def tiny_builders() -> ComponentBuilders:
         backend: Any,
         model: nn.Module,
         optimizer: Any,
-        task_module: nn.Module,
+        task_module: TaskModule,
         dataset: list[MedicalBatch],
     ) -> Trainer:
         return Trainer(
