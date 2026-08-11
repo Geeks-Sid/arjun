@@ -11,6 +11,13 @@ Deciders: Project Maintainer
 
 Training in v1 is **PEFT-first**: frozen-encoder feature extraction, linear/head training, LoRA/QLoRA, projector/bridge training, and decoder training. Full fine-tuning of any backbone layer requires an explicit per-model exception recorded in the run config and a memory justification. Billion-parameter full pretraining is outside v1.
 
+- Production native 2D VLM instruction tuning uses Unsloth's
+  `FastVisionModel`/`UnslothVisionDataCollator` with TRL `SFTTrainer`; this
+  replaces bespoke CUDA optimizer loops while retaining the PEFT-first
+  freeze policy.  Custom external-encoder/bridge, 3D, and WSI routes remain
+  on modality-specific trainers until an equivalent multimodal backend is
+  validated.
+
 ## Alternatives considered
 
 - **Full fine-tuning as default:** infeasible on target hardware; catastrophic-forgetting risk on small medical datasets. Rejected.

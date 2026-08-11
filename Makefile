@@ -2,7 +2,7 @@
 UV ?= uv
 PYTEST := $(UV) run --frozen pytest
 
-.PHONY: install install-dev install-tpu lint typecheck test test-gpu test-tpu \
+.PHONY: install install-dev install-vlm install-tpu lint typecheck test test-gpu test-tpu \
         test-distributed-gpu test-distributed-tpu smoke doctor lock \
         test-level1 test-level2 test-golden test-protected coverage build \
         security release-check release-matrix ci
@@ -16,6 +16,10 @@ install-dev:
 	$(UV) sync --frozen --extra medical --extra pathology --extra hf \
 		--extra cuda --extra tracking --all-groups
 
+
+# CUDA 2D VLM fine-tuning: Unsloth + TRL + NF4 support.
+install-vlm:
+	$(UV) sync --frozen --no-dev --extra medical --extra hf --extra cuda --extra vlm
 # TPU VM baseline: NO bitsandbytes / cuCIM / FlashAttention.
 install-tpu:
 	$(UV) sync --frozen --no-dev --extra medical --extra hf --extra tpu

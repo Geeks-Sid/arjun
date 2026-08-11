@@ -22,8 +22,8 @@ These cards describe the recipe contracts delivered in Phase 13. The offline rec
 
 - **Recipes:** `native_vlm_smoke.yaml`, `native_structured_findings_smoke.yaml`, `native_vlm_cuda_nf4.yaml`, and `native_vlm_tpu_bf16_lora.yaml`.
 - **Input/task:** fixed image and text buckets with masked prompt tokens, explicit visual-token counts, and no KV cache during training. Structured findings use versioned JSON schema validation before scoring.
-- **Training:** the primary production profiles distinguish CUDA NF4 QLoRA from TPU BF16 LoRA; neither is mislabeled or silently substituted. Mixed VQA/findings/impression/report weights are preserved in metadata.
-- **Known limitations:** MedGemma production checkpoints, `bitsandbytes` NF4 execution, TPU PJRT/no-recompile/export evidence, deterministic generation quality, shuffled-image grounding, clinical report quality, and human review are not available here.
+- **Training:** native CUDA 2D VLM SFT is now run by `scripts/train_vlm_unsloth.py` (or the Qwen/MedGemma wrappers) with `FastVisionModel`, response-only `UnslothVisionDataCollator`, and TRL `SFTTrainer`. The TPU BF16 profile remains a separate modality/backend contract; mixed VQA/findings/impression/report weights are preserved in metadata.
+- **Known limitations:** native production checkpoint loading, Unsloth CUDA kernel parity, TPU PJRT/no-recompile/export evidence, deterministic generation quality, shuffled-image grounding, clinical report quality, and human review are not available in this environment.
 
 ## External-encoder VLM
 

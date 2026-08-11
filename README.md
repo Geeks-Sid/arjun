@@ -27,6 +27,7 @@ upgrade one without the other.
 ```bash
 make install        # runtime: core + medical + HF/PEFT extras
 make install-dev    # everything local: + pathology, cuda (bitsandbytes), tracking, dev tools
+make install-vlm    # CUDA 2D VLM SFT: Unsloth + TRL + bitsandbytes
 make install-tpu    # TPU VM baseline (torch_xla[tpu]; NO bitsandbytes/cuCIM/FlashAttention)
 ```
 
@@ -35,6 +36,36 @@ Dependency policy: direct dependencies are pinned or lower-bounded in
 update: `uv lock --upgrade-package <pkg>`, re-run the acceptance command,
 commit both files. cuCIM, FlashAttention, bitsandbytes, MLflow, and W&B are
 optional extras and never part of the CPU or TPU baseline.
+
+## 2D VLM fine-tuning
+
+Native 2D VLM SFT uses the shared Unsloth runner.  It formats each case as a
+multimodal `messages` record, applies response-only loss masking through
+`UnslothVisionDataCollator`, and delegates optimization/checkpointing to
+`trl.SFTTrainer`; the old hand-written CUDA loops are no longer used.  The
+custom external-encoder/bridge recipes remain separate because Unsloth's
+vision backend patches native VLM architectures rather than arbitrary
+encoder/projector graphs.
+
+```bash
+# Qwen2.5-VL
+uv run --extra vlm python -m scripts.train_medreason_qwen --dry-run
+uv run --extra vlm python -m scripts.train_medreason_qwen
+
+# Gated MedGemma 1.5 (accept the Health AI terms and authenticate first)
+uv run --extra vlm python -m scripts.train_medgemma15 --dry-run
+uv run --extra vlm python -m scripts.train_medgemma15
+
+# Gemma vision pilot
+uv run --extra vlm python -m scripts.train_medreason_gemma4 --dry-run
+uv run --extra vlm python -m scripts.train_medreason_gemma4
+```
+
+Use `--finetune-vision-layers` for a joint vision/language adapter.  The
+default is language-layer LoRA with the vision tower frozen, matching the
+project's PEFT-first policy.  The `--dry-run` path validates the split and
+prints the resolved plan without importing Unsloth or allocating model
+weights.
 
 ## Developer commands
 

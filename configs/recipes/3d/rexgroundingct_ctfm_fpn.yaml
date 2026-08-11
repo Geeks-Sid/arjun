@@ -1,0 +1,55 @@
+schema_version: 1
+model_id: rexgroundingct-ctfm-fpn
+model:
+  id: project-lighter/ct_fm_feature_extractor
+  family: ct_fm_language_conditioned_fpn
+  checkpoint_source: Hugging Face Hub
+  revision: main
+dataset:
+  id: rajpurkarlab/ReXGroundingCT
+  revision: MICCAI-2026
+  volume_source: ibrahimhamamci/CT-RATE
+  volume_variant: fixed
+  root: ../RexGroundingData
+  split_policy: official_scan_level_train_val
+  text_field: findings
+task:
+  type: LANGUAGE_CONDITIONED_SEGMENTATION
+  metric: ReXrank_instance_f1
+recipe:
+  phase: 14
+  id: rexgroundingct-ctfm-fpn
+  family: language_conditioned_3d_segmentation
+  backbone: project-lighter/ct_fm_feature_extractor
+  text_model: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext
+  patch_shape: [96, 96, 96]
+  inference_stride: [64, 64, 64]
+  positive_sampling_ratio: 0.75
+  patches_per_finding: 2
+  threshold: 0.5
+  connected_component_min_size: 10
+  freeze_visual_first: true
+  train_visual_second_stage: true
+accelerator:
+  backend: cuda
+  precision: bf16
+  distribution: single
+batch:
+  microbatch_per_device: 1
+  gradient_accumulation_steps: 8
+  global_batch_size: 8
+optimizer:
+  name: adamw
+  head_lr: 0.0001
+  visual_lr: 0.00001
+  weight_decay: 0.01
+freeze_schedule:
+  - until_step: 2000
+    train: [text_projection, text_gates, decoder]
+  - train: [visual, text_projection, text_gates, decoder]
+tracking:
+  kind: local_json
+checkpoint:
+  format: torch
+  output_dir: artifacts/runs/rexgroundingct/ctfm_fpn
+seed: 2026

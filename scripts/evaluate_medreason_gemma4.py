@@ -17,12 +17,7 @@ import torch
 from peft import PeftModel
 from transformers import AutoModelForMultimodalLM, AutoProcessor, BitsAndBytesConfig
 
-from scripts.train_medreason_gemma4 import (
-    DEFAULT_MODEL,
-    evaluate_generation,
-    generate_one,
-)
-from scripts.train_medreason_qwen import (
+from scripts.medreason_data import (
     DEFAULT_PARTICIPANT_IMAGES,
     DEFAULT_PARTICIPANT_JSON,
     DEFAULT_TRAIN_IMAGES,
@@ -34,6 +29,8 @@ from scripts.train_medreason_qwen import (
     sha256_file,
     split_train_dev,
 )
+from scripts.train_medreason_gemma4 import DEFAULT_MODEL
+from scripts.train_vlm_unsloth import evaluate_generation, generate_one
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,7 +50,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-soft-tokens", type=int, default=70)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--no-4bit", action="store_true")
-    return parser.parse_args()
 
 
 def load_adapter(args: argparse.Namespace) -> tuple[Any, Any, torch.device]:
@@ -91,24 +87,10 @@ def main() -> int:
         args.participant_limit,
     )
     model, processor, device = load_adapter(args)
-    dev_metrics = evaluate_generation(
-        model,
-        processor,
-        dev_examples,
-        device,
-        args.max_new_tokens,
-        args.max_soft_tokens,
-    )
+    dev_metrics = evaluate_generation(model, processor, dev_examples, args.max_new_tokens)
     participant_predictions: list[dict[str, str | None]] = []
     for index, example in enumerate(participant_examples, 1):
-        generated = generate_one(
-            model,
-            processor,
-            example,
-            device,
-            args.max_new_tokens,
-            args.max_soft_tokens,
-        )
+        generated = generate_one(model, processor, example, args.max_new_tokens)
         participant_predictions.append(
             {
                 "case_id": example.case_id,
@@ -136,8 +118,6 @@ def main() -> int:
         ),
         "participant_labels_available": False,
         "four_bit": not args.no_4bit,
-        "max_soft_tokens": args.max_soft_tokens,
-        "gpu": torch.cuda.get_device_name(device),
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "elapsed_seconds": round(time.time() - started, 3),
     }

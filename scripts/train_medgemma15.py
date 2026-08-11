@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Unsloth Gemma vision fine-tuning entrypoint for MedReason 2D images.
+"""Unsloth MedGemma 1.5 VLM fine-tuning entrypoint for MedReason 2D images.
 
-All 2D VLM pilots share the same Unsloth/TRL implementation.  This wrapper
-keeps the Gemma 4 command-line defaults while removing the old bespoke
-PyTorch/PEFT optimizer loop.
+MedGemma's gated checkpoint is loaded through Unsloth's ``FastVisionModel``.
+The former hand-written CUDA/PEFT optimizer loop is intentionally not kept:
+all production 2D VLM SFT now goes through the shared Unsloth/TRL runner.
 """
 
 from __future__ import annotations
@@ -41,21 +41,22 @@ from scripts.train_vlm_unsloth import (
     train_unsloth_vlm,
 )
 
-DEFAULT_MODEL = "artifacts/models/local/gemma-4-E4B-it"
-DEFAULT_OUTPUT_DIR = Path("artifacts/runs/medreason/unsloth_gemma4_vl_adapter")
+DEFAULT_MODEL = "google/medgemma-1.5-4b-it"
+DEFAULT_OUTPUT_DIR = Path("artifacts/runs/medreason/unsloth_medgemma15_adapter")
+MEDGEMMA_TERMS_URL = "https://developers.google.com/health-ai-developer-foundations/terms"
 
 
 def parse_args():
     return build_parser(
-        description=__doc__ or "Unsloth Gemma vision fine-tuning",
+        description=__doc__ or "Unsloth MedGemma 1.5 fine-tuning",
         default_model=DEFAULT_MODEL,
         default_output_dir=DEFAULT_OUTPUT_DIR,
-        model_family="gemma4-vl",
+        model_family="medgemma-1.5",
     ).parse_args()
 
 
 def main() -> int:
-    return run_cli(parse_args(), model_family="gemma4-vl")
+    return run_cli(parse_args(), model_family="medgemma-1.5", terms_url=MEDGEMMA_TERMS_URL)
 
 
 if __name__ == "__main__":
@@ -70,6 +71,7 @@ __all__ = [
     "DEFAULT_TRAIN_IMAGES",
     "DEFAULT_TRAIN_JSON",
     "Example",
+    "MEDGEMMA_TERMS_URL",
     "UnslothVLMConfig",
     "UnslothVLMError",
     "build_messages",

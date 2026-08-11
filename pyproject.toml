@@ -64,6 +64,22 @@ hf = [
     # later phases); pure PyTorch, no custom CUDA kernels.
     "timm>=1.0.16,<2",
 ]
+
+# CUDA-only Unsloth/TRL vision SFT backend.  Kept separate from ``hf`` so the
+# CPU and TPU baselines do not pull Unsloth's CUDA kernels and optimizer.
+vlm = [
+    "unsloth>=2026.8,<2027",
+]
+# ReXGroundingCT research route: CT-FM's released SegResEncoder adapter.
+# Kept separate from the baseline because lighter-zoo brings notebook helpers.
+rexgrounding = [
+    "lighter-zoo==0.1.3",
+]
+# Optional open TotalSegmentator `total` task for offline thoracic priors.
+# Kept separate because it pulls nnUNet inference dependencies and weights.
+totalsegmentator = [
+    "TotalSegmentator==2.17.0",
+]
 # CUDA-only extras. Never imported eagerly by CPU code paths.
 cuda = [
     "bitsandbytes>=0.45",

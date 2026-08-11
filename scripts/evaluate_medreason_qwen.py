@@ -17,19 +17,18 @@ import torch
 from peft import PeftModel
 from transformers import AutoProcessor, BitsAndBytesConfig, Qwen2_5_VLForConditionalGeneration
 
-from scripts.train_medreason_qwen import (
-    DEFAULT_MODEL,
+from scripts.medreason_data import (
     DEFAULT_PARTICIPANT_IMAGES,
     DEFAULT_PARTICIPANT_JSON,
     DEFAULT_TRAIN_IMAGES,
     DEFAULT_TRAIN_JSON,
-    evaluate_generation,
-    generate_one,
     load_examples,
     parse_mcq_label,
     select_examples,
     split_train_dev,
 )
+from scripts.train_medreason_qwen import DEFAULT_MODEL
+from scripts.train_vlm_unsloth import evaluate_generation, generate_one
 
 
 def parse_args() -> argparse.Namespace:
@@ -97,10 +96,10 @@ def main() -> int:
         args.participant_limit,
     )
     model, processor, device = load_adapter(args)
-    dev_metrics = evaluate_generation(model, processor, dev_examples, device, args.max_new_tokens)
+    dev_metrics = evaluate_generation(model, processor, dev_examples, args.max_new_tokens)
     participant_predictions: list[dict[str, str]] = []
     for index, example in enumerate(participant_examples, 1):
-        generated = generate_one(model, processor, example, device, args.max_new_tokens)
+        generated = generate_one(model, processor, example, args.max_new_tokens)
         participant_predictions.append(
             {
                 "case_id": example.case_id,
